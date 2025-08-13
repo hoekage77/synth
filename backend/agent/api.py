@@ -2085,40 +2085,40 @@ async def update_agent(
         restrictions = agent_metadata.get('restrictions', {})
         
         if is_suna_agent:
-            logger.warning(f"Update attempt on Suna default agent {agent_id} by user {user_id}")
+            logger.warning(f"Update attempt on Xera default agent {agent_id} by user {user_id}")
             
             if (agent_data.name is not None and 
                 agent_data.name != existing_data.get('name') and 
                 restrictions.get('name_editable') == False):
-                logger.error(f"User {user_id} attempted to modify restricted name of Suna agent {agent_id}")
+                logger.error(f"User {user_id} attempted to modify restricted name of Xera agent {agent_id}")
                 raise HTTPException(
                     status_code=403, 
-                    detail="Suna's name cannot be modified. This restriction is managed centrally."
+                    detail="Xera's name cannot be modified. This restriction is managed centrally."
                 )
             
             if (agent_data.description is not None and
                 agent_data.description != existing_data.get('description') and 
                 restrictions.get('description_editable') == False):
-                logger.error(f"User {user_id} attempted to modify restricted description of Suna agent {agent_id}")
+                logger.error(f"User {user_id} attempted to modify restricted description of Xera agent {agent_id}")
                 raise HTTPException(
                     status_code=403, 
-                    detail="Suna's description cannot be modified."
+                    detail="Xera's description cannot be modified."
                 )
             
             if (agent_data.system_prompt is not None and 
                 restrictions.get('system_prompt_editable') == False):
-                logger.error(f"User {user_id} attempted to modify restricted system prompt of Suna agent {agent_id}")
+                logger.error(f"User {user_id} attempted to modify restricted system prompt of Xera agent {agent_id}")
                 raise HTTPException(
                     status_code=403, 
-                    detail="Suna's system prompt cannot be modified. This is managed centrally to ensure optimal performance."
+                    detail="Xera's system prompt cannot be modified. This is managed centrally to ensure optimal performance."
                 )
             
             if (agent_data.agentpress_tools is not None and 
                 restrictions.get('tools_editable') == False):
-                logger.error(f"User {user_id} attempted to modify restricted tools of Suna agent {agent_id}")
+                logger.error(f"User {user_id} attempted to modify restricted tools of Xera agent {agent_id}")
                 raise HTTPException(
                     status_code=403, 
-                    detail="Suna's default tools cannot be modified. These tools are optimized for Suna's capabilities."
+                    detail="Xera's default tools cannot be modified. These tools are optimized for Xera's capabilities."
                 )
             
             if ((agent_data.configured_mcps is not None or agent_data.custom_mcps is not None) and 
@@ -2126,10 +2126,10 @@ async def update_agent(
                 logger.error(f"User {user_id} attempted to modify restricted MCPs of Suna agent {agent_id}")
                 raise HTTPException(
                     status_code=403, 
-                    detail="Suna's integrations cannot be modified."
+                    detail="Xera's integrations cannot be modified."
                 )
             
-            logger.info(f"Suna agent update validation passed for agent {agent_id} by user {user_id}")
+            logger.info(f"Xera agent update validation passed for agent {agent_id} by user {user_id}")
 
         current_version_data = None
         if existing_data.get('current_version_id'):

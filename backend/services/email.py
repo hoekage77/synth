@@ -71,7 +71,7 @@ class EmailService:
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to Kortix Suna</title>
+  <title>Welcome to Xera</title>
   <style>
     body {{
       font-family: Arial, sans-serif;
@@ -137,13 +137,13 @@ class EmailService:
 <body>
   <div class="container">
     <div class="logo-container">
-      <img src="https://i.postimg.cc/WdNtRx5Z/kortix-suna-logo.png" alt="Kortix Suna Logo" class="logo">
+      <img src="https://i.postimg.cc/WdNtRx5Z/kortix-suna-logo.png" alt="Xera Logo" class="logo">
     </div>
-    <h1>Welcome to Kortix Suna!</h1>
+    <h1>Welcome to Xera!</h1>
 
     <p>Hi {user_name},</p>
 
-    <p><em><strong>Welcome to Kortix Suna — we're excited to have you on board!</strong></em></p>
+    <p><em><strong>Welcome to Xera — we're excited to have you on board!</strong></em></p>
 
     <p>To get started, we'd like to get to know you better: fill out this short <a href="https://docs.google.com/forms/d/e/1FAIpQLSef1EHuqmIh_iQz-kwhjnzSC3Ml-V_5wIySDpMoMU9W_j24JQ/viewform">form</a>!</p>
 

@@ -491,7 +491,7 @@ export default function ThreadPage({
   // SEO title update
   useEffect(() => {
     if (projectName) {
-      document.title = `${projectName} | Kortix Suna`;
+      document.title = `${projectName} | Xera`;
 
       const metaDescription = document.querySelector(
         'meta[name="description"]',
@@ -499,13 +499,13 @@ export default function ThreadPage({
       if (metaDescription) {
         metaDescription.setAttribute(
           'content',
-          `${projectName} - Interactive agent conversation powered by Kortix Suna`,
+          `${projectName} - Interactive agent conversation powered by Xera`,
         );
       }
 
       const ogTitle = document.querySelector('meta[property="og:title"]');
       if (ogTitle) {
-        ogTitle.setAttribute('content', `${projectName} | Kortix Suna`);
+        ogTitle.setAttribute('content', `${projectName} | Xera`);
       }
 
       const ogDescription = document.querySelector(

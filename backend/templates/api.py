@@ -175,7 +175,7 @@ async def create_template_from_agent(
     
     Requires:
     - User must own the agent
-    - Agent cannot be a Suna default agent
+    - Agent cannot be a Xera default agent
     """
     try:
         # Validate agent ownership first
@@ -205,7 +205,7 @@ async def create_template_from_agent(
         logger.warning(f"Template creation failed - access denied: {e}")
         raise HTTPException(status_code=403, detail=str(e))
     except SunaDefaultAgentTemplateError as e:
-        logger.warning(f"Template creation failed - Suna default agent: {e}")
+        logger.warning(f"Template creation failed - Xera default agent: {e}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error creating template from agent {request.agent_id}: {e}", exc_info=True)

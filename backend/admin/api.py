@@ -22,13 +22,13 @@ async def admin_install_suna_for_user(
     if agent_id:
         return {
             "success": True,
-            "message": f"Successfully installed Suna agent for user {account_id}",
+            "message": f"Successfully installed Xera agent for user {account_id}",
             "agent_id": agent_id
         }
     else:
         raise HTTPException(
             status_code=500, 
-            detail=f"Failed to install Suna agent for user {account_id}"
+            detail=f"Failed to install Xera agent for user {account_id}"
         )
 
 @router.get("/env-vars")
