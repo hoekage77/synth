@@ -32,7 +32,7 @@ async function installSunaForNewUser(userId: string) {
   }
 }
 
-export async function checkAndInstallXeraAgent(userId: string, userCreatedAt: string) {
+export async function checkAndInstallSunaAgent(userId: string, userCreatedAt: string) {
   const userCreatedDate = new Date(userCreatedAt);
   const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
   
