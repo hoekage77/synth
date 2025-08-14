@@ -41,13 +41,13 @@ const CustomHeroSection = () => {
             </div>
             
             <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-medium tracking-tighter text-balance text-center">
-              <span className="text-primary">Enterprise AI Workers.</span>
+              <span className="text-primary">Enterprise AI Workers,</span>
               <br />
-              <span className="text-secondary">Delivered in days.</span>
+              <span className="text-secondary">delivered in days.</span>
             </h1>
             
             <p className="text-lg md:text-xl text-center text-muted-foreground font-medium text-balance leading-relaxed tracking-tight max-w-3xl">
-              Skip the learning curve. Our AI specialists design, develop and deploy enterprise-grade AI workers that integrate seamlessly with your operations.
+              Bypass the learning curve and operational hurdles. Our AI specialists design, develop, and deploy enterprise-grade AI workers that integrate seamlessly with your existing operations, delivering value in days, not months.
             </p>
             
             <div className="flex flex-col items-center gap-6 pt-6">
@@ -449,12 +449,6 @@ export default function CustomImplementationPage() {
     <main className="flex flex-col items-center justify-center min-h-screen w-full">
       <div className="w-full divide-y divide-border">
         <CustomHeroSection />
-        <ValuePropSection />
-        <ProcessSection />
-        <BenefitsSection />
-        {/* <TestimonialsSection /> */}
-        {/* <SelfServiceSection /> */}
-        <FinalCTASection />
         <FooterSection />
       </div>
     </main>

@@ -27,13 +27,10 @@ export default function Home() {
         <main className="flex flex-col items-center justify-center min-h-screen w-full">
           <div className="w-full divide-y divide-border">
             <HeroSection />
-            <BentoSection />
             {/* <AgentShowcaseSection /> */}
-            <OpenSourceSection />
             <PricingSection />
             {/* <TestimonialSection /> */}
             {/* <FAQSection /> */}
-            <CTASection />
             <FooterSection />
           </div>
         </main>
