@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { SectionHeader } from '@/components/home/section-header';
-import { FooterSection } from '@/components/home/sections/footer-section';
 import { motion } from 'motion/react';
 import { 
   ArrowRight, 
@@ -50,13 +49,11 @@ const CustomHeroSection = () => {
             </p>
             
             <div className="flex flex-col items-center gap-6 pt-6">
-              <KortixEnterpriseModal>
-                <Button size="lg">
+              <Button size="lg">
                   <Calendar className="w-4 h-4 mr-2" />
                   Schedule Strategy Call
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
-              </KortixEnterpriseModal>
               <div className="flex flex-col sm:flex-row items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-primary"></div>
@@ -408,13 +405,11 @@ const FinalCTASection = () => {
             <div className="text-center space-y-6">
               <div className="space-y-4">
                 <div className="space-y-6">
-                  <KortixEnterpriseModal>
-                    <Button size="lg">
+                  <Button size="lg">
                       <Calendar className="w-4 h-4 mr-2" />
                       Book Your Strategy Session
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
-                  </KortixEnterpriseModal>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center max-w-2xl mx-auto">
                     <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-accent/20">
                       <Shield className="w-6 h-6 text-primary" />
@@ -448,7 +443,6 @@ export default function CustomImplementationPage() {
     <main className="flex flex-col items-center justify-center min-h-screen w-full">
       <div className="w-full divide-y divide-border">
         <CustomHeroSection />
-        <FooterSection />
       </div>
     </main>
   );
