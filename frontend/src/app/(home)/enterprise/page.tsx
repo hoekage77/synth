@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { KortixEnterpriseModal } from '@/components/sidebar/kortix-enterprise-modal';
 import { KortixLogo } from '@/components/sidebar/kortix-logo';
 
 // Hero Section Component
