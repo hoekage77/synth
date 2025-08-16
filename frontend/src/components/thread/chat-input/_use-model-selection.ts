@@ -71,7 +71,7 @@ export const MODELS = {
     lowQuality: false
   },
   'google/gemini-2.5-pro': { 
-    tier: 'premium', 
+    tier: 'free', 
     priority: 96,
     recommended: false,
     lowQuality: false
