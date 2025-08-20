@@ -130,16 +130,16 @@ async def log_requests_middleware(request: Request, call_next):
         raise
 
 # Define allowed origins based on environment
-allowed_origins = ["https://astril.com.ng", "https://hoekage.tech"]
+allowed_origins = ["https://xera.cc"]
 allow_origin_regex = None
 
 # Add staging-specific origins
 if config.ENV_MODE == EnvMode.LOCAL:
-    allowed_origins.append("http://astril.com.ng")
+    allowed_origins.append("http://xera.cc")
 
 # Add staging-specific origins
 if config.ENV_MODE == EnvMode.STAGING:
-    allowed_origins.append("https://stage.astril.com.ng")
+    allowed_origins.append("https://stage.xera.cc")
     allowed_origins.append("http://localhost:3000")
     allow_origin_regex = r"https://xera-.*-prjcts\.vercel\.app"
 

@@ -7,7 +7,7 @@ import { useAvailableModels } from '@/hooks/react-query/subscriptions/use-model'
 
 export const STORAGE_KEY_MODEL = 'suna-preferred-model-v3';
 export const STORAGE_KEY_CUSTOM_MODELS = 'customModels';
-export const DEFAULT_PREMIUM_MODEL_ID = 'claude-sonnet-4';
+
 // export const DEFAULT_FREE_MODEL_ID = 'moonshotai/kimi-k2';
 export const DEFAULT_FREE_MODEL_ID = 'claude-sonnet-4';
 
@@ -51,7 +51,7 @@ export const MODELS = {
   //   lowQuality: false
   // },
 
-  // Premium/Paid tier models (require subscription) - except specific free models
+  
   'moonshotai/kimi-k2': { 
     tier: 'free', 
     priority: 96,
@@ -59,13 +59,13 @@ export const MODELS = {
     lowQuality: false
   },
   'grok-4': { 
-    tier: 'premium', 
+    tier: 'free', 
     priority: 94,
     recommended: false,
     lowQuality: false
   },
   'sonnet-3.7': { 
-    tier: 'premium', 
+    tier: 'free', 
     priority: 93, 
     recommended: false,
     lowQuality: false
@@ -77,25 +77,25 @@ export const MODELS = {
     lowQuality: false
   },
   'sonnet-3.5': { 
-    tier: 'premium', 
+    tier: 'free', 
     priority: 90,
     recommended: false,
     lowQuality: false
   },
   'gpt-5': { 
-    tier: 'premium', 
+    tier: 'free', 
     priority: 99,
     recommended: false,
     lowQuality: false
   },
   'gpt-5-mini': { 
-    tier: 'premium', 
+    tier: 'free', 
     priority: 98,
     recommended: false,
     lowQuality: false
   },
   'gemini-2.5-flash:thinking': { 
-    tier: 'premium', 
+    tier: 'free', 
     priority: 84,
     recommended: false,
     lowQuality: false
@@ -198,22 +198,7 @@ export const useModelSelection = () => {
     let models = [];
     
     // Default models if API data not available
-    if (!modelsData?.models || isLoadingModels) {
-      models = [
-        { 
-          id: DEFAULT_FREE_MODEL_ID, 
-          label: 'DeepSeek', 
-          requiresSubscription: false,
-          priority: MODELS[DEFAULT_FREE_MODEL_ID]?.priority || 50
-        },
-        { 
-          id: DEFAULT_PREMIUM_MODEL_ID, 
-          label: 'Sonnet 4', 
-          requiresSubscription: true, 
-          priority: MODELS[DEFAULT_PREMIUM_MODEL_ID]?.priority || 100
-        },
-      ];
-    } else {
+    if (modelsData && modelsData.models) {
       // Process API-provided models
       models = modelsData.models.map(model => {
         const shortName = model.short_name || model.id;
@@ -233,12 +218,10 @@ export const useModelSelection = () => {
         
         // Get model data from our central MODELS constant
         const modelData = MODELS[shortName] || {};
-        const isPremium = model?.requires_subscription || modelData.tier === 'premium' || false;
-        
         return {
           id: shortName,
           label: cleanLabel,
-          requiresSubscription: isPremium,
+          requiresSubscription: false,
           top: modelData.priority >= 90, // Mark high-priority models as "top"
           priority: modelData.priority || 0,
           lowQuality: modelData.lowQuality || false,
@@ -323,14 +306,14 @@ export const useModelSelection = () => {
       }
       
       // Fallback to default model
-      const defaultModel = subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
+      const defaultModel = DEFAULT_FREE_MODEL_ID;
       setSelectedModel(defaultModel);
       saveModelPreference(defaultModel);
       setHasInitialized(true);
       
     } catch (error) {
       console.warn('Failed to load preferences from localStorage:', error);
-      const defaultModel = subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
+      const defaultModel = DEFAULT_FREE_MODEL_ID;
       setSelectedModel(defaultModel);
       saveModelPreference(defaultModel);
       setHasInitialized(true);
@@ -355,7 +338,7 @@ export const useModelSelection = () => {
       console.warn('Model not found in options:', modelId, MODEL_OPTIONS, isCustomModel, customModels);
       
       // Reset to default model when the selected model is not found
-      const defaultModel = isLocalMode() ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
+      const defaultModel = isLocalMode() ? DEFAULT_FREE_MODEL_ID : DEFAULT_FREE_MODEL_ID;
       setSelectedModel(defaultModel);
       saveModelPreference(defaultModel);
       return;

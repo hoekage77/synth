@@ -33,7 +33,6 @@ export type AnnouncementType =
   | 'celebration'
   | 'onboarding'
   | 'beta-access'
-  | 'premium-upgrade'
   | 'survey'
   | 'changelog';
 

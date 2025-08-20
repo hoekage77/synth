@@ -26,21 +26,12 @@ import {
 } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { Check, Search, AlertTriangle, Crown, ArrowUpRight, Brain, Plus, Edit, Trash, Cpu, KeyRound, ExternalLink } from 'lucide-react';
-import {
-  ModelOption,
-  SubscriptionStatus,
-  STORAGE_KEY_MODEL,
-  STORAGE_KEY_CUSTOM_MODELS,
-  DEFAULT_FREE_MODEL_ID,
-  DEFAULT_PREMIUM_MODEL_ID,
-  formatModelName,
-  getCustomModels,
-  MODELS
-} from './_use-model-selection';
-import { PaywallDialog } from '@/components/payment/paywall-dialog';
+
+
 import { cn } from '@/lib/utils';
 import { isLocalMode } from '@/lib/config';
 import { CustomModelDialog, CustomModelFormData } from './custom-model-dialog';
+import { getCustomModels, STORAGE_KEY_CUSTOM_MODELS, STORAGE_KEY_MODEL, DEFAULT_FREE_MODEL_ID, MODELS, formatModelName } from './_use-model-selection';
 import Link from 'next/link';
 import { IntegrationsRegistry } from '@/components/agents/integrations-registry';
 import { ComposioConnector } from '@/components/agents/composio/composio-connector';
@@ -83,13 +74,15 @@ interface CustomModel {
 }
 
 
+
+
 interface ModelSelectorProps {
   selectedModel: string;
-  onModelChange: (modelId: string) => void;
-  modelOptions: ModelOption[];
+  onModelChange: (model: string) => void;
+  modelOptions: any[];
   canAccessModel: (modelId: string) => boolean;
-  subscriptionStatus: SubscriptionStatus;
-  refreshCustomModels?: () => void;
+  subscriptionStatus: any;
+  refreshCustomModels: () => void;
   billingModalOpen: boolean;
   setBillingModalOpen: (open: boolean) => void;
   hasBorder?: boolean;
@@ -216,14 +209,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   const getFreeModels = () => modelOptions.filter(m => !m.requiresSubscription).map(m => m.id);
 
   const sortedModels = filteredOptions;
-  const getPremiumModels = () => {
-    return modelOptions
-      .filter(m => m.requiresSubscription)
-      .map((m, index) => ({
-        ...m,
-        uniqueKey: getUniqueModelKey(m, index)
-      }));
-  }
+  
 
   const getUniqueModelKey = (model: any, index: number): string => {
     return `model-${model.id}-${index}`;
@@ -294,9 +280,9 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     }
   };
 
-  const premiumModels = sortedModels.filter(m => !getFreeModels().some(id => m.id.includes(id)));
+  
 
-  const shouldDisplayAll = (!isLocalMode() && subscriptionStatus === 'no_subscription') && premiumModels.length > 0;
+  
 
   const openAddCustomModelDialog = (e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -397,7 +383,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       refreshCustomModels();
     }
     if (selectedModel === modelId) {
-      const defaultModel = isLocalMode() ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
+      const defaultModel = isLocalMode() ? DEFAULT_FREE_MODEL_ID : DEFAULT_FREE_MODEL_ID;
       onModelChange(defaultModel);
       try {
         localStorage.setItem(STORAGE_KEY_MODEL, defaultModel);
@@ -437,7 +423,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
 
     const accessible = isCustom ? true : canAccessModel(opt.id);
     const isHighlighted = index === highlightedIndex;
-    const isPremium = opt.requiresSubscription;
+    
     const isLowQuality = MODELS[opt.id]?.lowQuality || false;
     const isRecommended = MODELS[opt.id]?.recommended || false;
 
@@ -467,9 +453,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                       Recommended
                     </span>
                   )}
-                  {isPremium && !accessible && (
-                    <Crown className="h-3.5 w-3.5 text-blue-500" />
-                  )}
+                  
                   {isLocalMode() && isCustom && (
                     <>
                       <button
@@ -501,7 +485,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           </TooltipTrigger>
           {!accessible ? (
             <TooltipContent side="left" className="text-xs max-w-xs">
-              <p>Requires subscription to access premium model</p>
+              
             </TooltipContent>
           ) : isLowQuality ? (
             <TooltipContent side="left" className="text-xs max-w-xs">
@@ -632,87 +616,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                       </div>
                     </div>
                     
-                    {shouldDisplayAll ? (
-                      <div>
-                        <div className="px-3 py-2 text-xs font-medium text-muted-foreground">
-                          Available Models
-                        </div>
-                        {uniqueModels
-                          .filter(m =>
-                            !m.requiresSubscription &&
-                            (m.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                              m.id.toLowerCase().includes(searchQuery.toLowerCase()))
-                          )
-                          .map((model, index) => renderModelOption(model, index))}
-                        
-                        <div className="mt-4 border-t border-border pt-2">
-                          <div className="px-3 py-1.5 text-xs font-medium text-blue-500 flex items-center">
-                            <Crown className="h-3.5 w-3.5 mr-1.5" />
-                            Additional Models
-                          </div>
-                          <div className="relative h-40 overflow-hidden px-2">
-                            {getPremiumModels()
-                              .filter(m =>
-                                m.requiresSubscription &&
-                                (m.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                  m.id.toLowerCase().includes(searchQuery.toLowerCase()))
-                              )
-                              .slice(0, 3)
-                              .map((model, index) => (
-                                <TooltipProvider key={model.uniqueKey || `model-${model.id}-${index}`}>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <div className='w-full'>
-                                        <DropdownMenuItem
-                                          className="text-sm px-3 rounded-lg py-2 mx-2 my-0.5 flex items-center justify-between opacity-70 cursor-pointer pointer-events-none"
-                                        >
-                                          <div className="flex items-center">
-                                            <span className="font-medium">{model.label}</span>
-                                          </div>
-                                          <div className="flex items-center gap-2">
-                                            {MODELS[model.id]?.recommended && (
-                                              <span className="text-xs px-1.5 py-0.5 rounded-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium whitespace-nowrap">
-                                                Recommended
-                                              </span>
-                                            )}
-                                            <Crown className="h-3.5 w-3.5 text-blue-500" />
-                                          </div>
-                                        </DropdownMenuItem>
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="left" className="text-xs max-w-xs">
-                                      <p>Requires subscription to access premium model</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              ))
-                            }
-                            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/95 to-transparent flex items-end justify-center">
-                              <div className="w-full p-3">
-                                <div className="rounded-xl bg-gradient-to-br from-blue-50/80 to-blue-200/70 dark:from-blue-950/40 dark:to-blue-900/30 shadow-sm border border-blue-200/50 dark:border-blue-800/50 p-3">
-                                  <div className="flex flex-col space-y-2">
-                                    <div className="flex items-center">
-                                      <Crown className="h-4 w-4 text-blue-500 mr-2 flex-shrink-0" />
-                                      <div>
-                                        <p className="text-sm font-medium">Unlock all models + higher limits</p>
-                                      </div>
-                                    </div>
-                                    <Button
-                                      size="sm"
-                                      className="w-full h-8 font-medium"
-                                      onClick={handleUpgradeClick}
-                                    >
-                                      Upgrade now
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div>
+                    <div>
                         {uniqueModels
                           .filter(m =>
                             m.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -725,7 +629,6 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                           </div>
                         )}
                       </div>
-                    )}
                   </DropdownMenuSubContent>
                 </DropdownMenuPortal>
               </DropdownMenuSub>
@@ -888,22 +791,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           mode="full"
         />
       )}
-      {paywallOpen && (
-        <PaywallDialog
-          open={true}
-          onDialogClose={closeDialog}
-          title="Premium Model"
-          description={
-            lockedModel
-              ? `Subscribe to access ${modelOptions.find(
-                (m) => m.id === lockedModel
-              )?.label}`
-              : 'Subscribe to access premium models with enhanced capabilities'
-          }
-          ctaText="Subscribe Now"
-          cancelText="Maybe Later"
-        />
-      )}
+      
     </div>
   );
 };

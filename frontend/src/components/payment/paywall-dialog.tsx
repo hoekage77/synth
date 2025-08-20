@@ -113,7 +113,7 @@ export const PaywallDialog: React.FC<PaywallDialogProps> = ({
               <div className="space-y-2">
                 <h3 className="text-lg font-medium">Upgrade to unlock</h3>
                 <p className="text-muted-foreground">
-                  Get access to premium models and features
+                  Get access to more features
                 </p>
               </div>
             </div>

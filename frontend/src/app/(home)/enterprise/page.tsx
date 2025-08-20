@@ -219,7 +219,7 @@ const BenefitsSection = () => {
               Enterprise-Grade Implementation
             </h2>
             <p className="text-muted-foreground text-center text-balance font-medium">
-              Premium service tier with dedicated resources and tailored solutions for complex organizational needs
+              Enterprise service tier with dedicated resources and tailored solutions for complex organizational needs
             </p>
           </SectionHeader>
 

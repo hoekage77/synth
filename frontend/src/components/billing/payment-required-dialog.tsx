@@ -16,7 +16,7 @@ export const PaymentRequiredDialog = () => {
         onOpenChange={onClose}
         icon={Zap}
         title="Upgrade Required"
-        description="You've reached your plan's usage limit. Upgrade to continue enjoying our premium features."
+        description="You've reached your plan's usage limit. Upgrade to continue enjoying our features."
         theme="destructive"
         size="lg"
         className="w-[95vw] max-w-[750px] max-h-[90vh] overflow-hidden flex flex-col p-0"

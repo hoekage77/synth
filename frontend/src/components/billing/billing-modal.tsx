@@ -78,7 +78,7 @@ export function BillingModal({ open, onOpenChange, returnUrl = typeof window !==
                             Running in local development mode - billing features are disabled
                         </p>
                         <p className="text-xs text-muted-foreground mt-2">
-                            All premium features are available in this environment
+                            All features are available in this environment
                         </p>
                     </div>
                 </DialogContent>

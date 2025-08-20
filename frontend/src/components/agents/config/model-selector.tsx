@@ -18,18 +18,17 @@ import {
 import { cn } from '@/lib/utils';
 import { 
   useModelSelection, 
-  MODELS,
   STORAGE_KEY_CUSTOM_MODELS,
   formatModelName,
   getCustomModels,
   DEFAULT_FREE_MODEL_ID,
-  DEFAULT_PREMIUM_MODEL_ID
+  MODELS
 } from '@/components/thread/chat-input/_use-model-selection';
-import { useAvailableModels } from '@/hooks/react-query/subscriptions/use-billing';
+
 import { isLocalMode } from '@/lib/config';
 import { CustomModelDialog, CustomModelFormData } from '@/components/thread/chat-input/custom-model-dialog';
-import { PaywallDialog } from '@/components/payment/paywall-dialog';
-import { BillingModal } from '@/components/billing/billing-modal';
+import { useAvailableModels } from '@/hooks/react-query/subscriptions/use-model';
+
 import Link from 'next/link';
 
 interface CustomModel {
@@ -58,7 +57,6 @@ export function AgentModelSelector({
   // Paywall and billing states
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [lockedModel, setLockedModel] = useState<string | null>(null);
-  const [billingModalOpen, setBillingModalOpen] = useState(false);
   
   // Custom model states for local mode
   const [customModels, setCustomModels] = useState<CustomModel[]>([]);
@@ -80,7 +78,7 @@ export function AgentModelSelector({
   }, [customModels]);
   
   const normalizeModelId = (modelId?: string): string => {
-    if (!modelId) return isLocalMode() ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
+    if (!modelId) return isLocalMode() ? DEFAULT_FREE_MODEL_ID : DEFAULT_FREE_MODEL_ID;
     
     if (modelsData?.models) {
       const exactMatch = modelsData.models.find(m => m.short_name === modelId);
@@ -155,10 +153,8 @@ export function AgentModelSelector({
     });
   }, [filteredOptions]);
 
-  const freeModels = sortedModels.filter(m => !m.requiresSubscription);
-  const premiumModels = sortedModels.filter(m => m.requiresSubscription);
-
-  const shouldDisplayAll = (!isLocalMode() && subscriptionStatus === 'no_subscription') && premiumModels.length > 0;
+  
+  
 
   useEffect(() => {
     if (isOpen && searchInputRef.current) {
@@ -196,9 +192,7 @@ export function AgentModelSelector({
     }
   };
 
-  const handleUpgradeClick = () => {
-    setBillingModalOpen(true);
-  };
+  
 
   const closePaywallDialog = () => {
     setPaywallOpen(false);
@@ -304,7 +298,7 @@ export function AgentModelSelector({
     setCustomModels(updatedCustomModels);
     
     if (selectedModel === modelId) {
-      const defaultModel = isLocalMode() ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
+      const defaultModel = isLocalMode() ? DEFAULT_FREE_MODEL_ID : DEFAULT_FREE_MODEL_ID;
       onChange(defaultModel);
     }
   };
@@ -314,7 +308,7 @@ export function AgentModelSelector({
       (isLocalMode() && customModels.some(m => m.id === model.id));
     const accessible = isCustom ? true : (isLocalMode() || canAccessModel(model.id));
     const isHighlighted = index === highlightedIndex;
-    const isPremium = model.requiresSubscription;
+    
     const isLowQuality = MODELS[model.id]?.lowQuality || false;
     const isRecommended = MODELS[model.id]?.recommended || false;
 
@@ -344,9 +338,7 @@ export function AgentModelSelector({
                       Recommended
                     </span>
                   )}
-                  {isPremium && !accessible && !isLocalMode() && (
-                    <Crown className="h-3.5 w-3.5 text-blue-500" />
-                  )}
+                  
                   {isLocalMode() && isCustom && (
                     <>
                       <button
@@ -378,7 +370,7 @@ export function AgentModelSelector({
           </TooltipTrigger>
           {!accessible && !isLocalMode() ? (
             <TooltipContent side="left" className="text-xs max-w-xs">
-              <p>Requires subscription to access premium model</p>
+              
             </TooltipContent>
           ) : isLowQuality ? (
             <TooltipContent side="left" className="text-xs max-w-xs">
@@ -492,77 +484,7 @@ export function AgentModelSelector({
                 </div>
               </div>
               
-              {shouldDisplayAll ? (
-                <div>
-                  <div className="px-3 py-2 text-xs font-medium text-muted-foreground">
-                    Available Models
-                  </div>
-                  {freeModels.map((model, index) => renderModelOption(model, index))}
-                  
-                  {premiumModels.length > 0 && (
-                    <>
-                      <div className="mt-4 border-t border-border pt-2">
-                        <div className="px-3 py-1.5 text-xs font-medium text-blue-500 flex items-center">
-                          <Crown className="h-3.5 w-3.5 mr-1.5" />
-                          Additional Models
-                        </div>
-                        <div className="relative h-40 overflow-hidden px-2">
-                          {premiumModels.slice(0, 3).map((model, index) => (
-                            <TooltipProvider key={`premium-${model.id}-${index}`}>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div className='w-full'>
-                                    <DropdownMenuItem
-                                      className="text-sm px-3 rounded-lg py-2 mx-2 my-0.5 flex items-center justify-between opacity-70 cursor-pointer pointer-events-none"
-                                    >
-                                      <div className="flex items-center">
-                                        <span className="font-medium">{model.label}</span>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        {MODELS[model.id]?.recommended && (
-                                          <span className="text-xs px-1.5 py-0.5 rounded-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium whitespace-nowrap">
-                                            Recommended
-                                          </span>
-                                        )}
-                                        <Crown className="h-3.5 w-3.5 text-blue-500" />
-                                      </div>
-                                    </DropdownMenuItem>
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent side="left" className="text-xs max-w-xs">
-                                  <p>Requires subscription to access premium model</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          ))}
-                          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/95 to-transparent flex items-end justify-center">
-                            <div className="w-full p-3">
-                              <div className="rounded-xl bg-gradient-to-br from-blue-50/80 to-blue-200/70 dark:from-blue-950/40 dark:to-blue-900/30 shadow-sm border border-blue-200/50 dark:border-blue-800/50 p-3">
-                                <div className="flex flex-col space-y-2">
-                                  <div className="flex items-center">
-                                    <Crown className="h-4 w-4 text-blue-500 mr-2 flex-shrink-0" />
-                                    <div>
-                                      <p className="text-sm font-medium">Unlock all models + higher limits</p>
-                                    </div>
-                                  </div>
-                                  <Button
-                                    size="sm"
-                                    className="w-full h-8 font-medium"
-                                    onClick={handleUpgradeClick}
-                                  >
-                                    Upgrade now
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <div>
+              <div>
                   {sortedModels.length > 0 ? (
                     sortedModels.map((model, index) => renderModelOption(model, index))
                   ) : (
@@ -571,7 +493,6 @@ export function AgentModelSelector({
                     </div>
                   )}
                 </div>
-              )}
             </div>
           </div>
         </DropdownMenuContent>
@@ -585,26 +506,8 @@ export function AgentModelSelector({
           mode={dialogMode}
         />
       )}
-      {paywallOpen && (
-        <PaywallDialog
-          open={true}
-          onDialogClose={closePaywallDialog}
-          title="Premium Model"
-          description={
-            lockedModel
-              ? `Subscribe to access ${enhancedModelOptions.find(
-                  (m) => m.id === lockedModel
-                )?.label}`
-              : 'Subscribe to access premium models with enhanced capabilities'
-          }
-          ctaText="Subscribe Now"
-          cancelText="Maybe Later"
-        />
-      )}
-      <BillingModal
-        open={billingModalOpen}
-        onOpenChange={setBillingModalOpen}
-      />
+      
+      
     </div>
   );
 }

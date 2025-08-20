@@ -408,7 +408,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                                                                             </div>
                                                                         </TooltipTrigger>
                                                                         <TooltipContent side="left" className="text-xs max-w-xs">
-                                                                            <p>Requires subscription to access premium model</p>
+                                                                            
                                                                         </TooltipContent>
                                                                     </Tooltip>
                                                                 </TooltipProvider>

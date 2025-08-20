@@ -171,11 +171,6 @@ export default function PricingPage() {
         requiresSubscription: allModels.find((m) => m.id === v.short_name)?.requiresSubscription,
       }))
       .sort((a, b) => {
-        // First by free/premium status (premium first)
-        if (a.requiresSubscription !== b.requiresSubscription) {
-          return a.requiresSubscription ? -1 : 1;
-        }
-
         // Then by priority (higher first)
         if ((a.priority ?? 0) !== (b.priority ?? 0)) {
           return (b.priority ?? 0) - (a.priority ?? 0);
