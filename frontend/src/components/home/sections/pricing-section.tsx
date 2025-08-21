@@ -85,29 +85,29 @@ function BillingPeriodToggle({
 }) {
   return (
     <div className="flex items-center justify-center gap-3">
-      <div className="relative bg-muted rounded-full p-1">
+      <div className="relative bg-black/60 border border-purple-500/30 rounded-full p-1 backdrop-blur-sm">
         <div className="flex">
           <div 
-            className={cn("px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer",
+            className={cn("px-4 py-2 rounded-full text-xs font-mono font-medium transition-all duration-200 cursor-pointer",
               billingPeriod === 'monthly'
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'bg-purple-600 text-white shadow-sm border border-purple-500/50'
+                : 'text-gray-300 hover:text-purple-400'
             )}
             onClick={() => setBillingPeriod('monthly')}
           >
-            Monthly
+            MONTHLY
           </div>
           <div 
-            className={cn("px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 flex items-center gap-1 cursor-pointer",
+            className={cn("px-4 py-2 rounded-full text-xs font-mono font-medium transition-all duration-200 flex items-center gap-2 cursor-pointer",
               billingPeriod === 'yearly_commitment'
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'bg-purple-600 text-white shadow-sm border border-purple-500/50'
+                : 'text-gray-300 hover:text-purple-400'
             )}
             onClick={() => setBillingPeriod('yearly_commitment')}
           >
-            Yearly
-            <span className="bg-green-600 text-green-50 dark:bg-green-500 dark:text-green-50 text-[10px] px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap">
-              15% off
+            YEARLY
+            <span className="bg-green-500 text-black text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
+              15%_OFF
             </span>
           </div>
         </div>
@@ -407,13 +407,13 @@ function PricingTier({
   return (
     <div
       className={cn(
-        'rounded-xl flex flex-col relative',
+        'rounded-xl flex flex-col relative backdrop-blur-sm',
         insideDialog
           ? 'min-h-[300px]'
           : 'h-full min-h-[300px]',
         tier.isPopular && !insideDialog
-          ? 'md:shadow-[0px_61px_24px_-10px_rgba(0,0,0,0.01),0px_34px_20px_-8px_rgba(0,0,0,0.05),0px_15px_15px_-6px_rgba(0,0,0,0.09),0px_4px_8px_-2px_rgba(0,0,0,0.10),0px_0px_0px_1px_rgba(0,0,0,0.08)] bg-accent'
-          : 'bg-[#F3F4F6] dark:bg-[#F9FAFB]/[0.02] border border-border',
+          ? 'bg-gradient-to-br from-purple-900/40 to-cyan-900/40 border-2 border-purple-500/50 shadow-xl shadow-purple-500/20'
+          : 'bg-black/60 border border-purple-500/30',
         !insideDialog && ringClass,
       )}
     >
@@ -615,16 +615,38 @@ export function PricingSection({
   return (
     <section
       id="pricing"
-      className={cn("flex flex-col items-center justify-center gap-10 w-full relative", noPadding ? "pb-0" : "pb-12")}
+      className={cn("flex flex-col items-center justify-center gap-10 w-full relative bg-black text-white", noPadding ? "pb-0" : "pb-12")}
     >
-      <div className="w-full max-w-6xl mx-auto px-6">
+      {/* Futuristic background elements */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-slate-950/50 to-black"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-transparent to-cyan-500/5"></div>
+      
+      {/* Grid pattern overlay */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 2px 2px, purple 1px, transparent 0)`,
+          backgroundSize: '60px 60px'
+        }} />
+      </div>
+      
+      {/* Scanning line */}
+      <motion.div
+        className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-purple-400 to-transparent opacity-30"
+        animate={{ y: ['-100%', '100vh'] }}
+        transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
+      />
+      
+      <div className="relative w-full max-w-6xl mx-auto px-6 z-10">
         {showTitleAndTabs && (
           <SectionHeader>
-            <h2 className="text-3xl md:text-4xl font-medium tracking-tighter text-center text-balance">
-              Choose the right plan for your needs
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center text-balance font-mono">
+              <span className="text-white">SELECT_</span>
+              <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                DEPLOYMENT_TIER
+              </span>
             </h2>
-            <p className="text-muted-foreground text-center text-balance font-medium">
-              Start with our free plan or upgrade for more AI token credits
+            <p className="text-gray-300 text-center text-balance font-mono">
+              Initialize neural network access levels and resource allocation protocols
             </p>
           </SectionHeader>
         )}

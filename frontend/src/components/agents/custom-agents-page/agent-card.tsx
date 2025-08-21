@@ -22,7 +22,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import type { MarketplaceTemplate } from '@/components/agents/installation/types';
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { XeraLogo } from '@/components/sidebar/kortix-logo';
 
 export type AgentCardMode = 'marketplace' | 'template' | 'agent';
 
@@ -344,7 +344,7 @@ const CardAvatar: React.FC<{ avatar: string; color: string; isSunaAgent?: boolea
   if (isSunaAgent) {
     return (
       <div className="h-14 w-14 bg-muted border flex items-center justify-center rounded-2xl">
-        <KortixLogo size={28} />
+        <XeraLogo size={28} />
       </div>
     )
   }
@@ -361,7 +361,7 @@ const CardAvatar: React.FC<{ avatar: string; color: string; isSunaAgent?: boolea
       <div className="text-2xl">{avatar}</div>
       {isSunaAgent && (
         <div className="absolute -top-1 -right-1 h-5 w-5 bg-background rounded-full border border-border flex items-center justify-center">
-          <KortixLogo size={12} />
+          <XeraLogo size={12} />
         </div>
       )}
       <div

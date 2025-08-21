@@ -19,6 +19,7 @@ import {
   Sun,
   Moon,
   KeyRound,
+  Users,
 } from 'lucide-react';
 import { useAccounts } from '@/hooks/use-accounts';
 import NewTeamForm from '@/components/basejump/new-team-form';
@@ -52,6 +53,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useTheme } from 'next-themes';
 import { isLocalMode } from '@/lib/config';
 import { useFeatureFlag } from '@/lib/feature-flags';
+import { cn } from '@/lib/utils';
 
 export function NavUserWithTeams({
   user,
@@ -66,8 +68,18 @@ export function NavUserWithTeams({
   const { isMobile } = useSidebar();
   const { data: accounts } = useAccounts();
   const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme, systemTheme, setTheme } = useTheme();
   const { enabled: customAgentsEnabled, loading: flagLoading } = useFeatureFlag("custom_agents");
+  const [mounted, setMounted] = React.useState(false);
+
+  // After mount, we can access the theme
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDarkMode = mounted && (
+    theme === 'dark' || (theme === 'system' && systemTheme === 'dark')
+  );
 
   // Prepare personal account and team accounts
   const personalAccount = React.useMemo(
@@ -151,6 +163,9 @@ export function NavUserWithTeams({
   };
 
   const getInitials = (name: string) => {
+    if (!name || typeof name !== 'string') {
+      return 'U';
+    }
     return name
       .split(' ')
       .map((part) => part.charAt(0))
@@ -169,175 +184,185 @@ export function NavUserWithTeams({
         <SidebarMenuItem>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <SidebarMenuButton
-                size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-              >
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">
-                    {getInitials(user.name)}
+              <SidebarMenuButton className={cn(
+                "transition-all duration-300 font-semibold text-sm tracking-wide",
+                isDarkMode 
+                  ? "text-white hover:text-gray-200 hover:bg-cyan-600/10" 
+                  : "text-gray-800 hover:text-gray-900 hover:bg-cyan-600/10"
+              )}>
+                <Avatar className="h-6 w-6 mr-2">
+                  <AvatarImage src={user?.avatar || ''} alt={user?.name || 'User'} />
+                  <AvatarFallback className={cn(
+                    "font-semibold text-xs",
+                    isDarkMode ? "bg-cyan-600/20 text-white" : "bg-cyan-600/20 text-gray-800"
+                  )}>
+                    {getInitials(user?.name || '')}
                   </AvatarFallback>
                 </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
-                </div>
-                <ChevronsUpDown className="ml-auto size-4" />
+                <span className="flex items-center justify-between w-full">
+                  {user?.name || 'User'}
+                  <ChevronDown className="h-4 w-4 ml-auto" />
+                </span>
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
-              side={isMobile ? 'bottom' : 'top'}
+              className={cn(
+                "w-56 rounded-lg transition-all duration-300",
+                isDarkMode
+                  ? "bg-black/95 border-cyan-500/30 backdrop-blur-lg"
+                  : "bg-white/95 border-cyan-500/30 backdrop-blur-lg"
+              )}
+              side="right"
               align="start"
-              sideOffset={4}
             >
-              <DropdownMenuLabel className="p-0 font-normal">
-                <div className="flex items-center gap-2 px-1.5 py-1.5 text-left text-sm">
-                  <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback className="rounded-lg">
-                      {getInitials(user.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">{user.name}</span>
-                    <span className="truncate text-xs">{user.email}</span>
-                  </div>
-                </div>
+              <DropdownMenuLabel className={cn(
+                "transition-all duration-300 font-semibold text-xs tracking-wide",
+                isDarkMode ? "text-white" : "text-gray-800"
+              )}>
+                PERSONAL_ACCOUNT
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-
-              {/* Teams Section */}
-              {personalAccount && (
-                <>
-                  <DropdownMenuLabel className="text-muted-foreground text-xs">
-                    Personal Account
-                  </DropdownMenuLabel>
-                  <DropdownMenuItem
-                    key={personalAccount.account_id}
-                    onClick={() =>
-                      handleTeamSelect({
-                        name: personalAccount.name,
-                        logo: Command,
-                        plan: 'Personal',
-                        account_id: personalAccount.account_id,
-                        slug: personalAccount.slug,
-                        personal_account: true,
-                      })
-                    }
-                    className="gap-2 p-2"
-                  >
-                    <div className="flex size-6 items-center justify-center rounded-xs border">
-                      <Command className="size-4 shrink-0" />
-                    </div>
-                    {personalAccount.name}
-                    <DropdownMenuShortcut>⌘1</DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                </>
-              )}
-
-              {teamAccounts?.length > 0 && (
-                <>
-                  <DropdownMenuLabel className="text-muted-foreground text-xs mt-2">
-                    Teams
-                  </DropdownMenuLabel>
-                  {teamAccounts.map((team, index) => (
-                    <DropdownMenuItem
-                      key={team.account_id}
-                      onClick={() =>
-                        handleTeamSelect({
-                          name: team.name,
-                          logo: AudioWaveform,
-                          plan: 'Team',
-                          account_id: team.account_id,
-                          slug: team.slug,
-                          personal_account: false,
-                        })
-                      }
-                      className="gap-2 p-2"
-                    >
-                      <div className="flex size-6 items-center justify-center rounded-xs border">
-                        <AudioWaveform className="size-4 shrink-0" />
-                      </div>
-                      {team.name}
-                      <DropdownMenuShortcut>⌘{index + 2}</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                  ))}
-                </>
-              )}
-
-              {/* <DropdownMenuSeparator />
-              <DialogTrigger asChild>
-                <DropdownMenuItem 
-                  className="gap-2 p-2"
-                  onClick={() => {
-                    setShowNewTeamDialog(true)
-                  }}
-                >
-                  <div className="bg-background flex size-6 items-center justify-center rounded-md border">
-                    <Plus className="size-4" />
-                  </div>
-                  <div className="text-muted-foreground font-medium">Add team</div>
-                </DropdownMenuItem>
-              </DialogTrigger> */}
-              <DropdownMenuSeparator />
-
-              {/* User Settings Section */}
               <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings/billing">
-                    <CreditCard className="h-4 w-4" />
-                    Billing
-                  </Link>
-                </DropdownMenuItem>
-                {!flagLoading && customAgentsEnabled && (
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings/api-keys">
-                      <Key className="h-4 w-4" />
-                      API Keys (Admin)
-                    </Link>
+                {defaultTeams.map((team) => (
+                  <DropdownMenuItem
+                    key={team.account_id}
+                    onClick={() => handleTeamSelect(team)}
+                    className={cn(
+                      "transition-all duration-300 font-semibold text-xs tracking-wide cursor-pointer",
+                      isDarkMode
+                        ? "hover:bg-cyan-600/10 text-white hover:text-gray-200"
+                        : "hover:bg-cyan-600/10 text-gray-800 hover:text-gray-900"
+                    )}
+                  >
+                    <Avatar className="h-6 w-6 mr-2">
+                      <AvatarImage src={user?.avatar || ''} alt={user?.name || 'User'} />
+                      <AvatarFallback className={cn(
+                        "font-semibold text-xs",
+                        isDarkMode ? "bg-cyan-600/20 text-white" : "bg-cyan-600/20 text-gray-800"
+                      )}>
+                        {getInitials(user?.name || '')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span>{team.name}</span>
                   </DropdownMenuItem>
-                )}
-                {isLocalMode() && <DropdownMenuItem asChild>
-                  <Link href="/settings/env-manager">
-                    <KeyRound className="h-4 w-4" />
-                    Local .Env Manager
-                  </Link>
-                </DropdownMenuItem>}
-                {/* <DropdownMenuItem asChild>
-                  <Link href="/settings">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
-                  </Link>
-                </DropdownMenuItem> */}
-                <DropdownMenuItem
-                  onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-                >
-                  <div className="flex items-center gap-2">
-                    <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                    <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                    <span>Theme</span>
-                  </div>
-                </DropdownMenuItem>
+                ))}
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className='text-destructive focus:text-destructive focus:bg-destructive/10' onClick={handleLogout}>
-                <LogOut className="h-4 w-4 text-destructive" />
-                Log out
+              <DropdownMenuItem
+                onClick={() => setShowNewTeamDialog(true)}
+                className={cn(
+                  "transition-all duration-300 font-semibold text-xs tracking-wide cursor-pointer",
+                  isDarkMode
+                    ? "hover:bg-cyan-600/10 text-white hover:text-gray-200"
+                    : "hover:bg-cyan-600/10 text-gray-800 hover:text-gray-900"
+                )}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                <span>CREATE_TEAM</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => router.push('/settings/billing')}
+                className={cn(
+                  "transition-all duration-300 font-semibold text-xs tracking-wide cursor-pointer",
+                  isDarkMode
+                    ? "hover:bg-cyan-600/10 text-white hover:text-gray-200"
+                    : "hover:bg-cyan-600/10 text-gray-800 hover:text-gray-900"
+                )}
+              >
+                <CreditCard className="mr-2 h-4 w-4" />
+                <span>BILLING</span>
+              </DropdownMenuItem>
+              {!flagLoading && customAgentsEnabled && (
+                <DropdownMenuItem
+                  onClick={() => router.push('/settings/api-keys')}
+                  className={cn(
+                    "transition-all duration-300 font-semibold text-xs tracking-wide cursor-pointer",
+                    isDarkMode
+                      ? "hover:bg-cyan-600/10 text-white hover:text-gray-200"
+                      : "hover:bg-cyan-600/10 text-gray-800 hover:text-gray-900"
+                  )}
+                >
+                  <Key className="mr-2 h-4 w-4" />
+                  <span>API_KEYS</span>
+                </DropdownMenuItem>
+              )}
+              {isLocalMode() && (
+                <DropdownMenuItem
+                  onClick={() => router.push('/settings/env-manager')}
+                  className={cn(
+                    "transition-all duration-300 font-semibold text-xs tracking-wide cursor-pointer",
+                    isDarkMode
+                      ? "hover:bg-cyan-600/10 text-white hover:text-gray-200"
+                      : "hover:bg-cyan-600/10 text-gray-800 hover:text-gray-900"
+                  )}
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>LOCAL_ENV_MANAGER</span>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
+                className={cn(
+                  "transition-all duration-300 font-semibold text-xs tracking-wide cursor-pointer",
+                  isDarkMode
+                    ? "hover:bg-cyan-600/10 text-white hover:text-gray-200"
+                    : "hover:bg-cyan-600/10 text-gray-800 hover:text-gray-900"
+                )}
+              >
+                {theme === 'dark' ? (
+                  <>
+                    <Sun className="mr-2 h-4 w-4" />
+                    <span>LIGHT_MODE</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon className="mr-2 h-4 w-4" />
+                    <span>DARK_MODE</span>
+                  </>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                className={cn(
+                  'text-destructive focus:text-destructive focus:bg-destructive/10 transition-all duration-300 font-semibold text-xs tracking-wide',
+                  isDarkMode 
+                    ? "hover:bg-red-600/10 text-red-400 hover:text-red-300" 
+                    : "hover:bg-red-600/10 text-red-600 hover:text-red-500"
+                )} 
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>LOGOUT</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
 
-      <DialogContent className="sm:max-w-[425px] border-subtle dark:border-white/10 bg-card-bg dark:bg-background-secondary rounded-2xl shadow-custom">
+      <DialogContent className={cn(
+        "sm:max-w-md transition-all duration-300",
+        isDarkMode 
+          ? "bg-black/95 border-cyan-500/30 backdrop-blur-lg" 
+          : "bg-white/95 border-cyan-500/30 backdrop-blur-lg"
+      )}>
         <DialogHeader>
-          <DialogTitle className="text-foreground">
-            Create a new team
+          <DialogTitle className={cn(
+            "font-mono text-lg tracking-wide",
+            isDarkMode 
+              ? "text-white" 
+              : "text-gray-800"
+          )}>
+            CREATE_NEW_TEAM
           </DialogTitle>
-          <DialogDescription className="text-foreground/70">
-            Create a team to collaborate with others.
+          <DialogDescription className={cn(
+            "font-mono text-sm tracking-wide",
+            isDarkMode 
+              ? "text-gray-300" 
+              : "text-gray-600"
+          )}>
+            INITIALIZE_COLLABORATIVE_NEURAL_NETWORK
           </DialogDescription>
         </DialogHeader>
         <NewTeamForm />

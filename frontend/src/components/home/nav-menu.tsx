@@ -148,9 +148,9 @@ export function NavMenu() {
   };
 
   return (
-    <div className="w-full hidden md:block">
+    <div className="w-full hidden md:block flex justify-center">
       <ul
-        className="relative mx-auto flex w-fit rounded-full h-11 px-2 items-center justify-center"
+        className="relative flex w-fit rounded-full h-11 px-2 items-center justify-center"
         ref={ref}
       >
         {navs.map((item) => (

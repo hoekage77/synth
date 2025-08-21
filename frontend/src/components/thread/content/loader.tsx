@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { AnimatedShinyText } from '@/components/ui/animated-shiny-text';
+import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 
 const items = [
     { id: 1, content: "Initializing neural pathways..." },
@@ -35,20 +35,19 @@ export const AgentLoader = () => {
 
   return (
     <div className="flex py-2 items-center w-full">
-      <div>✨</div>
-            <AnimatePresence>
-            <motion.div
-                key={items[index].id}
-                initial={{ y: 20, opacity: 0, filter: "blur(8px)" }}
-                animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                exit={{ y: -20, opacity: 0, filter: "blur(8px)" }}
-                transition={{ ease: "easeInOut" }}
-                style={{ position: "absolute" }}
-                className='ml-7'
-            >
-                <AnimatedShinyText>{items[index].content}</AnimatedShinyText>
-            </motion.div>
-            </AnimatePresence>
-        </div>
+      <div className="flex items-center gap-3">
+        <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
+        <motion.div
+          key={items[index].id}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.3 }}
+          className="text-sm text-muted-foreground"
+        >
+          {items[index].content}
+        </motion.div>
+      </div>
+    </div>
   );
 };

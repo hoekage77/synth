@@ -4,7 +4,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EditableText } from '@/components/ui/editable';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { XeraLogo } from '@/components/sidebar/kortix-logo';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -81,7 +81,7 @@ export function AgentHeader({
         <div className="relative">
           {isSunaAgent ? (
             <div className="h-9 w-9 rounded-lg bg-muted border flex items-center justify-center">
-              <KortixLogo size={16} />
+              <XeraLogo size={16} />
             </div>
           ) : (
             <div className="flex items-center gap-2">

@@ -2,17 +2,18 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Bot, Menu, Store, Plus, Zap, Plug, ChevronRight, Loader2 } from 'lucide-react';
+import { Bot, Menu, Store, Plus, Zap, Plug, ChevronRight, Loader2, Cpu, Power, Terminal, PanelLeft } from 'lucide-react';
 
-import { NavAgents } from '@/components/sidebar/nav-agents';
 import { NavUserWithTeams } from '@/components/sidebar/nav-user-with-teams';
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { NavAgents } from '@/components/sidebar/nav-agents';
+import { XeraLogo } from '@/components/sidebar/kortix-logo';
 
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -30,7 +31,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { NewAgentDialog } from '@/components/agents/new-agent-dialog';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import {
   Tooltip,
@@ -41,207 +42,235 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useFeatureFlags } from '@/lib/feature-flags';
+import { useTheme } from 'next-themes';
 import posthog from 'posthog-js';
+import { motion } from 'motion/react';
 
 export function SidebarLeft({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
-  const { state, setOpen, setOpenMobile } = useSidebar();
+  const { state, setOpen } = useSidebar();
+  const [showNewAgentDialog, setShowNewAgentDialog] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const isMobile = useIsMobile();
-  const [user, setUser] = useState<{
-    name: string;
-    email: string;
-    avatar: string;
-  }>({
-    name: 'Loading...',
-    email: 'loading@example.com',
-    avatar: '',
-  });
-
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { flags, loading: flagsLoading } = useFeatureFlags(['custom_agents', 'agent_marketplace']);
+  const { flags, loading: flagsLoading } = useFeatureFlags(['custom_agents']);
   const customAgentsEnabled = flags.custom_agents;
-  const marketplaceEnabled = flags.agent_marketplace;
-  const [showNewAgentDialog, setShowNewAgentDialog] = useState(false);
+  const { theme, systemTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
-  
+  // After mount, we can access the theme
   useEffect(() => {
-    const fetchUserData = async () => {
-      const supabase = createClient();
-      const { data } = await supabase.auth.getUser();
-
-      if (data.user) {
-        setUser({
-          name:
-            data.user.user_metadata?.name ||
-            data.user.email?.split('@')[0] ||
-            'User',
-          email: data.user.email || '',
-          avatar: data.user.user_metadata?.avatar_url || '',
-        });
-      }
-    };
-
-    fetchUserData();
+    setMounted(true);
   }, []);
 
+  const isDarkMode = mounted && (
+    theme === 'dark' || (theme === 'system' && systemTheme === 'dark')
+  );
+
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === 'b') {
-        event.preventDefault();
-        setOpen(!state.startsWith('expanded'));
-        window.dispatchEvent(
-          new CustomEvent('sidebar-left-toggled', {
-            detail: { expanded: !state.startsWith('expanded') },
-          }),
-        );
+    const supabase = createClient();
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+  }, []);
+
+  // Click outside handler to collapse sidebar
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+        if (state === 'expanded') {
+          setOpen(false);
+        }
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    // Only add listener when sidebar is expanded
+    if (state === 'expanded') {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [state, setOpen]);
 
-
-
+  const handleNewAgentClick = () => {
+    setShowNewAgentDialog(true);
+    if (posthog) {
+      posthog.capture('new_agent_clicked', { location: 'sidebar' });
+    }
+  };
 
   return (
-    <Sidebar
-      collapsible="icon"
-      className="border-r-0 bg-background/95 backdrop-blur-sm [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
-      {...props}
-    >
-      <SidebarHeader className="px-2 py-2">
-        <div className="flex h-[40px] items-center px-1 relative">
-          <Link href="/dashboard" className="flex-shrink-0">
-            <KortixLogo size={24} />
+    <Sidebar ref={sidebarRef} className="bg-black border-r border-blue-500/30 scrollbar-hide fixed left-0 top-0 h-full z-50 shadow-2xl">
+      <SidebarHeader className="border-b border-blue-500/20 bg-black/80 backdrop-blur-sm">
+        <div className="flex h-16 items-center px-4">
+          <Link href="/dashboard" className="flex items-center gap-3 group">
+            {state === 'collapsed' ? (
+              <div className="w-6 h-6 flex items-center justify-center">
+                <span className="text-2xl font-bold text-white font-mono">X</span>
+              </div>
+            ) : (
+              <span className="text-xl font-bold text-white font-mono">XERA</span>
+            )}
           </Link>
-          {state !== 'collapsed' && (
-            <div className="ml-2 transition-all duration-200 ease-in-out whitespace-nowrap">
-            </div>
-          )}
-          <div className="ml-auto flex items-center gap-2">
-            {state !== 'collapsed' && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <SidebarTrigger className="h-8 w-8" />
-                </TooltipTrigger>
-                <TooltipContent>Toggle sidebar (CMD+B)</TooltipContent>
-              </Tooltip>
-            )}
-            {isMobile && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => setOpenMobile(true)}
-                    className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-accent"
-                  >
-                    <Menu className="h-4 w-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>Open menu</TooltipContent>
-              </Tooltip>
-            )}
-          </div>
         </div>
       </SidebarHeader>
-      <SidebarContent className="[&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+
+      <SidebarContent className="bg-black/60 scrollbar-hide overflow-y-auto">
         <SidebarGroup>
-          <Link href="/dashboard">
-            <SidebarMenuButton className={cn({
-              'bg-accent text-accent-foreground font-medium': pathname === '/dashboard',
-            })} onClick={() => posthog.capture('new_task_clicked')}>
-              <Plus className="h-4 w-4 mr-1" />
-              <span className="flex items-center justify-between w-full">
-                New Task
-              </span>
-            </SidebarMenuButton>
-          </Link>
-          {!flagsLoading && customAgentsEnabled && (
-            <SidebarMenu>
-              <Collapsible
-                defaultOpen={pathname?.includes('/agents')}
-                className="group/collapsible"
+          <SidebarGroupLabel className="text-blue-400 font-mono text-xs tracking-wider px-4 py-1">
+            System Navigation
+          </SidebarGroupLabel>
+          
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                asChild 
+                isActive={pathname === '/agents'}
+                className={cn(
+                  "transition-all duration-300 text-sm tracking-wide",
+                  {
+                    'bg-gradient-to-r from-blue-600/20 to-cyan-600/20 text-blue-400 border border-blue-500/30': pathname === '/agents',
+                    'hover:bg-gradient-to-r hover:from-blue-600/10 hover:to-cyan-600/10 text-gray-300 hover:text-blue-400': pathname !== '/agents',
+                  }
+                )}
               >
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton
-                      tooltip="Agents"
-                    >
-                      <Bot className="h-4 w-4 mr-1" />
-                      <span>Agents</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton className={cn('pl-3', {
-                          'bg-accent text-accent-foreground font-medium': pathname === '/agents' && searchParams.get('tab') === 'marketplace',
-                        })} asChild>
-                          <Link href="/agents?tab=marketplace">
-                            <span>Explore</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton className={cn('pl-3', {
-                          'bg-accent text-accent-foreground font-medium': pathname === '/agents' && (searchParams.get('tab') === 'my-agents' || searchParams.get('tab') === null),
-                        })} asChild>
-                          <Link href="/agents?tab=my-agents">
-                            <span>My Agents</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton 
-                          onClick={() => setShowNewAgentDialog(true)}
-                          className="cursor-pointer pl-3"
-                        >
-                          <span>New Agent</span>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-            </SidebarMenu>
-          )}
-          {!flagsLoading && customAgentsEnabled && (
-            <Link href="/settings/credentials">
-              <SidebarMenuButton className={cn({
-                'bg-accent text-accent-foreground font-medium': pathname === '/settings/credentials',
-              })}>
-                <Plug className="h-4 w-4 mr-1" />
-                <span className="flex items-center justify-between w-full">
-                  Integrations
-                </span>
+                <Link href="/agents">
+                  <Bot className="h-4 w-4 mr-2" />
+                  <span>AI Agents</span>
+                </Link>
               </SidebarMenuButton>
-            </Link>
-          )}
+            </SidebarMenuItem>
+          </SidebarMenu>
         </SidebarGroup>
-        <NavAgents />
+
+        <SidebarGroup className="mt-2">
+          <SidebarGroupLabel className="text-blue-400 font-mono text-xs tracking-wider px-4 py-1">
+            Agent Management
+          </SidebarGroupLabel>
+          
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                onClick={handleNewAgentClick}
+                className="transition-all duration-300 text-sm tracking-wide text-gray-300 hover:text-blue-400 hover:bg-gradient-to-r hover:from-blue-600/10 hover:to-cyan-600/10"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                <span>Create Agent</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                asChild 
+                isActive={pathname === '/agents'}
+                className={cn(
+                  "transition-all duration-300 text-sm tracking-wide",
+                  {
+                    'bg-gradient-to-r from-blue-600/20 to-cyan-600/20 text-blue-400 border border-blue-500/30': pathname === '/agents',
+                    'hover:bg-gradient-to-r hover:from-blue-600/10 hover:to-cyan-600/10 text-gray-300 hover:text-blue-400': pathname !== '/agents',
+                  }
+                )}
+              >
+                <Link href="/agents">
+                  <Bot className="h-4 w-4 mr-2" />
+                  <span>AI Agents</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        {!flagsLoading && customAgentsEnabled && (
+          <SidebarGroup className="mt-2">
+            <SidebarGroupLabel className="text-blue-400 font-mono text-xs tracking-wider px-4 py-1">
+              Integrations
+            </SidebarGroupLabel>
+            
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild 
+                  isActive={pathname === '/settings/credentials'}
+                  className={cn(
+                    "transition-all duration-300 text-sm tracking-wide",
+                    {
+                      'bg-gradient-to-r from-blue-600/20 to-cyan-600/20 text-blue-400 border border-blue-500/30': pathname === '/settings/credentials',
+                      'hover:bg-gradient-to-r hover:from-blue-600/10 hover:to-cyan-600/10 text-gray-300 hover:text-blue-400': pathname !== '/settings/credentials',
+                    }
+                  )}
+                >
+                  <Link href="/settings/credentials">
+                    <Zap className="h-4 w-4 mr-2" />
+                    <span>MCP Hub</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
+        
+        <div className="mt-2">
+          <NavAgents />
+        </div>
       </SidebarContent>
       
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-blue-500/20 bg-black/80 backdrop-blur-sm scrollbar-hide">
         {state === 'collapsed' && (
           <div className="mt-2 flex justify-center">
             <Tooltip>
               <TooltipTrigger asChild>
-                <SidebarTrigger className="h-8 w-8" />
+                <SidebarTrigger className={cn(
+                  "h-8 w-8 transition-all duration-300 text-blue-400 hover:text-blue-300 hover:bg-blue-600/20",
+                  "border border-blue-500/30 rounded-lg"
+                )} />
               </TooltipTrigger>
-              <TooltipContent>Expand sidebar (CMD+B)</TooltipContent>
+              <TooltipContent className="bg-black border border-blue-500/30 text-blue-400 font-mono">
+                Expand Sidebar (Cmd+B)
+              </TooltipContent>
             </Tooltip>
           </div>
         )}
-        <NavUserWithTeams user={user} />
+        {user && <NavUserWithTeams user={user} />}
       </SidebarFooter>
       <SidebarRail />
       <NewAgentDialog 
         open={showNewAgentDialog} 
         onOpenChange={setShowNewAgentDialog}
       />
+      
+      {/* Floating Sidebar Toggle Button - appears when sidebar is hidden */}
+      {state === 'collapsed' && (
+        <motion.button
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          onClick={() => setOpen(true)}
+          className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-50 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white p-4 rounded-full shadow-2xl shadow-blue-500/25 border-2 border-blue-400 backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:shadow-blue-400/50"
+          title="Open Sidebar"
+        >
+          <PanelLeft className="w-6 h-6" />
+        </motion.button>
+      )}
+      
+      {/* Mobile Sidebar Toggle Button - always visible on mobile */}
+      {isMobile && (
+        <motion.button
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          onClick={() => setOpen(true)}
+          className="fixed left-4 top-4 z-50 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white p-3 rounded-full shadow-2xl shadow-blue-500/25 border border-blue-500/30 backdrop-blur-sm transition-all duration-300 hover:scale-110 md:hidden"
+          title="Open Sidebar"
+        >
+          <Menu className="w-5 h-5" />
+        </motion.button>
+      )}
     </Sidebar>
   );
 }

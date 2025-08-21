@@ -21,6 +21,7 @@ export interface ModelOption {
   top?: boolean;
   isCustom?: boolean;
   priority?: number;
+  recommended?: boolean;
 }
 
 export interface CustomModel {
@@ -35,7 +36,9 @@ export const MODELS = {
     tier: 'free',
     priority: 100, 
     recommended: true,
-    lowQuality: false
+    lowQuality: false,
+    provider: 'anthropic',
+    icon: 'claude'
   },
 
   // 'gemini-flash-2.5': { 
@@ -56,49 +59,65 @@ export const MODELS = {
     tier: 'free', 
     priority: 96,
     recommended: false,
-    lowQuality: false
+    lowQuality: false,
+    provider: 'moonshot',
+    icon: 'moonshot'
   },
   'grok-4': { 
     tier: 'free', 
     priority: 94,
     recommended: false,
-    lowQuality: false
+    lowQuality: false,
+    provider: 'xai',
+    icon: 'grok'
   },
   'sonnet-3.7': { 
     tier: 'free', 
     priority: 93, 
     recommended: false,
-    lowQuality: false
+    lowQuality: false,
+    provider: 'anthropic',
+    icon: 'claude'
   },
   'google/gemini-2.5-pro': { 
     tier: 'free', 
     priority: 96,
     recommended: false,
-    lowQuality: false
+    lowQuality: false,
+    provider: 'google',
+    icon: 'gemini'
   },
   'sonnet-3.5': { 
     tier: 'free', 
     priority: 90,
     recommended: false,
-    lowQuality: false
+    lowQuality: false,
+    provider: 'anthropic',
+    icon: 'claude'
   },
   'gpt-5': { 
     tier: 'free', 
     priority: 99,
     recommended: false,
-    lowQuality: false
+    lowQuality: false,
+    provider: 'openai',
+    icon: 'gpt'
   },
   'gpt-5-mini': { 
     tier: 'free', 
     priority: 98,
     recommended: false,
-    lowQuality: false
+    lowQuality: false,
+    provider: 'openai',
+    icon: 'gpt'
   },
   'gemini-2.5-flash:thinking': { 
     tier: 'free', 
     priority: 84,
     recommended: false,
-    lowQuality: false
+    lowQuality: false,
+    provider: 'google',
+    icon: 'gemini'
   },
   // 'deepseek/deepseek-chat-v3-0324': { 
   //   tier: 'free', 
@@ -106,6 +125,57 @@ export const MODELS = {
   //   recommended: false,
   //   lowQuality: false
   // },
+};
+
+// Model provider icons mapping
+export const MODEL_ICONS = {
+  // OpenAI models
+  'gpt': {
+    icon: '🤖',
+    color: 'from-emerald-500 to-emerald-600',
+    bgColor: 'bg-emerald-500/10',
+    borderColor: 'border-emerald-500/20'
+  },
+  
+  // Anthropic Claude models
+  'claude': {
+    icon: '🧠',
+    color: 'from-orange-500 to-red-500',
+    bgColor: 'bg-orange-500/10',
+    borderColor: 'border-orange-500/20'
+  },
+  
+  // Google Gemini models
+  'gemini': {
+    icon: '💎',
+    color: 'from-blue-500 to-indigo-500',
+    bgColor: 'bg-blue-500/10',
+    borderColor: 'border-blue-500/20'
+  },
+  
+  // Moonshot models
+  'moonshot': {
+    icon: '🌙',
+    color: 'from-purple-500 to-pink-500',
+    bgColor: 'bg-purple-500/10',
+    borderColor: 'border-purple-500/20'
+  },
+  
+  // XAI Grok models
+  'grok': {
+    icon: '⚡',
+    color: 'from-yellow-500 to-orange-500',
+    bgColor: 'bg-yellow-500/10',
+    borderColor: 'border-yellow-500/20'
+  },
+  
+  // Custom models
+  'custom': {
+    icon: '⚙️',
+    color: 'from-gray-500 to-gray-600',
+    bgColor: 'bg-gray-500/10',
+    borderColor: 'border-gray-500/20'
+  }
 };
 
 // Helper to check if a user can access a model based on subscription status

@@ -22,7 +22,8 @@ import {
   formatModelName,
   getCustomModels,
   DEFAULT_FREE_MODEL_ID,
-  MODELS
+  MODELS,
+  MODEL_ICONS
 } from '@/components/thread/chat-input/_use-model-selection';
 
 import { isLocalMode } from '@/lib/config';
@@ -311,6 +312,10 @@ export function AgentModelSelector({
     
     const isLowQuality = MODELS[model.id]?.lowQuality || false;
     const isRecommended = MODELS[model.id]?.recommended || false;
+    
+    // Get model icon and styling
+    const modelIcon = isCustom ? MODEL_ICONS.custom : MODEL_ICONS[MODELS[model.id]?.icon || 'custom'];
+    const isSelected = selectedModel === model.id;
 
     return (
       <TooltipProvider key={`model-${model.id}-${index}`}>
@@ -319,26 +324,60 @@ export function AgentModelSelector({
             <div className='w-full'>
               <DropdownMenuItem
                 className={cn(
-                  "text-sm px-3 rounded-lg py-2 mx-2 my-0.5 flex items-center justify-between cursor-pointer",
-                  isHighlighted && "bg-accent",
-                  !accessible && !disabled && "opacity-70"
+                  "text-sm px-4 py-3 mx-2 my-1 rounded-xl flex items-center justify-between cursor-pointer transition-all duration-200",
+                  isHighlighted && "bg-accent/50 scale-[1.02]",
+                  !accessible && !disabled && "opacity-70",
+                  isSelected && "bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20"
                 )}
                 onClick={() => !disabled && handleSelect(model.id)}
                 onMouseEnter={() => setHighlightedIndex(index)}
               >
-                <div className="flex items-center">
-                  <span className="font-medium">{model.label}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {isLowQuality && (
-                    <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                  )}
-                  {isRecommended && (
-                    <span className="text-xs px-1.5 py-0.5 rounded-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium">
-                      Recommended
-                    </span>
-                  )}
+                <div className="flex items-center gap-3 flex-1">
+                  {/* Model Icon with Brand Colors */}
+                  <div className={cn(
+                    "relative flex items-center justify-center w-8 h-8 rounded-lg border-2 transition-all duration-200",
+                    modelIcon.bgColor,
+                    modelIcon.borderColor,
+                    isSelected && "scale-110 shadow-lg"
+                  )}>
+                    <span className="text-lg">{modelIcon.icon}</span>
+                    
+                    {/* Quality indicator overlay */}
+                    {isLowQuality && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full border-2 border-background flex items-center justify-center">
+                        <AlertTriangle className="w-2 h-2 text-white" />
+                      </div>
+                    )}
+                  </div>
                   
+                  {/* Model Info */}
+                  <div className="flex flex-col items-start min-w-0 flex-1">
+                    <span className={cn(
+                      "font-semibold text-foreground truncate w-full",
+                      isSelected && "text-primary"
+                    )}>
+                      {model.label}
+                    </span>
+                    
+                    {/* Model provider badge */}
+                    <div className="flex items-center gap-2 mt-1">
+                      {isRecommended && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-600 dark:text-blue-300 font-medium border border-blue-500/30">
+                          ⭐ Recommended
+                        </span>
+                      )}
+                      
+                      {isCustom && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-gray-500/20 to-gray-600/20 text-gray-600 dark:text-gray-300 font-medium border border-gray-500/30">
+                          Custom
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Right side actions */}
+                <div className="flex items-center gap-2 ml-2">
                   {isLocalMode() && isCustom && (
                     <>
                       <button
@@ -346,7 +385,7 @@ export function AgentModelSelector({
                           e.stopPropagation();
                           openEditCustomModelDialog(model, e);
                         }}
-                        className="text-muted-foreground hover:text-foreground"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
                       >
                         <Edit className="h-3.5 w-3.5" />
                       </button>
@@ -355,14 +394,18 @@ export function AgentModelSelector({
                           e.stopPropagation();
                           handleDeleteCustomModel(model.id, e);
                         }}
-                        className="text-muted-foreground hover:text-red-500"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
                       >
                         <Trash className="h-3.5 w-3.5" />
                       </button>
                     </>
                   )}
-                  {selectedModel === model.id && (
-                    <Check className="h-4 w-4 text-blue-500" />
+                  
+                  {/* Selection indicator */}
+                  {isSelected && (
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center">
+                      <Check className="h-3 w-3 text-white" />
+                    </div>
                   )}
                 </div>
               </DropdownMenuItem>
@@ -370,7 +413,7 @@ export function AgentModelSelector({
           </TooltipTrigger>
           {!accessible && !isLocalMode() ? (
             <TooltipContent side="left" className="text-xs max-w-xs">
-              
+              <p>Upgrade required to access this model</p>
             </TooltipContent>
           ) : isLowQuality ? (
             <TooltipContent side="left" className="text-xs max-w-xs">

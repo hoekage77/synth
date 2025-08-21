@@ -21,24 +21,35 @@ export const TestimonialCard = ({
 }: TestimonialCardProps) => (
   <div
     className={cn(
-      'flex w-full cursor-pointer break-inside-avoid flex-col items-center justify-between gap-6 rounded-xl p-4',
-      // light styles
-      'bg-accent',
-      'shadow-[0px_0px_0px_1px_rgba(0,0,0,0.04),0px_8px_12px_-4px_rgba(15,12,12,0.08),0px_1px_2px_0px_rgba(15,12,12,0.10)] dark:shadow-[0px_0px_0px_1px_rgba(250,250,250,0.1),0px_0px_0px_1px_#18181B,0px_8px_12px_-4px_rgba(15,12,12,0.3),0px_1px_2px_0px_rgba(15,12,12,0.3)]',
+      'flex w-full cursor-pointer break-inside-avoid flex-col items-center justify-between gap-6 rounded-xl p-6 relative group',
+      // Futuristic dark styles
+      'bg-black/40 backdrop-blur-sm border border-cyan-500/20 hover:border-cyan-500/40',
+      'shadow-[0px_0px_20px_rgba(6,182,212,0.1)] hover:shadow-[0px_0px_30px_rgba(6,182,212,0.2)]',
+      'transition-all duration-300 hover:scale-[1.02]',
       className,
     )}
     {...props}
   >
-    <div className="select-none leading-relaxed font-normal text-primary/90">
+    {/* Holographic glow effect */}
+    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+    
+    {/* Scanning line effect */}
+    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-300" />
+    
+    <div className="relative z-10 select-none leading-relaxed font-normal text-cyan-200/90 font-mono text-sm">
       {description}
     </div>
 
-    <div className="flex w-full select-none items-center justify-start gap-3.5">
-      <img src={img} alt={name} className="size-8 rounded-full" />
+    <div className="relative z-10 flex w-full select-none items-center justify-start gap-3.5">
+      {/* Futuristic avatar with glow */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity duration-300" />
+        <img src={img} alt={name} className="relative size-10 rounded-full border border-cyan-500/30" />
+      </div>
 
       <div>
-        <p className="font-medium text-primary/90">{name}</p>
-        <p className="text-xs font-normal text-primary/50">{role}</p>
+        <p className="font-medium text-cyan-300 font-mono text-sm">{name}</p>
+        <p className="text-xs font-normal text-cyan-400/70 font-mono">{role}</p>
       </div>
     </div>
   </div>
@@ -80,8 +91,8 @@ export function SocialProofTestimonials({
                 </Marquee>
               ))}
           </div>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/6 md:h-1/5 w-full bg-gradient-to-t from-background from-20%"></div>
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1/6 md:h-1/5 w-full bg-gradient-to-b from-background from-20%"></div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/6 md:h-1/5 w-full bg-gradient-to-t from-black from-20%"></div>
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1/6 md:h-1/5 w-full bg-gradient-to-b from-black from-20%"></div>
         </div>
       </div>
     </div>

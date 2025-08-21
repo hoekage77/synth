@@ -1,5 +1,6 @@
 'use client';
 
+// NavAgents component for sidebar navigation
 import { useEffect, useState, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -16,6 +17,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { usePathname, useRouter } from "next/navigation"
+import { useTheme } from 'next-themes';
 
 import {
   DropdownMenu,
@@ -47,9 +49,12 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ThreadWithProject } from '@/hooks/react-query/sidebar/use-sidebar';
 import { processThreadsWithProjects, useDeleteMultipleThreads, useDeleteThread, useProjects, useThreads } from '@/hooks/react-query/sidebar/use-sidebar';
 import { projectKeys, threadKeys } from '@/hooks/react-query/sidebar/keys';
+import { cn } from '@/lib/utils';
 
 export function NavAgents() {
   const { isMobile, state } = useSidebar()
+  const { theme, systemTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [loadingThreadId, setLoadingThreadId] = useState<string | null>(null)
   const [showShareModal, setShowShareModal] = useState(false)
   const [selectedItem, setSelectedItem] = useState<{ threadId: string, projectId: string } | null>(null)
@@ -65,6 +70,15 @@ export function NavAgents() {
   const [selectedThreads, setSelectedThreads] = useState<Set<string>>(new Set());
   const [deleteProgress, setDeleteProgress] = useState(0);
   const [totalToDelete, setTotalToDelete] = useState(0);
+
+  // After mount, we can access the theme
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDarkMode = mounted && (
+    theme === 'dark' || (theme === 'system' && systemTheme === 'dark')
+  );
 
   const {
     data: projects = [],
@@ -152,20 +166,75 @@ export function NavAgents() {
 
   // Toggle thread selection for multi-select
   const toggleThreadSelection = (threadId: string, e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
+    e?.stopPropagation();
+    setSelectedThreads(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(threadId)) {
+        newSet.delete(threadId);
+      } else {
+        newSet.add(threadId);
+      }
+      return newSet;
+    });
+  };
+
+  // Handle delete thread
+  const handleDeleteThread = (threadId: string, threadName: string) => {
+    setThreadToDelete({ id: threadId, name: threadName });
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Confirm delete
+  const confirmDelete = () => {
+    if (!threadToDelete) return;
+
+    if (selectedThreads.size > 0) {
+      // Delete multiple threads
+      const threadIds = Array.from(selectedThreads);
+      setTotalToDelete(threadIds.length);
+      
+      deleteMultipleThreadsMutation(
+        { threadIds },
+        {
+          onSuccess: () => {
+            setSelectedThreads(new Set());
+            setDeleteProgress(0);
+            setTotalToDelete(0);
+            toast.success(`Deleted ${threadIds.length} thread${threadIds.length > 1 ? 's' : ''}`);
+          },
+          onError: (error) => {
+            toast.error('Failed to delete threads');
+            console.error('Delete error:', error);
+          },
+          onSettled: () => {
+            setDeleteProgress(0);
+            setTotalToDelete(0);
+          }
+        }
+      );
+    } else {
+      // Delete single thread
+      deleteThreadMutation(
+        { threadId: threadToDelete.id },
+        {
+          onSuccess: () => {
+            toast.success('Thread deleted successfully');
+          },
+          onError: (error) => {
+            toast.error('Failed to delete thread');
+            console.error('Delete error:', error);
+          }
+        }
+      );
     }
 
-    setSelectedThreads(prev => {
-      const newSelection = new Set(prev);
-      if (newSelection.has(threadId)) {
-        newSelection.delete(threadId);
-      } else {
-        newSelection.add(threadId);
-      }
-      return newSelection;
-    });
+    setIsDeleteDialogOpen(false);
+    setThreadToDelete(null);
+  };
+
+  // Clear selection
+  const clearSelection = () => {
+    setSelectedThreads(new Set());
   };
 
   // Select all threads
@@ -174,353 +243,263 @@ export function NavAgents() {
     setSelectedThreads(new Set(allThreadIds));
   };
 
-  // Deselect all threads
-  const deselectAllThreads = () => {
-    setSelectedThreads(new Set());
+  const handleSelectAll = () => {
+    selectAllThreads();
   };
 
-  // Function to handle thread deletion
-  const handleDeleteThread = async (threadId: string, threadName: string) => {
-    setThreadToDelete({ id: threadId, name: threadName });
-    setIsDeleteDialogOpen(true);
+  const handleClearSelection = () => {
+    clearSelection();
   };
 
-  // Function to handle multi-delete
-  const handleMultiDelete = () => {
-    if (selectedThreads.size === 0) return;
-
-    // Get thread names for confirmation dialog
-    const threadsToDelete = combinedThreads.filter(t => selectedThreads.has(t.threadId));
-    const threadNames = threadsToDelete.map(t => t.projectName).join(", ");
-
-    setThreadToDelete({
-      id: "multiple",
-      name: selectedThreads.size > 3
-        ? `${selectedThreads.size} conversations`
-        : threadNames
-    });
-
-    setTotalToDelete(selectedThreads.size);
-    setDeleteProgress(0);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!threadToDelete || isPerformingActionRef.current) return;
-
-    // Mark action in progress
-    isPerformingActionRef.current = true;
-
-    // Close dialog first for immediate feedback
-    setIsDeleteDialogOpen(false);
-
-    // Check if it's a single thread or multiple threads
-    if (threadToDelete.id !== "multiple") {
-      // Single thread deletion
-      const threadId = threadToDelete.id;
-      const isActive = pathname?.includes(threadId);
-
-      // Store threadToDelete in a local variable since it might be cleared
-      const deletedThread = { ...threadToDelete };
-
-      // Get sandbox ID from projects data
+  const handleDeleteSelected = () => {
+    const threadNames = Array.from(selectedThreads).map(threadId => {
       const thread = combinedThreads.find(t => t.threadId === threadId);
-      const project = projects.find(p => p.id === thread?.projectId);
-      const sandboxId = project?.sandbox?.id;
-
-      // Use the centralized deletion system with completion callback
-      await performDelete(
-        threadId,
-        isActive,
-        async () => {
-          // Delete the thread using the mutation with sandbox ID
-          deleteThreadMutation(
-            { threadId, sandboxId },
-            {
-              onSuccess: () => {
-                // Invalidate queries to refresh the list
-                queryClient.invalidateQueries({ queryKey: threadKeys.lists() });
-                toast.success('Conversation deleted successfully');
-              },
-              onSettled: () => {
-                setThreadToDelete(null);
-                isPerformingActionRef.current = false;
-              }
-            }
-          );
-        },
-        // Completion callback to reset local state
-        () => {
-          setThreadToDelete(null);
-          isPerformingActionRef.current = false;
-        },
-      );
-    } else {
-      // Multi-thread deletion
-      const threadIdsToDelete = Array.from(selectedThreads);
-      const isActiveThreadIncluded = threadIdsToDelete.some(id => pathname?.includes(id));
-
-      // Show initial toast
-      toast.info(`Deleting ${threadIdsToDelete.length} conversations...`);
-
-      try {
-        // If the active thread is included, handle navigation first
-        if (isActiveThreadIncluded) {
-          // Navigate to dashboard before deleting
-          isNavigatingRef.current = true;
-          document.body.style.pointerEvents = 'none';
-          router.push('/dashboard');
-
-          // Wait a moment for navigation to start
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-
-        // Use the mutation for bulk deletion
-        deleteMultipleThreadsMutation(
-          {
-            threadIds: threadIdsToDelete,
-            threadSandboxMap: Object.fromEntries(
-              threadIdsToDelete.map(threadId => {
-                const thread = combinedThreads.find(t => t.threadId === threadId);
-                const project = projects.find(p => p.id === thread?.projectId);
-                return [threadId, project?.sandbox?.id || ''];
-              }).filter(([, sandboxId]) => sandboxId)
-            ),
-            onProgress: handleDeletionProgress
-          },
-          {
-            onSuccess: (data) => {
-              // Invalidate queries to refresh the list
-              queryClient.invalidateQueries({ queryKey: threadKeys.lists() });
-
-              // Show success message
-              toast.success(`Successfully deleted ${data.successful.length} conversations`);
-
-              // If some deletions failed, show warning
-              if (data.failed.length > 0) {
-                toast.warning(`Failed to delete ${data.failed.length} conversations`);
-              }
-
-              // Reset states
-              setSelectedThreads(new Set());
-              setDeleteProgress(0);
-              setTotalToDelete(0);
-            },
-            onError: (error) => {
-              console.error('Error in bulk deletion:', error);
-              toast.error('Error deleting conversations');
-            },
-            onSettled: () => {
-              setThreadToDelete(null);
-              isPerformingActionRef.current = false;
-              setDeleteProgress(0);
-              setTotalToDelete(0);
-            }
-          }
-        );
-      } catch (err) {
-        console.error('Error initiating bulk deletion:', err);
-        toast.error('Error initiating deletion process');
-
-        // Reset states
-        setSelectedThreads(new Set());
-        setThreadToDelete(null);
-        isPerformingActionRef.current = false;
-        setDeleteProgress(0);
-        setTotalToDelete(0);
-      }
-    }
+      return thread?.projectName || 'Unknown';
+    });
+    setThreadToDelete({ 
+      id: Array.from(selectedThreads).join(','), 
+      name: threadNames.join(', ') 
+    });
+    setIsDeleteDialogOpen(true);
   };
-
-  // Loading state or error handling
-  const isLoading = isProjectsLoading || isThreadsLoading;
-  const hasError = projectsError || threadsError;
-
-  if (hasError) {
-    console.error('Error loading data:', { projectsError, threadsError });
-  }
 
   return (
     <SidebarGroup>
-      <div className="flex justify-between items-center">
-        <SidebarGroupLabel>Tasks</SidebarGroupLabel>
-        {state !== 'collapsed' ? (
-          <div className="flex items-center space-x-1">
-            {selectedThreads.size > 0 ? (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={deselectAllThreads}
-                  className="h-7 w-7"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={selectAllThreads}
-                  disabled={selectedThreads.size === combinedThreads.length}
-                  className="h-7 w-7"
-                >
-                  <Check className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleMultiDelete}
-                  className="h-7 w-7 text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-
-      <SidebarMenu className="overflow-y-auto max-h-[calc(100vh-200px)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-
-
-        {state !== 'collapsed' && (
+      <SidebarGroupLabel className={cn(
+        "px-2 py-1.5 text-xs font-semibold tracking-wide",
+        isDarkMode ? "text-white/70" : "text-gray-600/70",
+        state === 'collapsed' && "sr-only"
+      )}>
+        Message History
+      </SidebarGroupLabel>
+      <SidebarMenu>
+        {combinedThreads.length > 0 && (
           <>
-            {isLoading ? (
-              // Show skeleton loaders while loading
-              Array.from({ length: 3 }).map((_, index) => (
-                <SidebarMenuItem key={`skeleton-${index}`}>
-                  <SidebarMenuButton>
-                    <div className="h-4 w-4 bg-sidebar-foreground/10 rounded-md animate-pulse"></div>
-                    <div className="h-3 bg-sidebar-foreground/10 rounded w-3/4 animate-pulse"></div>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))
-            ) : combinedThreads.length > 0 ? (
-              // Show all threads with project info
-              <>
-                {combinedThreads.map((thread) => {
-                  // Check if this thread is currently active
-                  const isActive = pathname?.includes(thread.threadId) || false;
-                  const isThreadLoading = loadingThreadId === thread.threadId;
-                  const isSelected = selectedThreads.has(thread.threadId);
-
-                  return (
-                    <SidebarMenuItem key={`thread-${thread.threadId}`} className="group/row">
-                      <SidebarMenuButton
-                        asChild
-                        className={`relative ${isActive
-                          ? 'bg-accent text-accent-foreground font-medium'
-                          : isSelected
-                            ? 'bg-primary/10'
-                            : ''
-                          }`}
-                      >
-                        <div className="flex items-center w-full">
-                          <Link
-                            href={thread.url}
-                            onClick={(e) =>
-                              handleThreadClick(e, thread.threadId, thread.url)
-                            }
-                            prefetch={false}
-                            className="flex items-center flex-1 min-w-0"
-                          >
-                            {isThreadLoading ? (
-                              <Loader2 className="h-4 w-4 animate-spin mr-2 flex-shrink-0" />
-                            ) : null}
-                            <span className="truncate">{thread.projectName}</span>
-                          </Link>
-                          
-                          {/* Checkbox - only visible on hover of this specific area */}
-                          <div
-                            className="mr-1 flex-shrink-0 w-4 h-4 flex items-center justify-center group/checkbox"
-                            onClick={(e) => toggleThreadSelection(thread.threadId, e)}
-                          >
-                            <div
-                              className={`h-4 w-4 border rounded cursor-pointer transition-all duration-150 flex items-center justify-center ${isSelected
-                                ? 'opacity-100 bg-primary border-primary hover:bg-primary/90'
-                                : 'opacity-0 group-hover/checkbox:opacity-100 border-muted-foreground/30 bg-background hover:bg-muted/50'
-                                }`}
-                            >
-                              {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
-                            </div>
-                          </div>
-
-                          {/* Dropdown Menu - inline with content */}
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button
-                                className="flex-shrink-0 w-4 h-4 flex items-center justify-center hover:bg-muted/50 rounded transition-all duration-150 text-muted-foreground hover:text-foreground opacity-0 group-hover/row:opacity-100"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  // Ensure pointer events are enabled when dropdown opens
-                                  document.body.style.pointerEvents = 'auto';
-                                }}
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">More actions</span>
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              className="w-56 rounded-lg"
-                              side={isMobile ? 'bottom' : 'right'}
-                              align={isMobile ? 'end' : 'start'}
-                            >
-                              <DropdownMenuItem onClick={() => {
-                                setSelectedItem({ threadId: thread?.threadId, projectId: thread?.projectId })
-                                setShowShareModal(true)
-                              }}>
-                                <Share2 className="text-muted-foreground" />
-                                <span>Share Chat</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <a
-                                  href={thread.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  <ArrowUpRight className="text-muted-foreground" />
-                                  <span>Open in New Tab</span>
-                                </a>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleDeleteThread(
-                                    thread.threadId,
-                                    thread.projectName,
-                                  )
-                                }
-                              >
-                                <Trash2 className="text-muted-foreground" />
-                                <span>Delete</span>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </>
-            ) : (
-              <SidebarMenuItem>
-                <SidebarMenuButton className="text-sidebar-foreground/70">
-                  <span>No tasks yet</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+            {/* Multi-select controls */}
+            {selectedThreads.size > 0 && (
+              <div className="px-2 py-1.5 space-y-1">
+                {state !== 'collapsed' && (
+                  <>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className={cn(
+                        "font-semibold tracking-wide",
+                        isDarkMode ? "text-white/70" : "text-gray-600/70"
+                      )}>
+                        Selected: {selectedThreads.size}
+                      </span>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={handleSelectAll}
+                          className={cn(
+                            "px-2 py-1 rounded text-xs font-semibold tracking-wide transition-all duration-300",
+                            isDarkMode
+                              ? "bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border border-blue-500/30"
+                              : "bg-blue-600/20 text-blue-600 hover:bg-blue-600/30 border border-blue-500/30"
+                          )}
+                        >
+                          Select All
+                        </button>
+                        <button
+                          onClick={handleClearSelection}
+                          className={cn(
+                            "px-2 py-1 rounded text-xs font-semibold tracking-wide transition-all duration-300",
+                            isDarkMode
+                              ? "bg-gray-600/20 text-gray-400 hover:bg-gray-600/30 border border-gray-500/30"
+                              : "bg-gray-600/20 text-gray-600 hover:bg-gray-600/30 border border-gray-500/30"
+                          )}
+                        >
+                          Clear
+                        </button>
+                        <button
+                          onClick={handleDeleteSelected}
+                          disabled={selectedThreads.size === 0}
+                          className={cn(
+                            "px-2 py-1 rounded text-xs font-semibold tracking-wide transition-all duration-300",
+                            isDarkMode
+                              ? "bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-500/30 disabled:opacity-50"
+                              : "bg-red-600/20 text-red-600 hover:bg-red-600/30 border border-red-500/30 disabled:opacity-50"
+                          )}
+                        >
+                          Delete Selected
+                        </button>
+                      </div>
+                    </div>
+                    {isDeletingSingle || isDeletingMultiple ? (
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style={{ width: `${deleteProgress}%` }}></div>
+                      </div>
+                    ) : null}
+                  </>
+                )}
+              </div>
             )}
+
+            {combinedThreads.map((thread) => {
+              // Check if this thread is currently active
+              const isActive = pathname?.includes(thread.threadId) || false;
+              const isThreadLoading = loadingThreadId === thread.threadId;
+              const isSelected = selectedThreads.has(thread.threadId);
+
+              return (
+                <SidebarMenuItem key={`thread-${thread.threadId}`} className="group/row">
+                  <div className="relative transition-all duration-300 font-semibold text-xs tracking-wide flex items-center w-full">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Link
+                          href={thread.url}
+                          onClick={(e) => handleThreadClick(e, thread.threadId, thread.url)}
+                          className={cn(
+                            "flex-1 flex items-center px-2 py-1.5 rounded transition-all duration-300",
+                            {
+                              'bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30': isActive,
+                              'bg-primary/10': isSelected && !isActive,
+                            },
+                            isDarkMode
+                              ? "text-white hover:text-gray-200 hover:bg-blue-600/10"
+                              : "text-gray-800 hover:text-gray-900 hover:bg-blue-600/10"
+                          )}
+                        >
+                          {isThreadLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin mr-2 flex-shrink-0" />
+                          ) : null}
+                          {state !== 'collapsed' && (
+                            <span className="truncate font-semibold tracking-wide">{thread.projectName}</span>
+                          )}
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-xs">
+                        {thread.projectName}
+                      </TooltipContent>
+                    </Tooltip>
+                    
+                    {/* Checkbox - only visible on hover of this specific area */}
+                    <div
+                      className="mr-1 flex-shrink-0 w-4 h-4 flex items-center justify-center group/checkbox"
+                      onClick={(e) => toggleThreadSelection(thread.threadId, e)}
+                    >
+                      <div
+                        className={cn(
+                          "h-4 w-4 border rounded cursor-pointer transition-all duration-150 flex items-center justify-center",
+                          isSelected
+                            ? 'opacity-100 bg-blue-600 border-blue-500 hover:bg-blue-500'
+                            : 'opacity-0 group-hover/checkbox:opacity-100 border-blue-500/30 bg-transparent hover:bg-blue-600/10'
+                        )}
+                      >
+                        {isSelected && <Check className="h-3 w-3 text-white" />}
+                      </div>
+                    </div>
+
+                    {/* Dropdown Menu - inline with content */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          className={cn(
+                            "flex-shrink-0 w-4 h-4 flex items-center justify-center rounded transition-all duration-150 opacity-0 group-hover/row:opacity-100",
+                            isDarkMode 
+                              ? "hover:bg-blue-600/20 text-white hover:text-gray-200" 
+                              : "hover:bg-blue-600/20 text-gray-800 hover:text-gray-900"
+                          )}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            // Ensure pointer events are enabled when dropdown opens
+                            document.body.style.pointerEvents = 'auto';
+                          }}
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">More actions</span>
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        className={cn(
+                          "w-56 rounded-lg transition-all duration-300",
+                          isDarkMode 
+                            ? "bg-black/95 border-blue-500/30 backdrop-blur-lg" 
+                            : "bg-white/95 border-blue-500/30 backdrop-blur-lg"
+                        )}
+                        side={isMobile ? 'bottom' : 'right'}
+                        align={isMobile ? 'end' : 'start'}
+                      >
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedItem({ threadId: thread?.threadId, projectId: thread?.projectId })
+                            setShowShareModal(true)
+                          }}
+                          className={cn(
+                            "transition-all duration-300 font-semibold text-xs tracking-wide",
+                            isDarkMode
+                              ? "hover:bg-blue-600/10 text-white hover:text-gray-200"
+                              : "hover:bg-blue-600/10 text-gray-800 hover:text-gray-900"
+                          )}
+                        >
+                          <Share2 className="text-muted-foreground" />
+                          <span>Share Chat</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <a
+                            href={thread.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={cn(
+                              "transition-all duration-300 font-semibold text-xs tracking-wide",
+                              isDarkMode
+                                ? "hover:bg-blue-600/10 text-white hover:text-gray-200"
+                                : "hover:bg-blue-600/10 text-gray-800 hover:text-gray-900"
+                            )}
+                          >
+                            <ArrowUpRight className="text-muted-foreground" />
+                            <span>Open New Tab</span>
+                          </a>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleDeleteThread(
+                              thread.threadId,
+                              thread.projectName,
+                            )
+                          }
+                          className={cn(
+                            "transition-all duration-300 font-semibold text-xs tracking-wide",
+                            isDarkMode
+                              ? "hover:bg-red-600/10 text-red-400 hover:text-red-300"
+                              : "hover:bg-red-600/10 text-red-600 hover:text-red-500"
+                          )}
+                        >
+                          <Trash2 className="text-muted-foreground" />
+                          <span>Delete</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </SidebarMenuItem>
+              );
+            })}
           </>
+        ) || (
+          <div className={cn(
+            "px-2 py-4 text-center font-semibold text-xs tracking-wide",
+            isDarkMode ? "text-white/70" : "text-gray-600/70"
+          )}>
+            No Tasks Yet
+          </div>
         )}
       </SidebarMenu>
 
       {(isDeletingSingle || isDeletingMultiple) && totalToDelete > 0 && (
         <div className="mt-2 px-2">
-          <div className="text-xs text-muted-foreground mb-1">
+          <div className={cn(
+            "text-xs mb-1 font-mono tracking-wide",
+            isDarkMode ? "text-blue-300/70" : "text-blue-600/70"
+          )}>
             Deleting {deleteProgress > 0 ? `(${Math.floor(deleteProgress)}%)` : '...'}
           </div>
-          <div className="w-full bg-secondary h-1 rounded-full overflow-hidden">
+          <div className={cn(
+            "w-full h-1 rounded-full overflow-hidden",
+            isDarkMode ? "bg-blue-600/20" : "bg-blue-400/20"
+          )}>
             <div
-              className="bg-primary h-1 transition-all duration-300 ease-in-out"
+              className="bg-gradient-to-r from-blue-500 to-purple-500 h-1 transition-all duration-300 ease-in-out"
               style={{ width: `${deleteProgress}%` }}
             />
           </div>

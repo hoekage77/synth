@@ -9,7 +9,7 @@ import { getAgentAvatar } from '../../lib/utils/get-agent-style';
 import { useCreateTemplate, useUnpublishTemplate } from '@/hooks/react-query/secure-mcp/use-secure-mcp';
 import { toast } from 'sonner';
 import { AgentCard } from './custom-agents-page/agent-card';
-import { KortixLogo } from '../sidebar/kortix-logo';
+import { XeraLogo } from '../sidebar/kortix-logo';
 
 interface Agent {
   agent_id: string;
@@ -110,7 +110,7 @@ const AgentModal: React.FC<AgentModalProps> = ({
           <div className={`p-4 h-24 flex items-start justify-start relative`}>
             {isSunaAgent ? (
               <div className="p-6">
-                <KortixLogo size={48} />
+                <XeraLogo size={48} />
               </div>
             ) : agent.profile_image_url ? (
               <img src={agent.profile_image_url} alt={agent.name} className="h-16 w-16 rounded-xl object-cover" />

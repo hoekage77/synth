@@ -130,10 +130,18 @@ const allPrompts: PromptExample[] = [
   },
 ];
 
-// Function to get random prompts
-const getRandomPrompts = (count: number = 3): PromptExample[] => {
-  const shuffled = [...allPrompts].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
+// Function to get deterministic prompts to avoid hydration issues
+const getDeterministicPrompts = (count: number = 3): PromptExample[] => {
+  // Use a deterministic selection based on count to avoid hydration mismatches
+  const startIndex = (count * 7) % allPrompts.length;
+  const selected = [];
+  
+  for (let i = 0; i < count; i++) {
+    const index = (startIndex + i) % allPrompts.length;
+    selected.push(allPrompts[index]);
+  }
+  
+  return selected;
 };
 
 export const Examples = ({
@@ -146,21 +154,21 @@ export const Examples = ({
   const [displayedPrompts, setDisplayedPrompts] = useState<PromptExample[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Initialize with random prompts on mount
+  // Initialize with deterministic prompts on mount
   useEffect(() => {
-    setDisplayedPrompts(getRandomPrompts(count));
+    setDisplayedPrompts(getDeterministicPrompts(count));
   }, [count]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    setDisplayedPrompts(getRandomPrompts(count));
+    setDisplayedPrompts(getDeterministicPrompts(count));
     setTimeout(() => setIsRefreshing(false), 300);
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4">
+    <div className="w-full">
       <div className="group relative">
-        <div className="flex gap-2 justify-center py-2 flex-wrap">
+        <div className="flex gap-3 justify-center py-2 flex-wrap">
           {displayedPrompts.map((prompt, index) => (
             <motion.div
               key={`${prompt.title}-${index}`}
@@ -168,40 +176,66 @@ export const Examples = ({
               animate={{ opacity: 1, scale: 1 }}
               transition={{
                 duration: 0.3,
-                delay: index * 0.03,
+                delay: index * 0.1,
                 ease: "easeOut"
               }}
+              whileHover={{ scale: 1.05, y: -2 }}
             >
               <Button
                 variant="outline"
-                className="w-fit h-fit px-3 py-2 rounded-full border-neutral-200 dark:border-neutral-800 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-sm font-normal text-muted-foreground hover:text-foreground transition-colors"
+                className="relative w-fit h-fit px-4 py-3 rounded-lg border-cyan-500/30 bg-black/60 hover:bg-cyan-600/20 text-sm font-mono font-medium text-cyan-400 hover:text-cyan-300 transition-all duration-300 backdrop-blur-sm group/button"
                 onClick={() => onSelectPrompt && onSelectPrompt(prompt.query)}
               >
-                <div className="flex items-center gap-2">
+                {/* Holographic glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-lg opacity-0 group-hover/button:opacity-100 transition-opacity duration-300" />
+                
+                {/* Scanning line on hover */}
+                <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-0 group-hover/button:opacity-100 transition-opacity duration-300" />
+                
+                <div className="relative flex items-center gap-3">
                   <div className="flex-shrink-0">
-                    {React.cloneElement(prompt.icon as React.ReactElement, { size: 14 })}
+                    {React.cloneElement(prompt.icon as React.ReactElement, { 
+                      size: 16,
+                      className: "text-cyan-400 group-hover/button:text-cyan-300 transition-colors duration-300"
+                    })}
                   </div>
-                  <span className="whitespace-nowrap">{prompt.title}</span>
+                  <span className="whitespace-nowrap tracking-wide">{prompt.title}</span>
                 </div>
               </Button>
             </motion.div>
           ))}
         </div>
 
-        {/* Refresh button that appears on hover */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleRefresh}
-          className="absolute -top-4 right-1 h-5 w-5 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+        {/* Enhanced refresh button with futuristic styling */}
+        <motion.div
+          className="absolute -top-6 right-2"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.3 }}
         >
           <motion.div
-            animate={{ rotate: isRefreshing ? 360 : 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <RefreshCw size={10} className="text-muted-foreground" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefresh}
+              className="relative h-8 w-8 p-0 rounded-lg border border-cyan-500/30 bg-black/60 hover:bg-cyan-600/20 transition-all duration-300 backdrop-blur-sm group/refresh"
+            >
+            {/* Refresh button glow */}
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-lg opacity-0 group-hover/refresh:opacity-100 transition-opacity duration-300" />
+            
+                          <motion.div
+                className="relative"
+                animate={{ rotate: isRefreshing ? 360 : 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+              >
+                <RefreshCw size={14} className="text-cyan-400 group-hover/refresh:text-cyan-300 transition-colors duration-300" />
+              </motion.div>
+            </Button>
           </motion.div>
-        </Button>
+        </motion.div>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useAgent } from '@/hooks/react-query/agents/use-agents';
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
+import { XeraLogo } from '@/components/sidebar/kortix-logo';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface AgentAvatarProps {
@@ -30,12 +30,12 @@ export const AgentAvatar: React.FC<AgentAvatarProps> = ({
   }
 
   if (!agent && !agentId) {
-    return <KortixLogo size={size} />;
+    return <XeraLogo size={size} />;
   }
 
   const isSuna = agent?.metadata?.is_suna_default;
   if (isSuna) {
-    return <KortixLogo size={size} />;
+    return <XeraLogo size={size} />;
   }
 
   if (agent?.profile_image_url) {
@@ -60,7 +60,7 @@ export const AgentAvatar: React.FC<AgentAvatarProps> = ({
     );
   }
 
-  return <KortixLogo size={size} />;
+  return <XeraLogo size={size} />;
 };
 
 interface AgentNameProps {

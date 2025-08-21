@@ -2,15 +2,13 @@
 
 import { Icons } from '@/components/home/icons';
 import { NavMenu } from '@/components/home/nav-menu';
-import { ThemeToggle } from '@/components/home/theme-toggle';
 import { siteConfig } from '@/lib/home';
 import { cn } from '@/lib/utils';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Cpu, Power, Zap } from 'lucide-react';
 import { AnimatePresence, motion, useScroll } from 'motion/react';
 import Link from 'next/link';
-import Image from 'next/image';
+
 import { useEffect, useState } from 'react';
-import { useTheme } from 'next-themes';
 import { useAuth } from '@/components/AuthProvider';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -58,15 +56,9 @@ export function Navbar() {
   const [hasScrolled, setHasScrolled] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
-  const { theme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -102,96 +94,113 @@ export function Navbar() {
   const toggleDrawer = () => setIsDrawerOpen((prev) => !prev);
   const handleOverlayClick = () => setIsDrawerOpen(false);
 
-  const logoSrc = !mounted
-    ? '/kortix-logo.svg'
-    : resolvedTheme === 'dark'
-      ? '/kortix-logo-white.svg'
-      : '/kortix-logo.svg';
+
 
   return (
-    <header
-      className={cn(
-        'sticky z-50 flex justify-center transition-all duration-300',
-        hasScrolled ? 'top-6 mx-4 md:mx-0' : 'top-4 mx-2 md:mx-0',
-      )}
-    >
+    <header className="fixed top-0 left-0 right-0 z-50">
+      {/* Futuristic Navbar Background */}
       <motion.div
-        initial={{ width: INITIAL_WIDTH }}
-        animate={{ width: hasScrolled ? MAX_WIDTH : INITIAL_WIDTH }}
-        transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        className="relative"
       >
-        <div
-          className={cn(
-            'mx-auto max-w-7xl rounded-2xl transition-all duration-300 xl:px-0',
-            hasScrolled
-              ? 'px-2 md:px-2 border border-border backdrop-blur-lg bg-background/75'
-              : 'shadow-none px-3 md:px-7',
-          )}
-        >
-          <div className="flex h-[56px] items-center p-2 md:p-4">
-            {/* Left Section - Logo */}
-            <div className="flex items-center justify-start flex-shrink-0 w-auto md:w-[200px]">
-              <Link href="/" className="flex items-center gap-3">
-                <Image
-                  src={logoSrc}
-                  alt="Kortix Logo"
-                  width={80}
-                  height={14}
-                  className="md:w-[100px] md:h-[18px]"
-                  priority
-                /> 
-              </Link>
-            </div>
+        {/* Scanning line effect */}
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-50" />
+        
+        {/* Main navbar container */}
+        <div className={cn(
+          'relative bg-black/80 backdrop-blur-lg border-b transition-all duration-300',
+          hasScrolled 
+            ? 'border-cyan-500/30 shadow-lg shadow-cyan-500/10' 
+            : 'border-gray-800/50'
+        )}>
+          {/* Holographic overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-transparent to-purple-500/5" />
+          
+                                <div className="relative max-w-6xl mx-auto px-8 sm:px-12 lg:px-16">
+             <div className="flex h-20 items-center justify-between py-4">
+               
+               {/* Left Section - Futuristic Logo */}
+               <motion.div 
+                 className="flex items-center gap-4"
+                 whileHover={{ scale: 1.02 }}
+                 transition={{ duration: 0.2 }}
+               >
+                                  <Link href="/" className="flex items-center gap-3 group">
+                    {/* Clean white text logo */}
+                    <span className="text-2xl font-bold text-white">XERA</span>
+                  </Link>
+               </motion.div>
 
-            {/* Center Section - Navigation Menu */}
-            <div className="hidden md:flex items-center justify-center flex-grow">
-              <NavMenu />
-            </div>
+               {/* Center Section - Navigation Menu */}
+               <div className="flex items-center justify-center flex-1">
+                 <div className="relative bg-black/40 border border-gray-700/50 rounded-full px-1 py-1 backdrop-blur-sm">
+                   <NavMenu />
+                 </div>
+               </div>
 
-            {/* Right Section - Actions */}
-            <div className="flex items-center justify-end flex-shrink-0 w-auto md:w-[200px] ml-auto">
-              <div className="flex flex-row items-center gap-2 md:gap-3 shrink-0">
-                <div className="flex items-center space-x-3">
-                  
+                               {/* Right Section - Actions */}
+                <div className="flex items-center gap-4">
+                 {/* Action buttons */}
+                <div className="flex items-center gap-3">
                   {user ? (
-                    <Link
-                      className="bg-secondary h-8 hidden md:flex items-center justify-center text-sm font-normal tracking-wide rounded-full text-primary-foreground dark:text-secondary-foreground w-fit px-4 shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_3px_3px_-1.5px_rgba(16,24,40,0.06),0_1px_1px_rgba(16,24,40,0.08)] border border-white/[0.12]"
-                      href="/dashboard"
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      Dashboard
-                    </Link>
+                      <Link
+                        className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg text-white font-mono text-sm hover:from-cyan-500 hover:to-purple-500 transition-all duration-300 shadow-lg"
+                        href="/dashboard"
+                      >
+                        <Power className="w-4 h-4" />
+                        CONTROL_PANEL
+                      </Link>
+                    </motion.div>
                   ) : (
-                    <Link
-                      className="bg-secondary h-8 hidden md:flex items-center justify-center text-sm font-normal tracking-wide rounded-full text-primary-foreground dark:text-secondary-foreground w-fit px-4 shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_3px_3px_-1.5px_rgba(16,24,40,0.06),0_1px_1px_rgba(16,24,40,0.08)] border border-white/[0.12]"
-                      href="/auth"
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      Try free
-                    </Link>
+                      <Link
+                        className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg text-white font-mono text-sm hover:from-cyan-500 hover:to-purple-500 transition-all duration-300 shadow-lg"
+                        href="/auth"
+                      >
+                        <Zap className="w-4 h-4" />
+                        INITIALIZE
+                      </Link>
+                    </motion.div>
                   )}
+
+                  {/* Mobile menu button */}
+                  <motion.button
+                    className="md:hidden relative bg-black/60 border border-cyan-500/30 rounded-lg p-2 hover:border-cyan-400/50 transition-colors duration-300"
+                    onClick={toggleDrawer}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/10 to-purple-400/10 rounded-lg" />
+                    <div className="relative">
+                      {isDrawerOpen ? (
+                        <X className="w-5 h-5 text-cyan-400" />
+                      ) : (
+                        <Menu className="w-5 h-5 text-cyan-400" />
+                      )}
+                    </div>
+                  </motion.button>
                 </div>
-                <ThemeToggle />
-                <button
-                  className="md:hidden border border-border size-8 rounded-md cursor-pointer flex items-center justify-center"
-                  onClick={toggleDrawer}
-                >
-                  {isDrawerOpen ? (
-                    <X className="size-5" />
-                  ) : (
-                    <Menu className="size-5" />
-                  )}
-                </button>
               </div>
             </div>
           </div>
         </div>
       </motion.div>
 
-      {/* Mobile Drawer */}
+      {/* Futuristic Mobile Drawer */}
       <AnimatePresence>
         {isDrawerOpen && (
           <>
             <motion.div
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+              className="fixed inset-0 bg-black/70 backdrop-blur-md"
               initial="hidden"
               animate="visible"
               exit="exit"
@@ -201,45 +210,49 @@ export function Navbar() {
             />
 
             <motion.div
-              className="fixed inset-x-0 w-[95%] mx-auto bottom-3 bg-background border border-border p-4 rounded-xl shadow-lg"
+              className="fixed inset-x-0 w-[95%] mx-auto bottom-4 bg-black/90 border border-cyan-500/30 p-6 rounded-xl shadow-2xl backdrop-blur-lg"
               initial="hidden"
               animate="visible"
               exit="exit"
               variants={drawerVariants}
             >
+              {/* Holographic overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-transparent to-purple-500/5 rounded-xl" />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-50" />
+              
               {/* Mobile menu content */}
-              <div className="flex flex-col gap-4">
+              <div className="relative flex flex-col gap-6">
                 <div className="flex items-center justify-between">
-                  <Link href="/" className="flex items-center gap-3">
-                    <Image
-                      src={logoSrc}
-                      alt="Kortix Logo"
-                      width={120}
-                      height={22}
-                      priority
-                    />
-                    <span className="font-medium text-primary text-sm">
-                      / Xera
-                    </span>
-                  </Link>
-                  <button
+                                     <Link href="/" className="flex items-center gap-3 group">
+                     {/* Clean mobile logo */}
+                     <span className="text-xl font-bold text-white">XERA</span>
+                   </Link>
+                  
+                  <motion.button
                     onClick={toggleDrawer}
-                    className="border border-border rounded-md p-1 cursor-pointer"
+                    className="bg-black/60 border border-cyan-500/30 rounded-lg p-2 hover:border-cyan-400/50 transition-colors duration-300"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <X className="size-5" />
-                  </button>
+                    <X className="w-5 h-5 text-cyan-400" />
+                  </motion.button>
                 </div>
 
-                <motion.ul
-                  className="flex flex-col text-sm mb-4 border border-border rounded-md"
+                {/* Navigation menu */}
+                <motion.div
+                  className="bg-black/40 border border-gray-700/50 rounded-xl p-4 backdrop-blur-sm"
                   variants={drawerMenuContainerVariants}
                 >
+                  <div className="text-xs font-mono text-gray-400 mb-3 tracking-wider">NAVIGATION_MENU</div>
                   <AnimatePresence>
-                    {siteConfig.nav.links.map((item) => (
-                      <motion.li
+                    {siteConfig.nav.links.map((item, index) => (
+                      <motion.div
                         key={item.id}
-                        className="p-2.5 border-b border-border last:border-b-0"
+                        className="mb-2 last:mb-0"
                         variants={drawerMenuVariants}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
                       >
                         <a
                           href={item.href}
@@ -265,41 +278,39 @@ export function Navbar() {
                             element?.scrollIntoView({ behavior: 'smooth' });
                             setIsDrawerOpen(false);
                           }}
-                          className={`underline-offset-4 hover:text-primary/80 transition-colors ${
+                          className={`flex items-center gap-3 p-3 rounded-lg font-mono text-sm transition-all duration-300 ${
                             (item.href.startsWith('#') && pathname === '/' && activeSection === item.href.substring(1)) || (item.href === pathname)
-                              ? 'text-primary font-medium'
-                              : 'text-primary/60'
+                              ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                              : 'text-gray-300 hover:bg-gray-800/50 hover:text-cyan-400'
                           }`}
                         >
-                          {item.name}
+                          <div className="w-1 h-1 bg-current rounded-full" />
+                          {item.name.toUpperCase()}
                         </a>
-                      </motion.li>
+                      </motion.div>
                     ))}
                   </AnimatePresence>
-                </motion.ul>
-
-                
+                </motion.div>
 
                 {/* Action buttons */}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-3">
                   {user ? (
                     <Link
                       href="/dashboard"
-                      className="bg-secondary h-8 flex items-center justify-center text-sm font-normal tracking-wide rounded-full text-primary-foreground dark:text-secondary-foreground w-full px-4 shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_3px_3px_-1.5px_rgba(16,24,40,0.06),0_1px_1px_rgba(16,24,40,0.08)] border border-white/[0.12] hover:bg-secondary/80 transition-all ease-out active:scale-95"
+                      className="flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg text-white font-mono text-sm hover:from-cyan-500 hover:to-purple-500 transition-all duration-300 shadow-lg"
                     >
-                      Dashboard
+                      <Power className="w-4 h-4" />
+                      CONTROL_PANEL
                     </Link>
                   ) : (
                     <Link
                       href="/auth"
-                      className="bg-secondary h-8 flex items-center justify-center text-sm font-normal tracking-wide rounded-full text-primary-foreground dark:text-secondary-foreground w-full px-4 shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_3px_3px_-1.5px_rgba(16,24,40,0.06),0_1px_1px_rgba(16,24,40,0.08)] border border-white/[0.12] hover:bg-secondary/80 transition-all ease-out active:scale-95"
+                      className="flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg text-white font-mono text-sm hover:from-cyan-500 hover:to-purple-500 transition-all duration-300 shadow-lg"
                     >
-                      Try free
+                      <Zap className="w-4 h-4" />
+                      INITIALIZE
                     </Link>
                   )}
-                  <div className="flex justify-between">
-                    <ThemeToggle />
-                  </div>
                 </div>
               </div>
             </motion.div>

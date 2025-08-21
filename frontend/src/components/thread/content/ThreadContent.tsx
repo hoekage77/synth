@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { CircleDashed, CheckCircle, AlertTriangle } from 'lucide-react';
+import { CircleDashed, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import { UnifiedMessage, ParsedContent, ParsedMetadata } from '@/components/thread/types';
 import { FileAttachmentGrid } from '@/components/thread/file-attachment';
 import { useFilePreloader } from '@/hooks/react-query/files';
@@ -11,13 +11,13 @@ import {
     getUserFriendlyToolName,
     safeJsonParse,
 } from '@/components/thread/utils';
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
 import { AgentLoader } from './loader';
 import { AgentAvatar, AgentName } from './agent-avatar';
 import { parseXmlToolCalls, isNewXmlFormat } from '@/components/thread/tool-views/xml-parser';
 import { ShowToolStream } from './ShowToolStream';
 import { ComposioUrlDetector } from './composio-url-detector';
 import { HIDE_STREAMING_XML_TAGS } from '@/components/thread/utils';
+import { ClickableUserMessage } from './clickable-user-message';
 
 
 // Helper function to render attachments (keeping original implementation for now)
@@ -284,6 +284,7 @@ export interface ThreadContentProps {
     scrollContainerRef?: React.RefObject<HTMLDivElement>; // Add scroll container ref prop
     agentMetadata?: any; // Add agent metadata prop
     agentData?: any; // Add full agent data prop
+    onResendMessage?: (message: UnifiedMessage) => void; // Add onResendMessage prop
 }
 
 export const ThreadContent: React.FC<ThreadContentProps> = ({
@@ -304,12 +305,13 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
     debugMode = false,
     isPreviewMode = false,
     agentName = 'Xera',
-    agentAvatar = <KortixLogo size={16} />,
+    agentAvatar = null,
     emptyStateComponent,
     threadMetadata,
     scrollContainerRef,
     agentMetadata,
     agentData,
+    onResendMessage,
 }) => {
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const latestMessageRef = useRef<HTMLDivElement>(null);
@@ -368,11 +370,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                 <div className="h-5 w-5 flex items-center justify-center rounded text-xs">
                     <span className="text-lg">{agentData.avatar}</span>
                 </div>
-            ) : (
-                <div className="h-5 w-5 flex items-center justify-center rounded text-xs">
-                    <KortixLogo size={16} />
-                </div>
-            );
+            ) : null;
             return {
                 name: agentData.name || agentName,
                 avatar
@@ -387,36 +385,24 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                 <img src={profileUrl} alt={recentAssistantWithAgent.agents.name} className="h-5 w-5 rounded object-cover" />
             ) : recentAssistantWithAgent.agents.avatar && !isSunaDefaultAgent ? (
                 <>
-                    {isSunaAgent ? (
-                        <div className="h-5 w-5 flex items-center justify-center rounded text-xs">
-                            <KortixLogo size={16} />
-                        </div>
-                    ) : (
+                    {isSunaAgent ? null : (
                         <div className="h-5 w-5 flex items-center justify-center rounded text-xs">
                             <span className="text-lg">{recentAssistantWithAgent.agents.avatar}</span>
                         </div>
                     )}
                 </>
-            ) : (
-                <div className="h-5 w-5 flex items-center justify-center rounded text-xs">
-                    <KortixLogo size={16} />
-                </div>
-            );
+            ) : null;
             return {
                 name: recentAssistantWithAgent.agents.name,
                 avatar
             };
         }
 
-        // Fallback: if this is a Suna default agent, always show KortixLogo
+        // Fallback: if this is a Xera default agent, show no avatar
         if (isSunaDefaultAgent) {
             return {
                 name: agentName || 'Xera',
-                avatar: (
-                    <div className="h-5 w-5 flex items-center justify-center rounded text-xs">
-                        <KortixLogo size={16} />
-                    </div>
-                )
+                avatar: null
             };
         }
 
@@ -510,7 +496,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                     className={`${containerClassName} flex flex-col-reverse ${shouldJustifyToTop ? 'justify-end min-h-full' : ''}`}
                     onScroll={handleScroll}
                 >
-                    <div ref={contentRef} className="mx-auto max-w-3xl md:px-8 min-w-0 w-full">
+                    <div ref={contentRef} className="mx-auto max-w-4xl md:px-8 min-w-0 w-full">
                         <div className="space-y-8 min-w-0">
                             {(() => {
 
@@ -679,12 +665,18 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                     if (group.type === 'user') {
                                         const message = group.messages[0];
                                         const messageContent = (() => {
-                                            try {
-                                                const parsed = safeJsonParse<ParsedContent>(message.content, { content: message.content });
-                                                return parsed.content || message.content;
-                                            } catch {
-                                                return message.content;
+                                            // User messages are typically plain text, not JSON
+                                            // Only try to parse as JSON if it looks like JSON
+                                            if (message.content && message.content.startsWith('{') && message.content.endsWith('}')) {
+                                                try {
+                                                    const parsed = safeJsonParse<ParsedContent>(message.content, { content: message.content });
+                                                    return parsed.content || message.content;
+                                                } catch {
+                                                    return message.content;
+                                                }
                                             }
+                                            // Return plain text content
+                                            return message.content;
                                         })();
 
                                         // In debug mode, display raw message content
@@ -714,16 +706,17 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
 
                                         return (
                                             <div key={group.key} className="flex justify-end">
-                                                <div className="flex max-w-[85%] rounded-3xl rounded-br-lg bg-card border px-4 py-3 break-words overflow-hidden">
-                                                    <div className="space-y-3 min-w-0 flex-1">
-                                                        {cleanContent && (
-                                                            <ComposioUrlDetector content={cleanContent} className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere" />
-                                                        )}
-
-                                                        {/* Use the helper function to render user attachments */}
-                                                        {renderAttachments(attachments as string[], handleOpenFileViewer, sandboxId, project)}
-                                                    </div>
-                                                </div>
+                                                <ClickableUserMessage 
+                                                    message={message}
+                                                    cleanContent={cleanContent}
+                                                    attachments={attachments as string[]}
+                                                    onResend={() => {
+                                                        // Trigger resend functionality
+                                                        if (onResendMessage) {
+                                                            onResendMessage(message);
+                                                        }
+                                                    }}
+                                                />
                                             </div>
                                         );
                                     } else if (group.type === 'assistant_group') {
@@ -735,14 +728,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                             <div key={group.key} ref={groupIndex === groupedMessages.length - 1 ? latestMessageRef : null}>
                                                 <div className="flex flex-col gap-2">
                                                     <div className="flex items-center">
-                                                        <div className="rounded-md flex items-center justify-center relative">
-                                                            {groupAgentId ? (
-                                                                <AgentAvatar agentId={groupAgentId} size={20} className="h-5 w-5" />
-                                                            ) : (
-                                                                getAgentInfo().avatar
-                                                            )}
-                                                        </div>
-                                                        <p className='ml-2 text-sm text-muted-foreground'>
+                                                        <p className='text-sm text-muted-foreground'>
                                                             {groupAgentId ? (
                                                                 <AgentName agentId={groupAgentId} fallback={getAgentInfo().name} />
                                                             ) : (
@@ -876,7 +862,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                                                         return (
                                                                             <>
                                                                                 {textBeforeTag && (
-                                                                                    <ComposioUrlDetector content={textBeforeTag} className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere" />
+                                                                                    <ComposioUrlDetector content={textBeforeTag} className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3" />
                                                                                 )}
                                                                                 {showCursor && (
                                                                                     <span className="inline-block h-4 w-0.5 bg-primary ml-0.5 -mb-1 animate-pulse" />
@@ -939,7 +925,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                                                                 ) : (
                                                                                     <>
                                                                                         {textBeforeTag && (
-                                                                                            <ComposioUrlDetector content={textBeforeTag} className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere" />
+                                                                                            <ComposioUrlDetector content={textBeforeTag} className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3" />
                                                                                         )}
                                                                                         {showCursor && (
                                                                                             <span className="inline-block h-4 w-0.5 bg-primary ml-0.5 -mb-1 animate-pulse" />
@@ -1007,8 +993,8 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
 
                                         {/* Tool call content */}
                                         <div className="space-y-2">
-                                            <div className="animate-shimmer inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium text-primary bg-primary/10 rounded-md border border-primary/20">
-                                                <CircleDashed className="h-3.5 w-3.5 text-primary flex-shrink-0 animate-spin animation-duration-2000" />
+                                            <div className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium text-primary bg-primary/10 rounded-md border border-primary/20">
+                                                <Loader2 className="h-3.5 w-3.5 text-primary flex-shrink-0 animate-spin" />
                                                 <span className="font-mono text-xs text-primary">
                                                     {currentToolCall.name || 'Using Tool'}
                                                 </span>

@@ -370,6 +370,85 @@ export default function ThreadPage({
     [threadId, project?.account_id, addUserMessageMutation, startAgentMutation, setMessages, setBillingData, setShowBillingAlert, setAgentRunId],
   );
 
+  const handleResendMessage = useCallback(async (message: UnifiedMessage) => {
+    if (!message.message_id) {
+      toast.error('Message not found.');
+      return;
+    }
+
+    setIsSending(true);
+    setMessages(prev => prev.map(m => m.message_id === message.message_id ? { ...m, is_llm_message: true } : m));
+
+    try {
+      const messagePromise = addUserMessageMutation.mutateAsync({
+        threadId,
+        message: message.content,
+      });
+
+      const agentPromise = startAgentMutation.mutateAsync({
+        threadId,
+        options: {
+          agent_id: selectedAgentId,
+          enable_thinking: false, // Disable thinking for resend
+        },
+      });
+
+      const results = await Promise.allSettled([messagePromise, agentPromise]);
+
+      if (results[0].status === 'rejected') {
+        const reason = results[0].reason;
+        console.error("Failed to resend message:", reason);
+        throw new Error(`Failed to resend message: ${reason?.message || reason}`);
+      }
+
+      if (results[1].status === 'rejected') {
+        const error = results[1].reason;
+        console.error("Failed to start agent for resend:", error);
+
+        if (error instanceof BillingError) {
+          setBillingData({
+            currentUsage: error.detail.currentUsage as number | undefined,
+            limit: error.detail.limit as number | undefined,
+            message: error.detail.message || 'Monthly usage limit reached. Please upgrade.',
+            accountId: project?.account_id || null
+          });
+          setShowBillingAlert(true);
+
+          setMessages(prev => prev.filter(m => m.message_id !== message.message_id));
+          return;
+        }
+
+        if (error instanceof AgentRunLimitError) {
+          const { running_thread_ids, running_count } = error.detail;
+
+          setAgentLimitData({
+            runningCount: running_count,
+            runningThreadIds: running_thread_ids,
+          });
+          setShowAgentLimitDialog(true);
+
+          setMessages(prev => prev.filter(m => m.message_id !== message.message_id));
+          return;
+        }
+
+        throw new Error(`Failed to start agent for resend: ${error?.message || error}`);
+      }
+
+      const agentResult = results[1].value;
+      setUserInitiatedRun(true);
+      setAgentRunId(agentResult.agent_run_id);
+
+    } catch (err) {
+      console.error('Error resending message or starting agent:', err);
+      if (!(err instanceof BillingError) && !(err instanceof AgentRunLimitError)) {
+        toast.error(err instanceof Error ? err.message : 'Operation failed');
+      }
+      setMessages(prev => prev.map(m => m.message_id === message.message_id ? { ...m, is_llm_message: false } : m));
+    } finally {
+      setIsSending(false);
+    }
+  }, [threadId, project?.account_id, addUserMessageMutation, startAgentMutation, setMessages, setBillingData, setShowBillingAlert, setAgentRunId, selectedAgentId, messages]);
+
   const handleStopAgent = useCallback(async () => {
     setAgentStatus('idle');
 
@@ -691,6 +770,7 @@ export default function ThreadPage({
           agentMetadata={agent?.metadata}
           agentData={agent}
           scrollContainerRef={scrollContainerRef}
+          onResendMessage={handleResendMessage}
         />
 
 

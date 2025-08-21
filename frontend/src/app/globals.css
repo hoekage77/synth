@@ -5,6 +5,24 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Custom scrollbar hiding for better UX */
+.scrollbar-hide {
+  /* Firefox */
+  scrollbar-width: none;
+  /* IE and Edge */
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  /* Chrome, Safari and Opera */
+  display: none;
+}
+
+/* Ensure smooth scrolling behavior */
+.scrollbar-hide {
+  scroll-behavior: smooth;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

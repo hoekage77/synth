@@ -41,7 +41,6 @@ export const metadata: Metadata = {
     'web scraping',
     'file management',
     'AI assistant',
-    'open source',
     'research',
     'data analysis',
   ],
@@ -66,9 +65,9 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'Xera - Open Source Generalist AI Worker',
+    title: 'Xera - AI Worker',
     description:
-      'Xera is a fully open source AI assistant that helps you accomplish real-world tasks with ease through natural conversation.',
+      'Xera is an AI assistant that helps you accomplish real-world tasks with ease through natural conversation.',
     url: siteConfig.url,
     siteName: 'Xera',
     images: [
@@ -76,7 +75,7 @@ export const metadata: Metadata = {
         url: '/banner.png',
         width: 1200,
         height: 630,
-        alt: 'Xera - Generalist AI Worker',
+        alt: 'Xera - AI Worker',
         type: 'image/png',
       },
     ],
@@ -85,7 +84,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Xera - Generalist AI Worker',
+    title: 'Xera - AI Worker',
     description:
       'Xera is an autonomous AI assistant that helps you accomplish real-world tasks with ease through natural conversation.',
     creator: '@x',
@@ -95,7 +94,7 @@ export const metadata: Metadata = {
         url: '/banner.png',
         width: 1200,
         height: 630,
-        alt: 'Xera - Open Source Generalist AI Worker',
+        alt: 'Xera - AI Worker',
       },
     ],
   },

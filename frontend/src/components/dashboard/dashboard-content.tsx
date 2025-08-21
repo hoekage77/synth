@@ -33,7 +33,6 @@ import { useAgentSelection } from '@/lib/stores/agent-selection-store';
 import { Examples } from './examples';
 import { useThreadQuery } from '@/hooks/react-query/threads/use-threads';
 import { normalizeFilenameToNFC } from '@/lib/utils/unicode';
-import { KortixLogo } from '../sidebar/kortix-logo';
 import { AgentRunLimitDialog } from '@/components/thread/agent-run-limit-dialog';
 import { useFeatureFlag } from '@/lib/feature-flags';
 import { CustomAgentsSection } from './custom-agents-section';
@@ -219,83 +218,93 @@ export function DashboardContent() {
   }, [autoSubmit, inputValue, isSubmitting]);
 
   return (
-    <>
-      <ModalProviders />
-      <div className="flex flex-col h-screen w-full overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent">
-        {isMobile && (
-          <div className="absolute top-4 left-4 z-10">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setOpenMobile(true)}
-                >
-                  <Menu className="h-4 w-4" />
-                  <span className="sr-only">Open menu</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Open menu</TooltipContent>
-            </Tooltip>
+    <div className="flex flex-col min-h-screen bg-background">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
+        <div className="w-full max-w-4xl mx-auto">
+            {/* Futuristic Welcome Section */}
+            <div className="text-center mb-12">
+              <div className="relative">
+                {/* Glowing background effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-cyan-500/20 rounded-3xl blur-3xl" />
+                
+                {/* Main welcome container */}
+                <div className="relative bg-gradient-to-br from-background/80 via-background/60 to-background/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+                  {/* Animated accent line */}
+                  <div className="w-24 h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 mx-auto mb-6 rounded-full animate-pulse" />
+                  
+                  {/* Main heading with gradient text */}
+                  <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                    Welcome to the Future
+                  </h1>
+                  
+                  {/* Subtitle with modern styling */}
+                  <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                    Your AI-powered workspace is ready. Describe your vision and watch it come to life.
+                  </p>
+                  
+                  {/* Futuristic accent elements */}
+                  <div className="flex items-center justify-center gap-4 mt-6">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Main Chat Input */}
+          <div className="w-full">
+            <ChatInput
+              ref={chatInputRef}
+              onSubmit={handleSubmit}
+              placeholder="Describe what you need help with..."
+              loading={isSubmitting}
+              disabled={isSubmitting}
+              value={inputValue}
+              onChange={setInputValue}
+              onFileBrowse={() => {}}
+              selectedAgentId={selectedAgentId}
+              onAgentSelect={setSelectedAgent}
+              agentName={displayName}
+              messages={[]}
+              bgColor="bg-card"
+              toolCalls={[]}
+              toolCallIndex={0}
+              showToolPreview={false}
+              onExpandToolPreview={() => {}}
+              isLoggedIn={true}
+              enableAdvancedConfig={customAgentsEnabled}
+              onConfigureAgent={(agentId) => router.push(`/agents/config/${agentId}`)}
+              hideAgentSelection={false}
+              defaultShowSnackbar="tokens"
+              showToLowCreditUsers={true}
+              agentMetadata={{ is_suna_default: isSunaAgent }}
+              showScrollToBottomIndicator={false}
+              onScrollToBottom={() => {}}
+            />
           </div>
-        )}
-        {customAgentsEnabled && (
-          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-10">
-            <ReleaseBadge text="Custom Agents, Playbooks, and more!" link="/agents?tab=my-agents" />
+
+          {/* Examples Section */}
+          <div className="mt-8">
+            <Examples />
           </div>
-        )}
-        <div className={cn(
-          "flex flex-col min-h-screen px-4 items-center justify-center",
-          // customAgentsEnabled ? "items-center pt-20" : "items-center justify-center"
-        )}>
-          <div className="w-[650px] max-w-[90%]">
-            <div className="flex flex-col items-center text-center w-full">
-              <p className="tracking-tight text-3xl font-normal text-muted-foreground/80 mt-2">
-                What would you like to do today?
-              </p>
+
+          {/* Custom Agents Section */}
+          {customAgentsEnabled && (
+            <div className="mt-12">
+              <CustomAgentsSection />
             </div>
-            <div className={cn(
-              "w-full mb-2",
-              "max-w-full",
-              "sm:max-w-3xl"
-            )}>
-              <ChatInput
-                ref={chatInputRef}
-                onSubmit={handleSubmit}
-                loading={isSubmitting}
-                placeholder="Describe what you need help with..."
-                value={inputValue}
-                onChange={setInputValue}
-                hideAttachments={false}
-                selectedAgentId={selectedAgentId}
-                onAgentSelect={setSelectedAgent}
-                enableAdvancedConfig={true}
-                onConfigureAgent={(agentId) => router.push(`/agents/config/${agentId}`)}
-              />
-            </div>
-            <div className="w-full pt-4">
-              <Examples onSelectPrompt={setInputValue} count={4} />
-            </div>
-          </div>
-          
-          {/* {customAgentsEnabled && (
-            <div className="w-full max-w-none mt-16 mb-8">
-              <CustomAgentsSection 
-                onAgentSelect={setSelectedAgent}
-              />
-            </div>
-          )} */}
+          )}
         </div>
-        <BillingErrorAlert
-          message={billingError?.message}
-          currentUsage={billingError?.currentUsage}
-          limit={billingError?.limit}
-          accountId={personalAccount?.account_id}
-          onDismiss={clearBillingError}
-          isOpen={!!billingError}
-        />
       </div>
+      <BillingErrorAlert
+        message={billingError?.message}
+        currentUsage={billingError?.currentUsage}
+        limit={billingError?.limit}
+        accountId={personalAccount?.account_id}
+        onDismiss={clearBillingError}
+        isOpen={!!billingError}
+      />
 
       {agentLimitData && (
         <AgentRunLimitDialog
@@ -306,6 +315,6 @@ export function DashboardContent() {
           projectId={undefined}
         />
       )}
-    </>
+    </div>
   );
 }

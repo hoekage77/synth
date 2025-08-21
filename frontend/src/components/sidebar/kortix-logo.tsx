@@ -4,10 +4,11 @@ import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
-interface KortixLogoProps {
+interface XeraLogoProps {
   size?: number;
 }
-export function KortixLogo({ size = 24 }: KortixLogoProps) {
+
+export function XeraLogo({ size = 32 }: XeraLogoProps) {
   const { theme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -16,18 +17,17 @@ export function KortixLogo({ size = 24 }: KortixLogoProps) {
     setMounted(true);
   }, []);
 
-  const shouldInvert = mounted && (
+  const isDarkMode = mounted && (
     theme === 'dark' || (theme === 'system' && systemTheme === 'dark')
   );
 
   return (
     <Image
-        src="/kortix-symbol.svg"
-        alt="Kortix"
-        width={size}
-        height={size}
-        className={`${shouldInvert ? 'invert' : ''} flex-shrink-0`}
-        style={{ width: size, height: size, minWidth: size, minHeight: size }}
-      />
+      src={isDarkMode ? "/xera-logo-white.svg" : "/xera-logo.svg"}
+      alt="Xera"
+      width={size * 3.6}
+      height={size * 3.6}
+      className="transition-all duration-300"
+    />
   );
 }

@@ -59,16 +59,16 @@ export interface PricingTier {
 
 export const siteConfig = {
   name: 'Xera',
-  description: 'The Generalist AI Worker that can act on your behalf.',
+  description: 'The AI Worker that can act on your behalf.',
   cta: 'Start Free',
   url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-  keywords: ['AI Worker', 'Generalist AI', 'Open Source AI', 'Autonomous Agent'],
+  keywords: ['AI Worker',  'Autonomous Agent'],
   links: {
-    email: 'support@kortix.ai',
-    twitter: 'https://x.com/kortixai',
+    email: 'support@xera.cc',
+    twitter: 'https://x.com/xera',
     // discord: 'https://discord.gg/kortixai',
-    github: 'https://github.com/Kortix-ai/Suna',
-    instagram: 'https://instagram.com/kortixai',
+    github: 'https://github.com/xera-ai/xera',
+    instagram: 'https://instagram.com/xera.cc',
   },
   nav: {
     links: [
@@ -103,12 +103,12 @@ export const siteConfig = {
         />
       </svg>
     ),
-    badge: '100% OPEN SOURCE',
-    githubUrl: 'https://github.com/kortix-ai/suna',
-    title: 'Kortix – Build, manage and train your AI Workforce.',
+    badge: '100% agentic',
+    githubUrl: 'https://github.com/xera-ai/xera',
+    title: 'Xera – Build, manage and train your AI Workforce.',
     description:
-      'Kortix – open-source platform to build, manage and train your AI Workforce.',
-    inputPlaceholder: 'Ask Suna to...',
+      'Xera – build, manage and train your AI workforce.',
+    inputPlaceholder: 'Ask Xera to...',
   },
   cloudPricingItems: [
     {
@@ -914,7 +914,7 @@ export const siteConfig = {
   pricing: {
     title: 'Open Source & Free Forever',
     description:
-      'Xera is 100% open source and free to use. No hidden fees, no premium features locked behind paywalls.',
+      'Xera is free to use. No hidden fees, no premium features locked behind paywalls.',
     pricingItems: [
       {
         name: 'Community',
@@ -929,7 +929,7 @@ export const siteConfig = {
           'Community support',
         ],
         description: 'Perfect for individual users and developers',
-        buttonText: 'Hire Suna',
+        buttonText: 'Hire Xera',
         buttonColor: 'bg-accent text-primary',
         isPopular: false,
       },
@@ -1195,21 +1195,21 @@ export const siteConfig = {
       },
       {
         id: 3,
-        question: 'Is Xera really free?',
+        question: 'What makes Xera different from other AI platforms?',
         answer:
-          'Yes, Xera is completely free and open source. We believe in democratizing AI technology and making it accessible to everyone. You can use it, modify it, and contribute to its development without any cost.',
+          'Xera is a premium AI agent platform that combines enterprise-grade capabilities with cutting-edge AI technology. We offer advanced features, dedicated support, and custom integrations that go beyond basic AI assistants, making it ideal for businesses and power users.',
       },
       {
         id: 4,
-        question: 'Can I integrate Suna with my existing tools?',
+        question: 'Can I integrate Xera with my existing tools?',
         answer:
           'Yes, Xera is designed to be highly compatible with popular tools and platforms. We offer APIs and pre-built integrations for seamless connection with your existing workflow tools and systems.',
       },
       {
         id: 5,
-        question: 'How can I contribute to Xera?',
+        question: 'What support options are available?',
         answer:
-          'You can contribute to Xera by submitting pull requests on GitHub, reporting bugs, suggesting new features, or helping with documentation. Join our Discord community to connect with other contributors and Hire Suna.',
+          'Xera offers multiple support tiers including community support, priority support for premium users, and dedicated account management for enterprise customers. Our team is committed to ensuring your success with the platform.',
       },
       {
         id: 6,

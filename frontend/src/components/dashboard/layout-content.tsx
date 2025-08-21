@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { SidebarLeft } from '@/components/sidebar/sidebar-left';
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 // import { PricingAlert } from "@/components/billing/pricing-alert"
 import { MaintenanceAlert } from '@/components/maintenance-alert';
 import { useAccounts } from '@/hooks/use-accounts';
@@ -99,12 +99,17 @@ export default function DashboardLayoutContent({
 
   return (
     <DeleteOperationProvider>
-      <SidebarProvider>
-        <SidebarLeft />
-        <SidebarInset>
-          {mantenanceBanner}
-          <div className="bg-background">{children}</div>
-        </SidebarInset>
+      <SidebarProvider defaultOpen={false}>
+        <div className="relative w-full h-full">
+          {/* Sidebar overlays on top */}
+          <SidebarLeft />
+          
+          {/* Main content area - full width, not affected by sidebar */}
+          <main className="w-full h-full bg-background">
+            {mantenanceBanner}
+            <div className="w-full h-full">{children}</div>
+          </main>
+        </div>
 
         {/* <PricingAlert 
         open={showPricingAlert} 
