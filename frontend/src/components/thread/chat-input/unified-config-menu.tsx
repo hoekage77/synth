@@ -37,6 +37,8 @@ type UnifiedConfigMenuProps = {
     // Agent
     selectedAgentId?: string;
     onAgentSelect?: (agentId: string | undefined) => void;
+    hideAgentSelection?: boolean;
+    isSunaAgent?: boolean;
 
     // Model
     selectedModel: string;
@@ -52,6 +54,8 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
     isLoggedIn = true,
     selectedAgentId,
     onAgentSelect,
+    hideAgentSelection = false,
+    isSunaAgent = false,
     selectedModel,
     onModelChange,
     modelOptions,
@@ -278,7 +282,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
             </DropdownMenu>
 
             {/* Agent Selector */}
-            {onAgentSelect && (
+            {!hideAgentSelection && onAgentSelect && (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
@@ -374,6 +378,7 @@ const GuestMenu: React.FC<UnifiedConfigMenuProps> = ({
     onModelChange,
     modelOptions,
     canAccessModel,
+    hideAgentSelection = false,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -540,28 +545,30 @@ const GuestMenu: React.FC<UnifiedConfigMenuProps> = ({
             </DropdownMenu>
 
             {/* Agent Selector - Disabled for guests */}
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <span className="inline-flex">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-9 px-3 bg-transparent border-2 border-border rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 flex items-center gap-1.5 cursor-not-allowed opacity-80 pointer-events-none"
-                                disabled
-                            >
-                                <div className="flex items-center gap-2">
-                                    <span className="font-medium text-sm">Xera</span>
-                                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                                </div>
-                            </Button>
-                        </span>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-xs">
-                        <p>Log in to change agent</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+            {!hideAgentSelection && (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="inline-flex">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-9 px-3 bg-transparent border-2 border-border rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 flex items-center gap-1.5 cursor-not-allowed opacity-80 pointer-events-none"
+                                    disabled
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-medium text-sm">Xera</span>
+                                        <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                                    </div>
+                                </Button>
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs">
+                            <p>Log in to change agent</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )}
         </div>
     );
 };

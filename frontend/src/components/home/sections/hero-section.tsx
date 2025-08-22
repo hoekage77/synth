@@ -785,9 +785,6 @@ export function HeroSection() {
                               refreshCustomModels={refreshCustomModels}
                               selectedAgentId={selectedAgentId}
                               onAgentSelect={handleAgentSelect}
-                              enableAdvancedConfig={false}
-                              hideAgentSelection={true}
-                              isSunaAgent={false}
                             />
                             
                             {/* Debug info */}
