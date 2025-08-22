@@ -38,6 +38,7 @@ import { useFeatureFlag } from '@/lib/feature-flags';
 import { CustomAgentsSection } from './custom-agents-section';
 import { toast } from 'sonner';
 import { ReleaseBadge } from '../auth/release-badge';
+import { Ripple } from '@/components/ui/ripple';
 
 const PENDING_PROMPT_KEY = 'pendingAgentPrompt';
 
@@ -219,82 +220,164 @@ export function DashboardContent() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
+      <div className="flex-1 flex flex-col items-center justify-center p-3 sm:p-4 md:p-8">
         <div className="w-full max-w-4xl mx-auto">
-            {/* Futuristic Welcome Section */}
-            <div className="text-center mb-12">
-              <div className="relative">
-                {/* Glowing background effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-cyan-500/20 rounded-3xl blur-3xl" />
-                
-                {/* Main welcome container */}
-                <div className="relative bg-gradient-to-br from-background/80 via-background/60 to-background/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
-                  {/* Animated accent line */}
-                  <div className="w-24 h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 mx-auto mb-6 rounded-full animate-pulse" />
-                  
-                  {/* Main heading with gradient text */}
-                  <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                    Welcome to the Future
-                  </h1>
-                  
-                  {/* Subtitle with modern styling */}
-                  <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                    Your AI-powered workspace is ready. Describe your vision and watch it come to life.
-                  </p>
-                  
-                  {/* Futuristic accent elements */}
-                  <div className="flex items-center justify-center gap-4 mt-6">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                </div>
+          {/* Sleek ChatGPT-5 Inspired Design */}
+          <div className="space-y-8 mb-8">
+            {/* Hero Section - Minimal and Elegant */}
+            <div className="text-center space-y-6">
+              {/* Subtle gradient accent */}
+              <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-gray-400 to-transparent mx-auto opacity-60 animate-pulse"></div>
+              
+              {/* Main heading - Clean and modern */}
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-foreground animate-in fade-in duration-1000">
+                Welcome to{' '}
+                <span className="font-medium bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-gray-100 dark:via-gray-300 dark:to-gray-100 bg-clip-text text-transparent">
+                  Xera
+                </span>
+              </h1>
+              
+              {/* Subtitle - Minimal and elegant */}
+              <p className="text-base sm:text-lg text-muted-foreground font-light max-w-2xl mx-auto leading-relaxed animate-in fade-in duration-1000 delay-200">
+                Your AI workspace is ready. Start a conversation or explore what's possible.
+              </p>
+            </div>
+
+            {/* Main Chat Input - Centered and Prominent */}
+            <div className="w-full max-w-2xl mx-auto">
+              {/* Custom ChatGPT-5 inspired styling */}
+              <style jsx>{`
+                .chatgpt5-input .bg-background {
+                  background: transparent !important;
+                }
+                .chatgpt5-input .border {
+                  border: 1px solid hsl(var(--border) / 0.2) !important;
+                  border-radius: 24px !important;
+                  background: hsl(var(--background)) !important;
+                  backdrop-filter: blur(20px) !important;
+                  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.08) !important;
+                }
+                .chatgpt5-input .border:hover {
+                  border-color: hsl(var(--border) / 0.4) !important;
+                  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.12) !important;
+                }
+                .chatgpt5-input textarea {
+                  font-size: 16px !important;
+                  line-height: 1.5 !important;
+                  padding: 16px 20px !important;
+                }
+                .chatgpt5-input textarea::placeholder {
+                  color: hsl(var(--muted-foreground) / 0.6) !important;
+                  font-weight: 400 !important;
+                }
+                .chatgpt5-input button[type="submit"] {
+                  background: hsl(var(--foreground)) !important;
+                  color: hsl(var(--background)) !important;
+                  border-radius: 16px !important;
+                  width: 32px !important;
+                  height: 32px !important;
+                  transition: all 0.2s ease !important;
+                }
+                .chatgpt5-input button[type="submit"]:hover {
+                  transform: scale(1.05) !important;
+                  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+                }
+                .chatgpt5-input button[type="submit"]:disabled {
+                  opacity: 0.4 !important;
+                  transform: none !important;
+                }
+              `}</style>
+              
+              <div className="chatgpt5-input">
+                <ChatInput
+                  ref={chatInputRef}
+                  onSubmit={handleSubmit}
+                  placeholder="Message Xera..."
+                  loading={isSubmitting}
+                  disabled={isSubmitting}
+                  value={inputValue}
+                  onChange={setInputValue}
+                  onFileBrowse={() => {}}
+                  selectedAgentId={selectedAgentId}
+                  onAgentSelect={setSelectedAgent}
+                  agentName={displayName}
+                  messages={[]}
+                  bgColor="bg-background"
+                  toolCalls={[]}
+                  toolCallIndex={0}
+                  showToolPreview={false}
+                  onExpandToolPreview={() => {}}
+                  onStopAgent={() => {}}
+                  isAgentRunning={false}
+                  autoFocus={false}
+                  hideAttachments={true}
+                  hideAgentSelection={true}
+                  defaultShowSnackbar={false}
+                  showToLowCreditUsers={false}
+                  agentMetadata={{}}
+                  showScrollToBottomIndicator={false}
+                  onScrollToBottom={() => {}}
+                  isLoggedIn={true}
+                  enableAdvancedConfig={false}
+                  onConfigureAgent={() => {}}
+                  sandboxId={undefined}
+                />
               </div>
             </div>
 
-            {/* Main Chat Input */}
-          <div className="w-full">
-            <ChatInput
-              ref={chatInputRef}
-              onSubmit={handleSubmit}
-              placeholder="Describe what you need help with..."
-              loading={isSubmitting}
-              disabled={isSubmitting}
-              value={inputValue}
-              onChange={setInputValue}
-              onFileBrowse={() => {}}
-              selectedAgentId={selectedAgentId}
-              onAgentSelect={setSelectedAgent}
-              agentName={displayName}
-              messages={[]}
-              bgColor="bg-card"
-              toolCalls={[]}
-              toolCallIndex={0}
-              showToolPreview={false}
-              onExpandToolPreview={() => {}}
-              isLoggedIn={true}
-              enableAdvancedConfig={customAgentsEnabled}
-              onConfigureAgent={(agentId) => router.push(`/agents/config/${agentId}`)}
-              hideAgentSelection={false}
-              defaultShowSnackbar="tokens"
-              showToLowCreditUsers={true}
-              agentMetadata={{ is_suna_default: isSunaAgent }}
-              showScrollToBottomIndicator={false}
-              onScrollToBottom={() => {}}
-            />
-          </div>
-
-          {/* Examples Section */}
-          <div className="mt-8">
-            <Examples />
-          </div>
-
-          {/* Custom Agents Section */}
-          {customAgentsEnabled && (
-            <div className="mt-12">
-              <CustomAgentsSection />
+            {/* Quick Actions - Subtle and Elegant */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 animate-in fade-in duration-1000 delay-300">
+              <Button 
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-300 hover:scale-105"
+                onClick={() => router.push('/agents')}
+              >
+                Browse Agents
+              </Button>
+              <div className="w-1 h-1 bg-muted-foreground/30 rounded-full animate-pulse"></div>
+              <Button 
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-300 hover:scale-105"
+                onClick={() => router.push('/agents/config/new')}
+              >
+                Create Agent
+              </Button>
             </div>
-          )}
+          </div>
+
+          {/* Subtle Stats Section - Minimal and Informative */}
+          <div className="max-w-2xl mx-auto animate-in fade-in duration-1000 delay-500">
+            <div className="grid grid-cols-3 gap-8 py-6 border-t border-border/20">
+              <div className="text-center group">
+                <div className="text-lg font-medium text-foreground group-hover:scale-105 transition-transform duration-200">
+                  {agents.length}
+                </div>
+                <div className="text-xs text-muted-foreground font-light uppercase tracking-wider">
+                  Agents
+                </div>
+              </div>
+              
+              <div className="text-center group">
+                <div className="text-lg font-medium text-foreground group-hover:scale-105 transition-transform duration-200">
+                  {threadQuery.data?.messages?.length || 0}
+                </div>
+                <div className="text-xs text-muted-foreground font-light uppercase tracking-wider">
+                  Messages
+                </div>
+              </div>
+              
+              <div className="text-center group">
+                <div className="text-lg font-medium text-foreground group-hover:scale-105 transition-transform duration-200">
+                  {customAgentsEnabled ? 'Yes' : 'No'}
+                </div>
+                <div className="text-xs text-muted-foreground font-light uppercase tracking-wider">
+                  Custom
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <BillingErrorAlert

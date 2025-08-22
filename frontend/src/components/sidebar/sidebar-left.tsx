@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Bot, Menu, Store, Plus, Zap, Plug, ChevronRight, Loader2, Cpu, Power, Terminal, PanelLeft } from 'lucide-react';
+import { Bot, Menu, Store, Plus, Zap, Plug, ChevronRight, Loader2, Cpu, Power, Terminal, PanelLeft, Network } from 'lucide-react';
 
 import { NavUserWithTeams } from '@/components/sidebar/nav-user-with-teams';
 import { NavAgents } from '@/components/sidebar/nav-agents';
@@ -30,7 +30,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { NewAgentDialog } from '@/components/agents/new-agent-dialog';
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import {
@@ -43,15 +42,18 @@ import { cn } from '@/lib/utils';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useFeatureFlags } from '@/lib/feature-flags';
 import { useTheme } from 'next-themes';
-import posthog from 'posthog-js';
+import { NewAgentDialog } from '@/components/agents/new-agent-dialog';
 import { motion } from 'motion/react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/AuthProvider';
+import posthog from 'posthog-js';
 
 export function SidebarLeft({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
   const { state, setOpen } = useSidebar();
   const [showNewAgentDialog, setShowNewAgentDialog] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const { user } = useAuth();
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -60,8 +62,9 @@ export function SidebarLeft({
   const { theme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
-  // After mount, we can access the theme
+  // After mount, we can access the theme and ensure mobile detection is working
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -72,11 +75,6 @@ export function SidebarLeft({
 
   useEffect(() => {
     const supabase = createClient();
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    getUser();
   }, []);
 
   // Click outside handler to collapse sidebar
@@ -107,79 +105,73 @@ export function SidebarLeft({
   };
 
   return (
-    <Sidebar ref={sidebarRef} className="bg-black border-r border-blue-500/30 scrollbar-hide fixed left-0 top-0 h-full z-50 shadow-2xl">
-      <SidebarHeader className="border-b border-blue-500/20 bg-black/80 backdrop-blur-sm">
-        <div className="flex h-16 items-center px-4">
-          <Link href="/dashboard" className="flex items-center gap-3 group">
-            {state === 'collapsed' ? (
-              <div className="w-6 h-6 flex items-center justify-center">
-                <span className="text-2xl font-bold text-white font-mono">X</span>
+    <Sidebar ref={sidebarRef} className="bg-background/95 backdrop-blur-xl border-r border-border/20 scrollbar-hide fixed left-0 top-0 h-full z-50 shadow-lg">
+      <SidebarHeader className="border-b border-border/20 bg-background/95 backdrop-blur-xl">
+        <div className="flex items-center gap-3 px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-foreground to-foreground/80 rounded-lg flex items-center justify-center">
+              <span className="text-background font-semibold text-sm">X</span>
+            </div>
+            {state !== 'collapsed' && (
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-foreground">Xera</span>
+                <span className="text-xs text-muted-foreground/70 font-light">AI Platform</span>
               </div>
-            ) : (
-              <span className="text-xl font-bold text-white font-mono">XERA</span>
             )}
-          </Link>
+          </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="bg-black/60 scrollbar-hide overflow-y-auto">
+      <SidebarContent className="bg-background/95 backdrop-blur-xl scrollbar-hide overflow-y-auto border-r border-border/20">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-blue-400 font-mono text-xs tracking-wider px-4 py-1">
-            System Navigation
+          <SidebarGroupLabel className="text-muted-foreground/70 font-light text-xs tracking-wide px-4 py-2">
+            Quick Actions
           </SidebarGroupLabel>
           
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton 
-                asChild 
-                isActive={pathname === '/agents'}
-                className={cn(
-                  "transition-all duration-300 text-sm tracking-wide",
-                  {
-                    'bg-gradient-to-r from-blue-600/20 to-cyan-600/20 text-blue-400 border border-blue-500/30': pathname === '/agents',
-                    'hover:bg-gradient-to-r hover:from-blue-600/10 hover:to-cyan-600/10 text-gray-300 hover:text-blue-400': pathname !== '/agents',
-                  }
-                )}
+                onClick={() => router.push('/dashboard')}
+                className="transition-all duration-200 text-sm tracking-wide text-muted-foreground hover:text-foreground hover:bg-muted/20 rounded-lg mx-2 font-light"
               >
-                <Link href="/agents">
-                  <Bot className="h-4 w-4 mr-2" />
-                  <span>AI Agents</span>
-                </Link>
+                <Plus className="h-4 w-4 mr-2 text-muted-foreground/70" />
+                <span>New Chat</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                onClick={handleNewAgentClick}
+                className="transition-all duration-200 text-sm tracking-wide text-muted-foreground hover:text-foreground hover:bg-muted/20 rounded-lg mx-2 font-light"
+              >
+                <Plus className="h-4 w-4 mr-2 text-muted-foreground/70" />
+                <span>Create Agent</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
-        <SidebarGroup className="mt-2">
-          <SidebarGroupLabel className="text-blue-400 font-mono text-xs tracking-wider px-4 py-1">
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-muted-foreground/70 font-light text-xs tracking-wide px-4 py-2">
             Agent Management
           </SidebarGroupLabel>
           
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton 
-                onClick={handleNewAgentClick}
-                className="transition-all duration-300 text-sm tracking-wide text-gray-300 hover:text-blue-400 hover:bg-gradient-to-r hover:from-blue-600/10 hover:to-cyan-600/10"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                <span>Create Agent</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            
-            <SidebarMenuItem>
-              <SidebarMenuButton 
                 asChild 
                 isActive={pathname === '/agents'}
                 className={cn(
-                  "transition-all duration-300 text-sm tracking-wide",
+                  "transition-all duration-200 text-sm tracking-wide rounded-lg mx-2",
                   {
-                    'bg-gradient-to-r from-blue-600/20 to-cyan-600/20 text-blue-400 border border-blue-500/30': pathname === '/agents',
-                    'hover:bg-gradient-to-r hover:from-blue-600/10 hover:to-cyan-600/10 text-gray-300 hover:text-blue-400': pathname !== '/agents',
-                  }
+                    'bg-muted/30 text-foreground': pathname === '/agents',
+                    'text-muted-foreground hover:text-foreground hover:bg-muted/20': pathname !== '/agents',
+                  },
+                  "font-light"
                 )}
               >
                 <Link href="/agents">
-                  <Bot className="h-4 w-4 mr-2" />
+                  <Bot className="h-4 w-4 mr-2 text-muted-foreground/70" />
                   <span>AI Agents</span>
                 </Link>
               </SidebarMenuButton>
@@ -188,8 +180,8 @@ export function SidebarLeft({
         </SidebarGroup>
 
         {!flagsLoading && customAgentsEnabled && (
-          <SidebarGroup className="mt-2">
-            <SidebarGroupLabel className="text-blue-400 font-mono text-xs tracking-wider px-4 py-1">
+          <SidebarGroup className="mt-0.5">
+            <SidebarGroupLabel className="text-muted-foreground/70 font-light text-xs tracking-wide px-4 py-2">
               Integrations
             </SidebarGroupLabel>
             
@@ -197,17 +189,18 @@ export function SidebarLeft({
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   asChild 
-                  isActive={pathname === '/settings/credentials'}
+                  isActive={pathname === '/agents/mcp'}
                   className={cn(
-                    "transition-all duration-300 text-sm tracking-wide",
+                    "transition-all duration-200 text-sm tracking-wide rounded-lg mx-2",
                     {
-                      'bg-gradient-to-r from-blue-600/20 to-cyan-600/20 text-blue-400 border border-blue-500/30': pathname === '/settings/credentials',
-                      'hover:bg-gradient-to-r hover:from-blue-600/10 hover:to-cyan-600/10 text-gray-300 hover:text-blue-400': pathname !== '/settings/credentials',
-                    }
+                      'bg-muted/30 text-foreground': pathname === '/agents/mcp',
+                      'text-muted-foreground hover:text-foreground hover:bg-muted/20': pathname !== '/agents/mcp',
+                    },
+                    "font-light"
                   )}
                 >
-                  <Link href="/settings/credentials">
-                    <Zap className="h-4 w-4 mr-2" />
+                  <Link href="/agents/mcp">
+                    <Network className="h-4 w-4 mr-2 text-muted-foreground/70" />
                     <span>MCP Hub</span>
                   </Link>
                 </SidebarMenuButton>
@@ -215,29 +208,42 @@ export function SidebarLeft({
             </SidebarMenu>
           </SidebarGroup>
         )}
-        
-        <div className="mt-2">
+
+        <SidebarGroup className="mt-0.5">
+          <SidebarGroupLabel className="text-muted-foreground/70 font-light text-xs tracking-wide px-4 py-2">
+            Message History
+          </SidebarGroupLabel>
+          
           <NavAgents />
-        </div>
+        </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="border-t border-blue-500/20 bg-black/80 backdrop-blur-sm scrollbar-hide">
+      <SidebarFooter className="border-t border-border/20 bg-background/95 backdrop-blur-xl">
         {state === 'collapsed' && (
           <div className="mt-2 flex justify-center">
             <Tooltip>
               <TooltipTrigger asChild>
                 <SidebarTrigger className={cn(
-                  "h-8 w-8 transition-all duration-300 text-blue-400 hover:text-blue-300 hover:bg-blue-600/20",
-                  "border border-blue-500/30 rounded-lg"
+                  "h-8 w-8 transition-all duration-200 text-muted-foreground/70 hover:text-foreground hover:bg-muted/20",
+                  "border border-border/30 rounded-lg"
                 )} />
               </TooltipTrigger>
-              <TooltipContent className="bg-black border border-blue-500/30 text-blue-400 font-mono">
+              <TooltipContent className="bg-background/95 border border-border/20 text-foreground font-light">
                 Expand Sidebar (Cmd+B)
               </TooltipContent>
             </Tooltip>
           </div>
         )}
-        {user && <NavUserWithTeams user={user} />}
+        
+        {state !== 'collapsed' && user && (
+          <div className="p-4">
+            <NavUserWithTeams user={{ 
+              name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User', 
+              email: user.email || 'user@example.com', 
+              avatar: user.user_metadata?.avatar_url || '' 
+            }} />
+          </div>
+        )}
       </SidebarFooter>
       <SidebarRail />
       <NewAgentDialog 
@@ -245,8 +251,8 @@ export function SidebarLeft({
         onOpenChange={setShowNewAgentDialog}
       />
       
-      {/* Floating Sidebar Toggle Button - appears when sidebar is hidden */}
-      {state === 'collapsed' && (
+      {/* Desktop Floating Sidebar Toggle Button - appears when sidebar is collapsed */}
+      {!isMobile && state === 'collapsed' && (
         <motion.button
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -260,12 +266,12 @@ export function SidebarLeft({
       )}
       
       {/* Mobile Sidebar Toggle Button - always visible on mobile */}
-      {isMobile && (
+      {isMobile && mounted && (
         <motion.button
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           onClick={() => setOpen(true)}
-          className="fixed left-4 top-4 z-50 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white p-3 rounded-full shadow-2xl shadow-blue-500/25 border border-blue-500/30 backdrop-blur-sm transition-all duration-300 hover:scale-110 md:hidden"
+          className="fixed left-4 top-4 z-50 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white p-3 rounded-full shadow-2xl shadow-blue-500/25 border border-blue-500/30 backdrop-blur-sm transition-all duration-300 hover:scale-110 md:hidden lg:hidden xl:hidden 2xl:hidden"
           title="Open Sidebar"
         >
           <Menu className="w-5 h-5" />

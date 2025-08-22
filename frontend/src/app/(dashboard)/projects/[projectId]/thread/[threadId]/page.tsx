@@ -376,13 +376,25 @@ export default function ThreadPage({
       return;
     }
 
+    // Extract clean text content from the message
+    let cleanContent = message.content;
+    if (typeof message.content === 'string' && message.content.startsWith('{') && message.content.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(message.content);
+        cleanContent = parsed.content || message.content;
+      } catch {
+        // If parsing fails, use the raw content
+        cleanContent = message.content;
+      }
+    }
+
     setIsSending(true);
     setMessages(prev => prev.map(m => m.message_id === message.message_id ? { ...m, is_llm_message: true } : m));
 
     try {
       const messagePromise = addUserMessageMutation.mutateAsync({
         threadId,
-        message: message.content,
+        message: cleanContent, // Use clean content instead of raw message.content
       });
 
       const agentPromise = startAgentMutation.mutateAsync({
