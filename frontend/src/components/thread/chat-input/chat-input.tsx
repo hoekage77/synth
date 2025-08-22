@@ -19,7 +19,7 @@ import { useFileDelete } from '@/hooks/react-query/files';
 import { useQueryClient } from '@tanstack/react-query';
 import { ToolCallInput } from './floating-tool-preview';
 import { ChatSnack } from './chat-snack';
-import { Brain, Zap, Workflow, Database, ArrowDown } from 'lucide-react';
+import { Brain, Zap, Workflow, Database, ArrowDown, Network } from 'lucide-react';
 import { useComposioToolkitIcon } from '@/hooks/react-query/composio/use-composio';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -424,72 +424,78 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
           </Card>
 
           {enableAdvancedConfig && selectedAgentId && (
-            <div className="w-full max-w-4xl mx-auto -mt-12 relative z-20">
-              <div className="bg-gradient-to-b from-transparent via-transparent to-muted/30 pt-8 pb-2 px-4 rounded-b-3xl border border-t-0 border-border/50 transition-all duration-300 ease-out">
-                <div className="flex items-center justify-between gap-1 overflow-x-auto scrollbar-none relative">
+            <div className="w-full max-w-4xl mx-auto mt-4 relative z-10">
+              <div className="bg-background/95 backdrop-blur-xl border border-border/20 rounded-xl shadow-lg transition-all duration-300 ease-out p-4">
+                <div className="flex items-center justify-center gap-3 overflow-x-auto scrollbar-none">
                   <button
                     onClick={() => setRegistryDialogOpen(true)}
-                    className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-all duration-200 px-2.5 py-1.5 rounded-lg hover:bg-muted/50 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer relative pointer-events-auto"
+                    className="flex items-center gap-2.5 text-muted-foreground/70 hover:text-foreground transition-all duration-200 px-4 py-2.5 rounded-lg hover:bg-muted/20 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer font-light text-sm tracking-wide"
                   >
-                    <div className="flex items-center -space-x-0.5">
+                    <div className="flex items-center -space-x-1">
                       {googleDriveIcon?.icon_url && slackIcon?.icon_url && notionIcon?.icon_url ? (
                         <>
-                          <div className="w-4 h-4 bg-white dark:bg-muted border border-border rounded-full flex items-center justify-center shadow-sm">
+                          <div className="w-5 h-5 bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-border/20 rounded-lg flex items-center justify-center shadow-sm">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={googleDriveIcon.icon_url} className="w-2.5 h-2.5" alt="Google Drive" />
+                            <img src={googleDriveIcon.icon_url} className="w-3 h-3" alt="Google Drive" />
                           </div>
-                          <div className="w-4 h-4 bg-white dark:bg-muted border border-border rounded-full flex items-center justify-center shadow-sm">
+                          <div className="w-5 h-5 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-border/20 rounded-lg flex items-center justify-center shadow-sm">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={slackIcon.icon_url} className="w-2.5 h-2.5" alt="Slack" />
+                            <img src={slackIcon.icon_url} className="w-3 h-3" alt="Slack" />
                           </div>
-                          <div className="w-4 h-4 bg-white dark:bg-muted border border-border rounded-full flex items-center justify-center shadow-sm">
+                          <div className="w-5 h-5 bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-border/20 rounded-lg flex items-center justify-center shadow-sm">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={notionIcon.icon_url} className="w-2.5 h-2.5" alt="Notion" />
+                            <img src={notionIcon.icon_url} className="w-3 h-3" alt="Notion" />
                           </div>
                         </>
                       ) : (
-                        <>
-                          <div className="w-4 h-4 bg-white dark:bg-muted border border-border rounded-full flex items-center justify-center shadow-sm">
-                            <Skeleton className="w-2.5 h-2.5 rounded" />
-                          </div>
-                          <div className="w-4 h-4 bg-white dark:bg-muted border border-border rounded-full flex items-center justify-center shadow-sm">
-                            <Skeleton className="w-2.5 h-2.5 rounded" />
-                          </div>
-                          <div className="w-4 h-4 bg-white dark:bg-muted border border-border rounded-full flex items-center justify-center shadow-sm">
-                            <Skeleton className="w-2.5 h-2.5 rounded" />
-                          </div>
-                        </>
+                        <div className="w-5 h-5 bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-border/20 rounded-lg flex items-center justify-center shadow-sm">
+                          <Network className="h-3 w-3 text-blue-500/70" />
+                        </div>
                       )}
                     </div>
-                    <span className="text-xs font-medium">Integrations</span>
+                    <span className="font-medium">Integrations</span>
                   </button>
+                  
+                  <div className="w-px h-6 bg-border/20" />
+                  
                   <button
                     onClick={() => router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=instructions`)}
-                    className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-all duration-200 px-2.5 py-1.5 rounded-lg hover:bg-muted/50 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer relative pointer-events-auto"
+                    className="flex items-center gap-2.5 text-muted-foreground/70 hover:text-foreground transition-all duration-200 px-4 py-2.5 rounded-lg hover:bg-muted/20 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer font-light text-sm tracking-wide"
                   >
-                    <Brain className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span className="text-xs font-medium">Instructions</span>
+                    <div className="w-5 h-5 bg-gradient-to-br from-indigo-500/20 to-blue-500/20 border border-border/20 rounded-lg flex items-center justify-center">
+                      <Brain className="h-3 w-3 text-indigo-500/70" />
+                    </div>
+                    <span className="font-medium">Instructions</span>
                   </button>
+                  
                   <button
                     onClick={() => router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=knowledge`)}
-                    className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-all duration-200 px-2.5 py-1.5 rounded-lg hover:bg-muted/50 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer relative pointer-events-auto"
+                    className="flex items-center gap-2.5 text-muted-foreground/70 hover:text-foreground transition-all duration-200 px-4 py-2.5 rounded-lg hover:bg-muted/20 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer font-light text-sm tracking-wide"
                   >
-                    <Database className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span className="text-xs font-medium">Knowledge</span>
+                    <div className="w-5 h-5 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-border/20 rounded-lg flex items-center justify-center">
+                      <Database className="h-3 w-3 text-green-500/70" />
+                    </div>
+                    <span className="font-medium">Knowledge</span>
                   </button>
+                  
                   <button
                     onClick={() => router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=triggers`)}
-                    className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-all duration-200 px-2.5 py-1.5 rounded-lg hover:bg-muted/50 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer relative pointer-events-auto"
+                    className="flex items-center gap-2.5 text-muted-foreground/70 hover:text-foreground transition-all duration-200 px-4 py-2.5 rounded-lg hover:bg-muted/20 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer font-light text-sm tracking-wide"
                   >
-                    <Zap className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span className="text-xs font-medium">Triggers</span>
+                    <div className="w-5 h-5 bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-border/20 rounded-lg flex items-center justify-center">
+                      <Zap className="h-3 w-3 text-orange-500/70" />
+                    </div>
+                    <span className="font-medium">Triggers</span>
                   </button>
+                  
                   <button
                     onClick={() => router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=workflows`)}
-                    className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-all duration-200 px-2.5 py-1.5 rounded-lg hover:bg-muted/50 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer relative pointer-events-auto"
+                    className="flex items-center gap-2.5 text-muted-foreground/70 hover:text-foreground transition-all duration-200 px-4 py-2.5 rounded-lg hover:bg-muted/20 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer font-light text-sm tracking-wide"
                   >
-                    <Workflow className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span className="text-xs font-medium">Playbooks</span>
+                    <div className="w-5 h-5 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-border/20 rounded-lg flex items-center justify-center">
+                      <Workflow className="h-3 w-3 text-purple-500/70" />
+                    </div>
+                    <span className="font-medium">Playbooks</span>
                   </button>
                 </div>
               </div>

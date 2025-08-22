@@ -39,6 +39,7 @@ import { CustomAgentsSection } from './custom-agents-section';
 import { toast } from 'sonner';
 import { ReleaseBadge } from '../auth/release-badge';
 import { Ripple } from '@/components/ui/ripple';
+import { Bot, Cpu, Network, BookOpen, ArrowUpRight, Zap, FileText, Play } from 'lucide-react';
 
 const PENDING_PROMPT_KEY = 'pendingAgentPrompt';
 
@@ -277,6 +278,8 @@ export function DashboardContent() {
                   width: 32px !important;
                   height: 32px !important;
                   transition: all 0.2s ease !important;
+                  position: relative !important;
+                  margin: 0 !important;
                 }
                 .chatgpt5-input button[type="submit"]:hover {
                   transform: scale(1.05) !important;
@@ -285,6 +288,10 @@ export function DashboardContent() {
                 .chatgpt5-input button[type="submit"]:disabled {
                   opacity: 0.4 !important;
                   transform: none !important;
+                }
+                .chatgpt5-input .flex.items-center.justify-between {
+                  position: relative !important;
+                  z-index: 1 !important;
                 }
               `}</style>
               
@@ -311,71 +318,41 @@ export function DashboardContent() {
                   isAgentRunning={false}
                   autoFocus={false}
                   hideAttachments={true}
-                  hideAgentSelection={true}
+                  hideAgentSelection={false}
                   defaultShowSnackbar={false}
                   showToLowCreditUsers={false}
                   agentMetadata={{}}
                   showScrollToBottomIndicator={false}
                   onScrollToBottom={() => {}}
                   isLoggedIn={true}
-                  enableAdvancedConfig={false}
+                  enableAdvancedConfig={true}
                   onConfigureAgent={() => {}}
                   sandboxId={undefined}
                 />
               </div>
             </div>
 
-            {/* Quick Actions - Subtle and Elegant */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 animate-in fade-in duration-1000 delay-300">
-              <Button 
+            {/* Quick Actions */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 animate-in fade-in duration-1000 delay-400">
+              <Button
                 variant="ghost"
-                size="sm"
-                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-300 hover:scale-105"
-                onClick={() => router.push('/agents')}
-              >
-                Browse Agents
-              </Button>
-              <div className="w-1 h-1 bg-muted-foreground/30 rounded-full animate-pulse"></div>
-              <Button 
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-300 hover:scale-105"
                 onClick={() => router.push('/agents/config/new')}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-300 hover:scale-105"
               >
+                <Bot className="h-4 w-4 mr-2" />
                 Create Agent
               </Button>
-            </div>
-          </div>
-
-          {/* Subtle Stats Section - Minimal and Informative */}
-          <div className="max-w-2xl mx-auto animate-in fade-in duration-1000 delay-500">
-            <div className="grid grid-cols-3 gap-8 py-6 border-t border-border/20">
-              <div className="text-center group">
-                <div className="text-lg font-medium text-foreground group-hover:scale-105 transition-transform duration-200">
-                  {agents.length}
-                </div>
-                <div className="text-xs text-muted-foreground font-light uppercase tracking-wider">
-                  Agents
-                </div>
-              </div>
               
-              <div className="text-center group">
-                <div className="text-lg font-medium text-foreground group-hover:scale-105 transition-transform duration-200">
-                  {threadQuery.data?.messages?.length || 0}
-                </div>
-                <div className="text-xs text-muted-foreground font-light uppercase tracking-wider">
-                  Messages
-                </div>
-              </div>
+              <div className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-pulse" />
               
-              <div className="text-center group">
-                <div className="text-lg font-medium text-foreground group-hover:scale-105 transition-transform duration-200">
-                  {customAgentsEnabled ? 'Yes' : 'No'}
-                </div>
-                <div className="text-xs text-muted-foreground font-light uppercase tracking-wider">
-                  Custom
-                </div>
-              </div>
+              <Button
+                variant="ghost"
+                onClick={() => router.push('/agents')}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-300 hover:scale-105"
+              >
+                <Cpu className="h-4 w-4 mr-2" />
+                Manage Agents
+              </Button>
             </div>
           </div>
         </div>

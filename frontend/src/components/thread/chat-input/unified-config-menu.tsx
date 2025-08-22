@@ -14,11 +14,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Cpu, Search, Check, ChevronDown, Plus, ExternalLink, Crown } from 'lucide-react';
+import { Cpu, Search, Check, ChevronDown, Plus, ExternalLink, Crown, Bot } from 'lucide-react';
 import { useAgents } from '@/hooks/react-query/agents/use-agents';
 import { XeraLogo } from '@/components/sidebar/kortix-logo';
 import type { ModelOption, SubscriptionStatus } from './_use-model-selection';
-import { MODELS, STORAGE_KEY_CUSTOM_MODELS, STORAGE_KEY_MODEL, formatModelName, getCustomModels } from './_use-model-selection';
+import { MODELS, STORAGE_KEY_CUSTOM_MODELS, STORAGE_KEY_MODEL, formatModelName, getCustomModels, MODEL_ICONS } from './_use-model-selection';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { isLocalMode } from '@/lib/config';
@@ -149,192 +149,260 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
 
     return (
         <>
-            {/* Enhanced Model Selector - ChatGPT-5 Inspired */}
-            <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-                <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                            "h-8 px-3 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200",
-                            "border border-border/20 hover:border-border/40 rounded-lg",
-                            "font-light text-sm tracking-wide"
-                        )}
-                        onKeyDown={handleKeyDown}
-                    >
-                        <div className="flex items-center gap-2">
-                            <Cpu className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span className="font-light">
-                                {currentModel?.label || 'Select Model'}
-                            </span>
-                            {isRecommended && (
-                                <Crown className="h-3 w-3 text-amber-500/70" />
-                            )}
-                            {isTopTier && (
-                                <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40" />
-                            )}
-                            <ChevronDown className="h-3 w-3 text-muted-foreground/60 transition-transform duration-200" />
-                        </div>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                    align="start" 
-                    className="w-80 max-h-[60vh] overflow-hidden border border-border/20 bg-background/95 backdrop-blur-xl shadow-lg"
-                    onKeyDown={handleKeyDown}
-                >
-                    {/* Search Header - Minimal and Clean */}
-                    <div className="p-4 border-b border-border/10">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
-                            <input
-                                ref={searchInputRef}
-                                type="text"
-                                placeholder="Search models..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-3 py-2.5 bg-transparent border-none outline-none text-sm placeholder:text-muted-foreground/60 font-light"
-                                onKeyDown={handleKeyDown}
-                            />
-                        </div>
-                    </div>
+            {/* Custom Scrollbar Styles */}
+            <style jsx>{`
+                .scrollbar-thin::-webkit-scrollbar {
+                    width: 4px;
+                }
+                .scrollbar-thin::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .scrollbar-thin::-webkit-scrollbar-thumb {
+                    background: rgba(115, 115, 115, 0.1);
+                    border-radius: 2px;
+                }
+                .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+                    background: rgba(115, 115, 115, 0.2);
+                }
+                .scrollbar-thin {
+                    scrollbar-width: thin;
+                    scrollbar-color: rgba(115, 115, 115, 0.1) transparent;
+                }
+            `}</style>
 
-                    {/* Model List */}
-                    <div className="max-h-[50vh] overflow-y-auto p-2">
-                        {filteredModels.length === 0 ? (
-                            <div className="p-6 text-center text-muted-foreground/70 font-light">
-                                No models found matching "{searchQuery}"
-                            </div>
-                        ) : (
-                            filteredModels.map((model, index) => {
-                                const isAccessible = canAccessModel(model.id);
-                                const isSelected = model.id === selectedModel;
-                                
-                                return (
-                                    <DropdownMenuItem
-                                        key={model.id}
-                                        className={cn(
-                                            "flex items-center justify-between px-3 py-2.5 cursor-pointer transition-all duration-200 rounded-lg mx-1",
-                                            isSelected ? "bg-muted/30 text-foreground" : "hover:bg-muted/20 text-muted-foreground hover:text-foreground",
-                                            !isAccessible && "opacity-40 cursor-not-allowed",
-                                            highlightedIndex === index && "bg-muted/30"
-                                        )}
-                                        onClick={() => isAccessible && handleModelSelect(model.id)}
-                                        onMouseEnter={() => setHighlightedIndex(index)}
-                                    >
-                                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                                            <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                                                <Cpu className="h-3.5 w-3.5 text-muted-foreground/70 flex-shrink-0" />
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="font-light text-sm truncate">
-                                                            {model.label}
-                                                        </span>
-                                                        {model.recommended && (
-                                                            <Crown className="h-3 w-3 text-amber-500/70 flex-shrink-0" />
-                                                        )}
-                                                        {model.top && (
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 flex-shrink-0" />
-                                                        )}
-                                                    </div>
-                                                    {model.description && (
-                                                        <p className="text-xs text-muted-foreground/60 truncate font-light">
-                                                            {model.description}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        {isSelected && (
-                                            <Check className="h-4 w-4 text-foreground flex-shrink-0" />
-                                        )}
-                                        
-                                        {!isAccessible && (
-                                            <div className="flex items-center gap-1 text-xs text-muted-foreground/60 font-light">
-                                                <Crown className="h-3 w-3" />
-                                                <span>Upgrade</span>
-                                            </div>
-                                        )}
-                                    </DropdownMenuItem>
-                                );
-                            })
-                        )}
-                    </div>
-
-                    {/* Footer Actions - Minimal and Clean */}
-                    <div className="p-4 border-t border-border/10 bg-muted/10">
-                        <div className="flex items-center justify-between text-xs text-muted-foreground/70 font-light">
-                            <span>{filteredModels.length} models available</span>
-                            {isLocalMode() && (
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-6 px-2 text-xs text-muted-foreground/70 hover:text-foreground hover:bg-muted/20 font-light"
-                                    onClick={() => setIsCustomModelDialogOpen(true)}
-                                >
-                                    <Plus className="h-3 w-3 mr-1" />
-                                    Add Custom
-                                </Button>
-                            )}
-                        </div>
-                    </div>
-                </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Agent Selector - ChatGPT-5 Inspired */}
-            {!hideAgentSelection && onAgentSelect && (
-                <DropdownMenu>
+            {/* Enhanced Model Selector and Agent Selector - Side by Side */}
+            <div className="flex items-center gap-2">
+                {/* Enhanced Model Selector - ChatGPT-5 Inspired */}
+                <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
                     <DropdownMenuTrigger asChild>
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 px-3 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 border border-border/20 hover:border-border/40 rounded-lg font-light text-sm tracking-wide"
+                            className={cn(
+                                "h-8 px-3 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200",
+                                "border border-border/20 hover:border-border/40 rounded-lg",
+                                "font-light text-sm tracking-wide"
+                            )}
+                            onKeyDown={handleKeyDown}
                         >
                             <div className="flex items-center gap-2">
+                                {/* Dynamic Model Icon */}
+                                <div className="flex items-center justify-center w-4 h-4">
+                                    {(() => {
+                                        const currentModelData = MODELS[currentModel?.id || ''];
+                                        const iconKey = currentModelData?.icon || 'custom';
+                                        const iconData = MODEL_ICONS[iconKey];
+                                        
+                                        if (iconData) {
+                                            return (
+                                                <div className={cn(
+                                                    "w-4 h-4 rounded-sm flex items-center justify-center text-xs",
+                                                    iconData.bgColor,
+                                                    iconData.borderColor,
+                                                    "border"
+                                                )}>
+                                                    {iconData.icon}
+                                                </div>
+                                            );
+                                        }
+                                        return <Cpu className="h-3.5 w-3.5 text-muted-foreground" />;
+                                    })()}
+                                </div>
                                 <span className="font-light">
-                                    {agents.find(a => a.agent_id === selectedAgentId)?.name || 'Select Agent'}
+                                    {currentModel?.label || 'Select Model'}
                                 </span>
+                                {isRecommended && (
+                                    <Crown className="h-3 w-3 text-amber-500/70" />
+                                )}
+                                {isTopTier && (
+                                    <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40" />
+                                )}
                                 <ChevronDown className="h-3 w-3 text-muted-foreground/60 transition-transform duration-200" />
                             </div>
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-64 border border-border/20 bg-background/95 backdrop-blur-xl shadow-lg">
-                        <div className="p-3">
-                            <div className="px-3 py-2 text-xs font-light text-muted-foreground/70 flex items-center justify-between">
-                                <span>Agents</span>
-                                <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-6 w-6 p-0 text-muted-foreground/70 hover:text-foreground hover:bg-muted/20"
-                                    onClick={() => { setIsOpen(false); setShowNewAgentDialog(true); }}
-                                >
-                                    <Plus className="h-3.5 w-3.5" />
-                                </Button>
+                    <DropdownMenuContent 
+                        align="start" 
+                        className="w-80 max-h-[60vh] overflow-hidden border border-border/20 bg-background/95 backdrop-blur-xl shadow-lg"
+                        onKeyDown={handleKeyDown}
+                    >
+                        {/* Search Header - Minimal and Clean */}
+                        <div className="p-4 border-b border-border/10">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+                                <input
+                                    ref={searchInputRef}
+                                    type="text"
+                                    placeholder="Search models..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full pl-9 pr-3 py-2.5 bg-transparent border-none outline-none text-sm placeholder:text-muted-foreground/60 font-light"
+                                    onKeyDown={handleKeyDown}
+                                />
                             </div>
-                            {agents.length === 0 ? (
-                                <div className="px-3 py-3 text-xs text-muted-foreground/70 font-light">No agents</div>
+                        </div>
+
+                        {/* Model List */}
+                        <div className="max-h-[50vh] overflow-y-auto p-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/30">
+                            {filteredModels.length === 0 ? (
+                                <div className="p-6 text-center text-muted-foreground/70 font-light">
+                                    No models found matching "{searchQuery}"
+                                </div>
                             ) : (
-                                <div className="max-h-[200px] overflow-y-auto">
-                                    {agents.map((agent) => (
+                                filteredModels.map((model, index) => {
+                                    const isAccessible = canAccessModel(model.id);
+                                    const isSelected = model.id === selectedModel;
+                                    
+                                    return (
                                         <DropdownMenuItem
-                                            key={agent.agent_id}
-                                            className="text-sm px-3 py-2.5 mx-1 my-0.5 flex items-center justify-between cursor-pointer rounded-lg transition-all duration-200 hover:bg-muted/20"
-                                            onClick={() => onAgentSelect(agent.agent_id)}
+                                            key={model.id}
+                                            className={cn(
+                                                "flex items-center justify-between px-3 py-2.5 cursor-pointer transition-all duration-200 rounded-lg mx-1",
+                                                isSelected ? "bg-muted/30 text-foreground" : "hover:bg-muted/20 text-muted-foreground hover:text-foreground",
+                                                !isAccessible && "opacity-40 cursor-not-allowed",
+                                                highlightedIndex === index && "bg-muted/30"
+                                            )}
+                                            onClick={() => isAccessible && handleModelSelect(model.id)}
+                                            onMouseEnter={() => setHighlightedIndex(index)}
                                         >
-                                            <div className="flex items-center gap-2 min-w-0">
-                                                <span className="truncate font-light">{agent.name}</span>
+                                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                                                    {/* Dynamic Model Icon */}
+                                                    <div className="flex items-center justify-center w-4 h-4 flex-shrink-0">
+                                                        {(() => {
+                                                            const modelData = MODELS[model.id];
+                                                            const iconKey = modelData?.icon || 'custom';
+                                                            const iconData = MODEL_ICONS[iconKey];
+                                                            
+                                                            if (iconData) {
+                                                                return (
+                                                                    <div className={cn(
+                                                                        "w-4 h-4 rounded-sm flex items-center justify-center text-xs",
+                                                                        iconData.bgColor,
+                                                                        iconData.borderColor,
+                                                                        "border"
+                                                                    )}>
+                                                                        {iconData.icon}
+                                                                    </div>
+                                                                );
+                                                            }
+                                                            return <Cpu className="h-3.5 w-3.5 text-muted-foreground/70" />;
+                                                        })()}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-light text-sm truncate">
+                                                                {model.label}
+                                                            </span>
+                                                            {model.recommended && (
+                                                                <Crown className="h-3 w-3 text-amber-500/70 flex-shrink-0" />
+                                                            )}
+                                                            {model.top && (
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 flex-shrink-0" />
+                                                            )}
+                                                        </div>
+                                                        {model.description && (
+                                                            <p className="text-xs text-muted-foreground/60 truncate font-light">
+                                                                {model.description}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
-                                            {selectedAgentId === agent.agent_id && (
-                                                <Check className="h-4 w-4 text-foreground" />
+                                            
+                                            {isSelected && (
+                                                <Check className="h-4 w-4 text-foreground flex-shrink-0" />
+                                            )}
+                                            
+                                            {!isAccessible && (
+                                                <div className="flex items-center gap-1 text-xs text-muted-foreground/60 font-light">
+                                                    <Crown className="h-3 w-3" />
+                                                    <span>Upgrade</span>
+                                                </div>
                                             )}
                                         </DropdownMenuItem>
-                                    ))}
-                                </div>
+                                    );
+                                })
                             )}
+                        </div>
+
+                        {/* Footer Actions - Minimal and Clean */}
+                        <div className="p-4 border-t border-border/10 bg-muted/10">
+                            <div className="flex items-center justify-between text-xs text-muted-foreground/70 font-light">
+                                <span>{filteredModels.length} models available</span>
+                                {isLocalMode() && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 px-2 text-xs text-muted-foreground/70 hover:text-foreground hover:bg-muted/20 font-light"
+                                        onClick={() => setIsCustomModelDialogOpen(true)}
+                                    >
+                                        <Plus className="h-3 w-3 mr-1" />
+                                        Add Custom
+                                    </Button>
+                                )}
+                            </div>
                         </div>
                     </DropdownMenuContent>
                 </DropdownMenu>
-            )}
+
+                {/* Agent Selector - ChatGPT-5 Inspired */}
+                {!hideAgentSelection && onAgentSelect && (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 px-3 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 border border-border/20 hover:border-border/40 rounded-lg font-light text-sm tracking-wide"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Bot className="h-3.5 w-3.5 text-muted-foreground" />
+                                    <span className="font-light">
+                                        {agents.find(a => a.agent_id === selectedAgentId)?.name || 'Select Agent'}
+                                    </span>
+                                    <ChevronDown className="h-3 w-3 text-muted-foreground/60 transition-transform duration-200" />
+                                </div>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-64 border border-border/20 bg-background/95 backdrop-blur-xl shadow-lg">
+                            <div className="p-3">
+                                <div className="px-3 py-2 text-xs font-light text-muted-foreground/70 flex items-center justify-between">
+                                    <span>Agents</span>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 w-6 p-0 text-muted-foreground/70 hover:text-foreground hover:bg-muted/20"
+                                        onClick={() => { setIsOpen(false); setShowNewAgentDialog(true); }}
+                                    >
+                                        <Plus className="h-3.5 w-3.5" />
+                                    </Button>
+                                </div>
+                                {agents.length === 0 ? (
+                                    <div className="px-3 py-3 text-xs text-muted-foreground/70 font-light">No agents</div>
+                                ) : (
+                                    <div className="max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/30">
+                                        {agents.map((agent) => (
+                                            <DropdownMenuItem
+                                                key={agent.agent_id}
+                                                className="text-sm px-3 py-2.5 mx-1 my-0.5 flex items-center justify-between cursor-pointer rounded-lg transition-all duration-200 hover:bg-muted/20"
+                                                onClick={() => onAgentSelect(agent.agent_id)}
+                                            >
+                                                <div className="flex items-center gap-2 min-w-0">
+                                                    <Bot className="h-3.5 w-3.5 text-muted-foreground/70 flex-shrink-0" />
+                                                    <span className="truncate font-light">{agent.name}</span>
+                                                </div>
+                                                {selectedAgentId === agent.agent_id && (
+                                                    <Check className="h-4 w-4 text-foreground" />
+                                                )}
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
+            </div>
 
             {/* Integrations manager */}
             <Dialog open={integrationsOpen} onOpenChange={setIntegrationsOpen}>
@@ -482,7 +550,7 @@ const GuestMenu: React.FC<UnifiedConfigMenuProps> = ({
                     </div>
 
                     {/* Model List */}
-                    <div className="max-h-[50vh] overflow-y-auto">
+                    <div className="max-h-[50vh] overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/30">
                         {filteredModels.length === 0 ? (
                             <div className="p-4 text-center text-muted-foreground">
                                 No models found matching "{searchQuery}"

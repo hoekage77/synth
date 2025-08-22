@@ -184,157 +184,99 @@ export function NavUserWithTeams({
         <SidebarMenuItem>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <SidebarMenuButton className={cn(
-                "transition-all duration-300 font-semibold text-sm tracking-wide",
-                isDarkMode 
-                  ? "text-white hover:text-gray-200 hover:bg-cyan-600/10" 
-                  : "text-gray-800 hover:text-gray-900 hover:bg-cyan-600/10"
-              )}>
-                <Avatar className="h-6 w-6 mr-2">
+              <SidebarMenuButton className="transition-all duration-200 text-sm tracking-wide text-muted-foreground hover:text-foreground hover:bg-muted/20 rounded-lg mx-2 font-light">
+                <Avatar className="h-8 w-8 mr-3">
                   <AvatarImage src={user?.avatar || ''} alt={user?.name || 'User'} />
-                  <AvatarFallback className={cn(
-                    "font-semibold text-xs",
-                    isDarkMode ? "bg-cyan-600/20 text-white" : "bg-cyan-600/20 text-gray-800"
-                  )}>
+                  <AvatarFallback className="font-light text-sm bg-muted/30 text-foreground">
                     {getInitials(user?.name || '')}
                   </AvatarFallback>
                 </Avatar>
                 <span className="flex items-center justify-between w-full">
-                  {user?.name || 'User'}
-                  <ChevronDown className="h-4 w-4 ml-auto" />
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium text-foreground">{user?.name || 'User'}</span>
+                    <span className="text-xs text-muted-foreground/70 font-light">View Profile</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 ml-auto text-muted-foreground/70" />
                 </span>
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className={cn(
-                "w-56 rounded-lg transition-all duration-300",
-                isDarkMode
-                  ? "bg-black/95 border-cyan-500/30 backdrop-blur-lg"
-                  : "bg-white/95 border-cyan-500/30 backdrop-blur-lg"
-              )}
+              className="w-64 rounded-lg transition-all duration-200 border border-border/20 bg-background/95 backdrop-blur-xl shadow-lg"
               side="right"
               align="start"
             >
-              <DropdownMenuLabel className={cn(
-                "transition-all duration-300 font-semibold text-xs tracking-wide",
-                isDarkMode ? "text-white" : "text-gray-800"
-              )}>
-                PERSONAL_ACCOUNT
+              <DropdownMenuLabel className="transition-all duration-200 font-light text-xs tracking-wide text-muted-foreground/70 px-3 py-2">
+                Account Settings
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="bg-border/20" />
               <DropdownMenuGroup>
                 {defaultTeams.map((team) => (
                   <DropdownMenuItem
                     key={team.account_id}
                     onClick={() => handleTeamSelect(team)}
-                    className={cn(
-                      "transition-all duration-300 font-semibold text-xs tracking-wide cursor-pointer",
-                      isDarkMode
-                        ? "hover:bg-cyan-600/10 text-white hover:text-gray-200"
-                        : "hover:bg-cyan-600/10 text-gray-800 hover:text-gray-900"
-                    )}
+                    className="transition-all duration-200 font-light text-xs tracking-wide cursor-pointer hover:bg-muted/20 px-3 py-2.5"
                   >
-                    <Avatar className="h-6 w-6 mr-2">
+                    <Avatar className="h-6 w-6 mr-3">
                       <AvatarImage src={user?.avatar || ''} alt={user?.name || 'User'} />
-                      <AvatarFallback className={cn(
-                        "font-semibold text-xs",
-                        isDarkMode ? "bg-cyan-600/20 text-white" : "bg-cyan-600/20 text-gray-800"
-                      )}>
+                      <AvatarFallback className="font-light text-xs bg-muted/30 text-foreground">
                         {getInitials(user?.name || '')}
                       </AvatarFallback>
                     </Avatar>
-                    <span>{team.name}</span>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-foreground">{team.name}</span>
+                      <span className="text-xs text-muted-foreground/70">Switch Account</span>
+                    </div>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuGroup>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="bg-border/20" />
               <DropdownMenuItem
                 onClick={() => setShowNewTeamDialog(true)}
-                className={cn(
-                  "transition-all duration-300 font-semibold text-xs tracking-wide cursor-pointer",
-                  isDarkMode
-                    ? "hover:bg-cyan-600/10 text-white hover:text-gray-200"
-                    : "hover:bg-cyan-600/10 text-gray-800 hover:text-gray-900"
-                )}
+                className="transition-all duration-200 font-light text-xs tracking-wide cursor-pointer hover:bg-muted/20 px-3 py-2.5"
               >
-                <Plus className="mr-2 h-4 w-4" />
-                <span>CREATE_TEAM</span>
+                <Plus className="mr-3 h-4 w-4 text-muted-foreground/70" />
+                <span>Create New Team</span>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="bg-border/20" />
               <DropdownMenuItem
                 onClick={() => router.push('/settings/billing')}
-                className={cn(
-                  "transition-all duration-300 font-semibold text-xs tracking-wide cursor-pointer",
-                  isDarkMode
-                    ? "hover:bg-cyan-600/10 text-white hover:text-gray-200"
-                    : "hover:bg-cyan-600/10 text-gray-800 hover:text-gray-900"
-                )}
+                className="transition-all duration-200 font-light text-xs tracking-wide cursor-pointer hover:bg-muted/20 px-3 py-2.5"
               >
-                <CreditCard className="mr-2 h-4 w-4" />
-                <span>BILLING</span>
+                <CreditCard className="mr-3 h-4 w-4 text-muted-foreground/70" />
+                <span>Billing & Subscription</span>
               </DropdownMenuItem>
               {!flagLoading && customAgentsEnabled && (
                 <DropdownMenuItem
                   onClick={() => router.push('/settings/api-keys')}
-                  className={cn(
-                    "transition-all duration-300 font-semibold text-xs tracking-wide cursor-pointer",
-                    isDarkMode
-                      ? "hover:bg-cyan-600/10 text-white hover:text-gray-200"
-                      : "hover:bg-cyan-600/10 text-gray-800 hover:text-gray-900"
-                  )}
+                  className="transition-all duration-200 font-light text-xs tracking-wide cursor-pointer hover:bg-muted/20 px-3 py-2.5"
                 >
-                  <Key className="mr-2 h-4 w-4" />
-                  <span>API_KEYS</span>
+                  <Key className="mr-3 h-4 w-4 text-muted-foreground/70" />
+                  <span>API Keys</span>
                 </DropdownMenuItem>
               )}
               {isLocalMode() && (
                 <DropdownMenuItem
                   onClick={() => router.push('/settings/env-manager')}
-                  className={cn(
-                    "transition-all duration-300 font-semibold text-xs tracking-wide cursor-pointer",
-                    isDarkMode
-                      ? "hover:bg-cyan-600/10 text-white hover:text-gray-200"
-                      : "hover:bg-cyan-600/10 text-gray-800 hover:text-gray-900"
-                  )}
+                  className="transition-all duration-200 font-light text-xs tracking-wide cursor-pointer hover:bg-muted/20 px-3 py-2.5"
                 >
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>LOCAL_ENV_MANAGER</span>
+                  <Settings className="mr-3 h-4 w-4 text-muted-foreground/70" />
+                  <span>Environment Manager</span>
                 </DropdownMenuItem>
               )}
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="bg-border/20" />
               <DropdownMenuItem
-                onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
-                className={cn(
-                  "transition-all duration-300 font-semibold text-xs tracking-wide cursor-pointer",
-                  isDarkMode
-                    ? "hover:bg-cyan-600/10 text-white hover:text-gray-200"
-                    : "hover:bg-cyan-600/10 text-gray-800 hover:text-gray-900"
-                )}
+                onClick={() => router.push('/settings')}
+                className="transition-all duration-200 font-light text-xs tracking-wide cursor-pointer hover:bg-muted/20 px-3 py-2.5"
               >
-                {theme === 'dark' ? (
-                  <>
-                    <Sun className="mr-2 h-4 w-4" />
-                    <span>LIGHT_MODE</span>
-                  </>
-                ) : (
-                  <>
-                    <Moon className="mr-2 h-4 w-4" />
-                    <span>DARK_MODE</span>
-                  </>
-                )}
+                <Settings className="mr-3 h-4 w-4 text-muted-foreground/70" />
+                <span>Settings</span>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                className={cn(
-                  'text-destructive focus:text-destructive focus:bg-destructive/10 transition-all duration-300 font-semibold text-xs tracking-wide',
-                  isDarkMode 
-                    ? "hover:bg-red-600/10 text-red-400 hover:text-red-300" 
-                    : "hover:bg-red-600/10 text-red-600 hover:text-red-500"
-                )} 
+              <DropdownMenuItem
                 onClick={handleLogout}
+                className="transition-all duration-200 font-light text-xs tracking-wide cursor-pointer hover:bg-red-500/10 text-red-500/70 hover:text-red-500 px-3 py-2.5"
               >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>LOGOUT</span>
+                <LogOut className="mr-3 h-4 w-4" />
+                <span>Sign Out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

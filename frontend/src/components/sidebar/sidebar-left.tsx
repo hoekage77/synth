@@ -138,16 +138,6 @@ export function SidebarLeft({
                 <span>New Chat</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            
-            <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={handleNewAgentClick}
-                className="transition-all duration-200 text-sm tracking-wide text-muted-foreground hover:text-foreground hover:bg-muted/20 rounded-lg mx-2 font-light"
-              >
-                <Plus className="h-4 w-4 mr-2 text-muted-foreground/70" />
-                <span>Create Agent</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
@@ -172,42 +162,32 @@ export function SidebarLeft({
               >
                 <Link href="/agents">
                   <Bot className="h-4 w-4 mr-2 text-muted-foreground/70" />
-                  <span>AI Agents</span>
+                  <span>Agent Hub</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                asChild 
+                isActive={pathname === '/agents/mcp'}
+                className={cn(
+                  "transition-all duration-200 text-sm tracking-wide rounded-lg mx-2",
+                  {
+                    'bg-muted/30 text-foreground': pathname === '/agents/mcp',
+                    'text-muted-foreground hover:text-foreground hover:bg-muted/20': pathname !== '/agents/mcp',
+                  },
+                  "font-light"
+                )}
+              >
+                <Link href="/agents/mcp">
+                  <Network className="h-4 w-4 mr-2 text-muted-foreground/70" />
+                  <span>MCP Hub</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
-
-        {!flagsLoading && customAgentsEnabled && (
-          <SidebarGroup className="mt-0.5">
-            <SidebarGroupLabel className="text-muted-foreground/70 font-light text-xs tracking-wide px-4 py-2">
-              Integrations
-            </SidebarGroupLabel>
-            
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild 
-                  isActive={pathname === '/agents/mcp'}
-                  className={cn(
-                    "transition-all duration-200 text-sm tracking-wide rounded-lg mx-2",
-                    {
-                      'bg-muted/30 text-foreground': pathname === '/agents/mcp',
-                      'text-muted-foreground hover:text-foreground hover:bg-muted/20': pathname !== '/agents/mcp',
-                    },
-                    "font-light"
-                  )}
-                >
-                  <Link href="/agents/mcp">
-                    <Network className="h-4 w-4 mr-2 text-muted-foreground/70" />
-                    <span>MCP Hub</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
-        )}
 
         <SidebarGroup className="mt-0.5">
           <SidebarGroupLabel className="text-muted-foreground/70 font-light text-xs tracking-wide px-4 py-2">
@@ -218,9 +198,15 @@ export function SidebarLeft({
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="border-t border-border/20 bg-background/95 backdrop-blur-xl">
+      <SidebarFooter className="border-t border-border/20 bg-background/95 backdrop-blur-xl mt-auto">
         {state === 'collapsed' && (
-          <div className="mt-2 flex justify-center">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.2 }}
+            className="p-3 flex justify-center"
+          >
             <Tooltip>
               <TooltipTrigger asChild>
                 <SidebarTrigger className={cn(
@@ -232,11 +218,11 @@ export function SidebarLeft({
                 Expand Sidebar (Cmd+B)
               </TooltipContent>
             </Tooltip>
-          </div>
+          </motion.div>
         )}
         
-        {state !== 'collapsed' && user && (
-          <div className="p-4">
+        {state === 'expanded' && user && (
+          <div className="p-3">
             <NavUserWithTeams user={{ 
               name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User', 
               email: user.email || 'user@example.com', 
@@ -251,8 +237,21 @@ export function SidebarLeft({
         onOpenChange={setShowNewAgentDialog}
       />
       
-      {/* Desktop Floating Sidebar Toggle Button - appears when sidebar is collapsed */}
-      {!isMobile && state === 'collapsed' && (
+      {/* Mobile Sidebar Toggle Button - always visible on mobile */}
+      {isMobile && (
+        <motion.button
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          onClick={() => setOpen(true)}
+          className="fixed left-4 top-4 z-[9999] bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white p-3 rounded-full shadow-2xl shadow-blue-500/25 border border-blue-500/30 backdrop-blur-sm transition-all duration-300 hover:scale-110"
+          title="Open Sidebar"
+        >
+          <Menu className="w-5 h-5" />
+        </motion.button>
+      )}
+
+      {/* Fallback Button - shows when sidebar is collapsed on any device */}
+      {state === 'collapsed' && !isMobile && (
         <motion.button
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -262,19 +261,6 @@ export function SidebarLeft({
           title="Open Sidebar"
         >
           <PanelLeft className="w-6 h-6" />
-        </motion.button>
-      )}
-      
-      {/* Mobile Sidebar Toggle Button - always visible on mobile */}
-      {isMobile && mounted && (
-        <motion.button
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          onClick={() => setOpen(true)}
-          className="fixed left-4 top-4 z-50 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white p-3 rounded-full shadow-2xl shadow-blue-500/25 border border-blue-500/30 backdrop-blur-sm transition-all duration-300 hover:scale-110 md:hidden lg:hidden xl:hidden 2xl:hidden"
-          title="Open Sidebar"
-        >
-          <Menu className="w-5 h-5" />
         </motion.button>
       )}
     </Sidebar>
