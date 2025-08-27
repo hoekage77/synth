@@ -14,7 +14,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { handleFiles } from './file-upload-handler';
 import { MessageInput } from './message-input';
 import { AttachmentGroup } from '../attachment-group';
-import { useModelSelection } from './_use-model-selection';
+import { useModelSelection } from './_use-model-selection-new';
 import { useFileDelete } from '@/hooks/react-query/files';
 import { useQueryClient } from '@tanstack/react-query';
 import { ToolCallInput } from './floating-tool-preview';
@@ -25,7 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 import { IntegrationsRegistry } from '@/components/agents/integrations-registry';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useSubscriptionWithStreaming } from '@/hooks/react-query/subscriptions/use-subscriptions';
+import { useSubscriptionData } from '@/contexts/SubscriptionContext';
 import { isLocalMode } from '@/lib/config';
 import { BillingModal } from '@/components/billing/billing-modal';
 import { useRouter } from 'next/navigation';
@@ -39,7 +39,11 @@ export interface ChatInputHandles {
 export interface ChatInputProps {
   onSubmit: (
     message: string,
-    options?: { model_name?: string; enable_thinking?: boolean },
+    options?: {
+      model_name?: string;
+      enable_thinking?: boolean;
+      agent_id?: string;
+    },
   ) => void;
   placeholder?: string;
   loading?: boolean;
@@ -149,7 +153,7 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
       refreshCustomModels,
     } = useModelSelection();
 
-    const { data: subscriptionData } = useSubscriptionWithStreaming(isAgentRunning);
+    const { data: subscriptionData } = useSubscriptionData();
     const deleteFileMutation = useFileDelete();
     const queryClient = useQueryClient();
 
@@ -245,6 +249,7 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
       posthog.capture("task_prompt_submitted", { message });
 
       onSubmit(message, {
+        agent_id: selectedAgentId,
         model_name: baseModelName,
         enable_thinking: thinkingEnabled,
       });

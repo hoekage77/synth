@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SearchBar } from './search-bar';
 import { MarketplaceSectionHeader } from './marketplace-section-header';
 import { AgentCard } from './agent-card';
+import { Pagination } from '../pagination';
 
 import type { MarketplaceTemplate } from '@/components/agents/installation/types';
 
@@ -16,8 +17,6 @@ interface MarketplaceTabProps {
   setMarketplaceFilter: (value: 'all' | 'kortix' | 'community' | 'mine') => void;
   marketplaceLoading: boolean;
   allMarketplaceItems: MarketplaceTemplate[];
-  kortixTeamItems: MarketplaceTemplate[];
-  communityItems: MarketplaceTemplate[];
   mineItems: MarketplaceTemplate[];
   installingItemId: string | null;
   onInstallClick: (item: MarketplaceTemplate, e?: React.MouseEvent) => void;
@@ -25,6 +24,19 @@ interface MarketplaceTabProps {
   getItemStyling: (item: MarketplaceTemplate) => { avatar: string; color: string };
   currentUserId?: string;
   onAgentPreview?: (agent: MarketplaceTemplate) => void;
+  
+  marketplacePage: number;
+  setMarketplacePage: (page: number) => void;
+  marketplacePageSize: number;
+  onMarketplacePageSizeChange: (pageSize: number) => void;
+  marketplacePagination?: {
+    current_page: number;
+    page_size: number;
+    total_items: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+  };
 }
 
 export const MarketplaceTab = ({
@@ -34,15 +46,18 @@ export const MarketplaceTab = ({
   setMarketplaceFilter,
   marketplaceLoading,
   allMarketplaceItems,
-  kortixTeamItems,
-  communityItems,
   mineItems,
   installingItemId,
   onInstallClick,
   onDeleteTemplate,
   getItemStyling,
   currentUserId,
-  onAgentPreview
+  onAgentPreview,
+  marketplacePage,
+  setMarketplacePage,
+  marketplacePageSize,
+  onMarketplacePageSizeChange,
+  marketplacePagination
 }: MarketplaceTabProps) => {
   const handleAgentClick = (item: MarketplaceTemplate) => {
     if (onAgentPreview) {
@@ -101,50 +116,27 @@ export const MarketplaceTab = ({
         ) : (
           <div className="space-y-12">
             {marketplaceFilter === 'all' ? (
-              <>
-                {kortixTeamItems.length > 0 && (
-                  <div className="space-y-6">
-                    <MarketplaceSectionHeader
-                      title="Verified by Kortix"
-                      subtitle="Official agents, maintained and supported"
+              <div className="space-y-6">
+                {/* <MarketplaceSectionHeader
+                  title="Popular Agents"
+                  subtitle="Sorted by popularity - most downloads first"
+                /> */}
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {allMarketplaceItems.map((item) => (
+                    <AgentCard
+                      key={item.id}
+                      mode="marketplace"
+                      data={item}
+                      styling={getItemStyling(item)}
+                      isActioning={installingItemId === item.id}
+                      onPrimaryAction={onInstallClick}
+                      onDeleteAction={onDeleteTemplate}
+                      onClick={() => handleAgentClick(item)}
+                      currentUserId={currentUserId}
                     />
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                      {kortixTeamItems.map((item) => (
-                        <AgentCard
-                          key={item.id}
-                          mode="marketplace"
-                          data={item}
-                          styling={getItemStyling(item)}
-                          isActioning={installingItemId === item.id}
-                          onPrimaryAction={onInstallClick}
-                          onDeleteAction={onDeleteTemplate}
-                          onClick={() => handleAgentClick(item)}
-                          currentUserId={currentUserId}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {communityItems.length > 0 && (
-                  <div className="space-y-6">
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                      {communityItems.map((item) => (
-                        <AgentCard
-                          key={item.id}
-                          mode="marketplace"
-                          data={item}
-                          styling={getItemStyling(item)}
-                          isActioning={installingItemId === item.id}
-                          onPrimaryAction={onInstallClick}
-                          onDeleteAction={onDeleteTemplate}
-                          onClick={() => handleAgentClick(item)}
-                          currentUserId={currentUserId}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
+                  ))}
+                </div>
+              </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {allMarketplaceItems.map((item) => (
@@ -161,6 +153,20 @@ export const MarketplaceTab = ({
                   />
                 ))}
               </div>
+            )}
+            {marketplacePagination && (
+              <Pagination
+                currentPage={marketplacePagination.current_page}
+                totalPages={marketplacePagination.total_pages}
+                totalItems={marketplacePagination.total_items}
+                pageSize={marketplacePagination.page_size}
+                onPageChange={setMarketplacePage}
+                onPageSizeChange={onMarketplacePageSizeChange}
+                isLoading={marketplaceLoading}
+                showPageSizeSelector={true}
+                showJumpToPage={true}
+                showResultsInfo={true}
+              />
             )}
           </div>
         )}

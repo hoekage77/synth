@@ -2,10 +2,9 @@ import { createMutationHook, createQueryHook } from '@/hooks/use-query';
 import { useQueryClient, type UseQueryOptions } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { agentKeys } from './keys';
-import { Agent, AgentUpdateRequest, AgentsParams, createAgent, deleteAgent, getAgent, getAgents, getThreadAgent, updateAgent, AgentBuilderChatRequest, AgentBuilderStreamData, startAgentBuilderChat, getAgentBuilderChatHistory } from './utils';
+import { Agent, AgentUpdateRequest, AgentsParams, createAgent, deleteAgent, getAgent, getAgents, getThreadAgent, updateAgent } from './utils';
 import { useRef, useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { generateRandomAvatar } from '@/lib/utils/_avatar-generator';
 import { DEFAULT_AGENTPRESS_TOOLS } from '@/components/agents/tools';
 
 export const useAgents = (
@@ -66,16 +65,15 @@ export const useCreateNewAgent = () => {
   
   return createMutationHook(
     async (_: void) => {
-      const { avatar, avatar_color } = generateRandomAvatar();
-      
       const defaultAgentData = {
         name: 'New Agent',
-        description: '',
-        avatar,
-        avatar_color,
+        description: 'A newly created agent, open for configuration',
         configured_mcps: [],
         agentpress_tools: DEFAULT_AGENTPRESS_TOOLS,
         is_default: false,
+        icon_name: 'brain',
+        icon_color: '#000000',
+        icon_background: '#F3F4F6',
       };
 
       const newAgent = await createAgentMutation.mutateAsync(defaultAgentData);
@@ -219,62 +217,3 @@ export const useThreadAgent = (threadId: string) => {
     }
   )();
 };
-
-export const useAgentBuilderChat = () => {
-  const abortControllerRef = useRef<AbortController | null>(null);
-
-  const sendMessage = useCallback(async (
-    request: AgentBuilderChatRequest,
-    callbacks: {
-      onData: (data: AgentBuilderStreamData) => void;
-      onComplete: () => void;
-      onError?: (error: Error) => void;
-    }
-  ) => {
-    // Cancel any existing request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    // Create new abort controller
-    abortControllerRef.current = new AbortController();
-
-    try {
-      await startAgentBuilderChat(
-        request,
-        callbacks.onData,
-        callbacks.onComplete,
-        abortControllerRef.current.signal
-      );
-    } catch (error) {
-      if (error instanceof Error && error.name !== 'AbortError') {
-        console.error('Error in agent builder chat:', error);
-        callbacks.onError?.(error);
-      }
-    } finally {
-      abortControllerRef.current = null;
-    }
-  }, []);
-
-  const cancelStream = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-  }, []);
-
-  return {
-    sendMessage,
-    cancelStream,
-  };
-};
-
-export const useAgentBuilderChatHistory = (agentId: string) =>
-  createQueryHook(
-    agentKeys.builderChatHistory(agentId),
-    () => getAgentBuilderChatHistory(agentId),
-    {
-      enabled: !!agentId,
-      retry: 1,
-    }
-  )();

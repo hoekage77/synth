@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Bot, Menu, Store, Plus, Zap, Loader2 } from 'lucide-react';
+import { Bot, Menu, Store, Plus, Zap, ChevronRight, Loader2 } from 'lucide-react';
 
 import { NavAgents } from '@/components/sidebar/nav-agents';
 import { NavUserWithTeams } from '@/components/sidebar/nav-user-with-teams';
@@ -34,7 +34,6 @@ import { cn } from '@/lib/utils';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useFeatureFlags } from '@/lib/feature-flags';
 import posthog from 'posthog-js';
-
 // Floating mobile menu button component
 function FloatingMobileMenuButton() {
   const { setOpenMobile, openMobile } = useSidebar();
@@ -153,7 +152,14 @@ export function SidebarLeft({
             </div>
           )}
           <div className="ml-auto flex items-center gap-2">
-            {/* Sidebar trigger removed to prevent double toggles - only show in footer when collapsed */}
+            {state !== 'collapsed' && !isMobile && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarTrigger className="h-8 w-8" />
+                </TooltipTrigger>
+                <TooltipContent>Toggle sidebar (CMD+B)</TooltipContent>
+              </Tooltip>
+            )}
           </div>
         </div>
       </SidebarHeader>

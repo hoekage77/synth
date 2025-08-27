@@ -12,7 +12,6 @@ import { useAuth } from '@/components/AuthProvider';
 import { StreamlinedInstallDialog } from '@/components/agents/installation/streamlined-install-dialog';
 import type { MarketplaceTemplate } from '@/components/agents/installation/types';
 
-import { getAgentAvatar } from '../../../lib/utils/get-agent-style';
 import { AgentsParams } from '@/hooks/react-query/agents/utils';
 
 import { AgentsPageHeader } from '@/components/agents/custom-agents-page/header';
@@ -63,6 +62,7 @@ export default function AgentsPage() {
   const pathname = usePathname();
   
   const [agentsPage, setAgentsPage] = useState(1);
+  const [agentsPageSize, setAgentsPageSize] = useState(20);
   const [agentsSearchQuery, setAgentsSearchQuery] = useState('');
   const [agentsSortBy, setAgentsSortBy] = useState<AgentSortOption>('created_at');
   const [agentsSortOrder, setAgentsSortOrder] = useState<SortOrder>('desc');
@@ -74,6 +74,7 @@ export default function AgentsPage() {
   });
 
   const [marketplacePage, setMarketplacePage] = useState(1);
+  const [marketplacePageSize, setMarketplacePageSize] = useState(20);
   const [marketplaceSearchQuery, setMarketplaceSearchQuery] = useState('');
   const [marketplaceSelectedTags, setMarketplaceSelectedTags] = useState<string[]>([]);
   const [marketplaceSortBy, setMarketplaceSortBy] = useState<MarketplaceSortOption>('newest');
@@ -82,6 +83,12 @@ export default function AgentsPage() {
   const [showInstallDialog, setShowInstallDialog] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [marketplaceFilter, setMarketplaceFilter] = useState<'all' | 'kortix' | 'community' | 'mine'>('all');
+  
+  const [templatesPage, setTemplatesPage] = useState(1);
+  const [templatesPageSize, setTemplatesPageSize] = useState(20);
+  const [templatesSearchQuery, setTemplatesSearchQuery] = useState('');
+  const [templatesSortBy, setTemplatesSortBy] = useState<'created_at' | 'name' | 'download_count'>('created_at');
+  const [templatesSortOrder, setTemplatesSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const [templatesActioningId, setTemplatesActioningId] = useState<string | null>(null);
   const [publishDialog, setPublishDialog] = useState<PublishDialogData | null>(null);
@@ -98,10 +105,11 @@ export default function AgentsPage() {
   const agentsQueryParams: AgentsParams = useMemo(() => {
     const params: AgentsParams = {
       page: agentsPage,
-      limit: 20,
+      limit: agentsPageSize,
       search: agentsSearchQuery || undefined,
       sort_by: agentsSortBy,
       sort_order: agentsSortOrder,
+      content_type: "agents", // Explicitly request only agents, not templates
     };
 
     if (agentsFilters.hasDefaultAgent) {
@@ -118,18 +126,53 @@ export default function AgentsPage() {
     }
 
     return params;
-  }, [agentsPage, agentsSearchQuery, agentsSortBy, agentsSortOrder, agentsFilters]);
+  }, [agentsPage, agentsPageSize, agentsSearchQuery, agentsSortBy, agentsSortOrder, agentsFilters]);
 
-  const marketplaceQueryParams = useMemo(() => ({
-    limit: 20,
-    offset: (marketplacePage - 1) * 20,
-    search: marketplaceSearchQuery || undefined,
-    tags: marketplaceSelectedTags.length > 0 ? marketplaceSelectedTags.join(',') : undefined,
-  }), [marketplacePage, marketplaceSearchQuery, marketplaceSelectedTags]);
+  const marketplaceQueryParams = useMemo(() => {
+    const params: any = {
+      page: marketplacePage,
+      limit: marketplacePageSize,
+      search: marketplaceSearchQuery || undefined,
+      tags: marketplaceSelectedTags.length > 0 ? marketplaceSelectedTags.join(',') : undefined,
+      sort_by: "download_count",
+      sort_order: "desc"
+    };
+    
+    if (marketplaceFilter === 'kortix') {
+      params.is_kortix_team = true;
+    } else if (marketplaceFilter === 'community') {
+      params.is_kortix_team = false;
+    } else if (marketplaceFilter === 'mine') {
+      params.mine = true;
+    }
+    
+    return params;
+  }, [marketplacePage, marketplacePageSize, marketplaceSearchQuery, marketplaceSelectedTags, marketplaceFilter]);
+
+  const templatesQueryParams = useMemo(() => ({
+    page: templatesPage,
+    limit: templatesPageSize,
+    search: templatesSearchQuery || undefined,
+    sort_by: templatesSortBy,
+    sort_order: templatesSortOrder
+  }), [templatesPage, templatesPageSize, templatesSearchQuery, templatesSortBy, templatesSortOrder]);
 
   const { data: agentsResponse, isLoading: agentsLoading, error: agentsError, refetch: loadAgents } = useAgents(agentsQueryParams);
   const { data: marketplaceTemplates, isLoading: marketplaceLoading } = useMarketplaceTemplates(marketplaceQueryParams);
-  const { data: myTemplates, isLoading: templatesLoading, error: templatesError } = useMyTemplates();
+
+  const templatesAgentsQueryParams = useMemo(() => ({
+    ...agentsQueryParams,
+    page: templatesPage,
+    limit: templatesPageSize,
+    search: templatesSearchQuery || undefined,
+    sort_by: templatesSortBy,
+    sort_order: templatesSortOrder,
+    content_type: "templates"
+  }), [templatesPage, templatesPageSize, templatesSearchQuery, templatesSortBy, templatesSortOrder]);
+  
+  const { data: templatesResponse, isLoading: templatesLoading, error: templatesError } = useAgents(templatesAgentsQueryParams);
+  const myTemplates = templatesResponse?.agents;
+  const templatesPagination = templatesResponse?.pagination;
   
   const updateAgentMutation = useUpdateAgent();
   const { optimisticallyUpdateAgent, revertOptimisticUpdate } = useOptimisticAgentUpdate();
@@ -143,13 +186,10 @@ export default function AgentsPage() {
   const agents = agentsResponse?.agents || [];
   const agentsPagination = agentsResponse?.pagination;
 
-  const { kortixTeamItems, communityItems, mineItems } = useMemo(() => {
-    const kortixItems: MarketplaceTemplate[] = [];
-    const communityItems: MarketplaceTemplate[] = [];
-    const mineItems: MarketplaceTemplate[] = [];
-
-    if (marketplaceTemplates) {
-      marketplaceTemplates.forEach(template => {
+  const allMarketplaceItems = useMemo(() => {
+    const items: MarketplaceTemplate[] = [];
+    if (marketplaceTemplates?.templates) {
+      marketplaceTemplates.templates.forEach(template => {
         const item: MarketplaceTemplate = {
           id: template.template_id,
           creator_id: template.creator_id,
@@ -160,71 +200,24 @@ export default function AgentsPage() {
           creator_name: template.creator_name || 'Anonymous',
           created_at: template.created_at,
           marketplace_published_at: template.marketplace_published_at,
+          profile_image_url: template.profile_image_url,
           avatar: template.avatar,
           avatar_color: template.avatar_color,
-          profile_image_url: template.profile_image_url,
+          icon_name: template.icon_name,
+          icon_color: template.icon_color,
+          icon_background: template.icon_background,
           template_id: template.template_id,
           is_kortix_team: template.is_kortix_team,
           mcp_requirements: template.mcp_requirements,
           metadata: template.metadata,
         };
 
-        const matchesSearch = !marketplaceSearchQuery.trim() || (() => {
-          const searchLower = marketplaceSearchQuery.toLowerCase();
-          return item.name.toLowerCase().includes(searchLower) ||
-                 item.description?.toLowerCase().includes(searchLower) ||
-                 item.tags.some(tag => tag.toLowerCase().includes(searchLower)) ||
-                 item.creator_name?.toLowerCase().includes(searchLower);
-        })();
-
-        if (!matchesSearch) return;
-
-        if (user?.id === template.creator_id) {
-          mineItems.push(item);
-        }
-        
-        if (template.is_kortix_team) {
-          kortixItems.push(item);
-        } else {
-          communityItems.push(item);
-        }
+        items.push(item);
       });
     }
 
-    const sortItems = (items: MarketplaceTemplate[]) => {
-      return items.sort((a, b) => {
-        switch (marketplaceSortBy) {
-          case 'newest':
-            return new Date(b.marketplace_published_at || b.created_at).getTime() - 
-                   new Date(a.marketplace_published_at || a.created_at).getTime();
-          case 'popular':
-          case 'most_downloaded':
-            return b.download_count - a.download_count;
-          case 'name':
-            return a.name.localeCompare(b.name);
-          default:
-            return 0;
-        }
-      });
-    };
-
-    return {
-      kortixTeamItems: sortItems(kortixItems),
-      communityItems: sortItems(communityItems),
-      mineItems: sortItems(mineItems)
-    };
-  }, [marketplaceTemplates, marketplaceSortBy, user?.id, marketplaceSearchQuery]);
-
-  const allMarketplaceItems = useMemo(() => {
-    if (marketplaceFilter === 'kortix') {
-      return kortixTeamItems;
-    } else if (marketplaceFilter === 'community') {
-      return communityItems;
-    } else if (marketplaceFilter === 'mine') {
-      return mineItems;
-    }
-    return [...kortixTeamItems, ...communityItems];
-  }, [kortixTeamItems, communityItems, mineItems, marketplaceFilter]);
+    return items;
+  }, [marketplaceTemplates]);
 
   const handleTabChange = (newTab: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -252,7 +245,10 @@ export default function AgentsPage() {
     setMarketplacePage(1);
   }, [marketplaceSearchQuery, marketplaceSelectedTags, marketplaceSortBy]);
 
-  // Handle shared agent URL parameter
+  useEffect(() => {
+    setTemplatesPage(1);
+  }, [templatesSearchQuery, templatesSortBy, templatesSortOrder]);
+
   useEffect(() => {
     const agentId = searchParams.get('agent');
     if (agentId && allMarketplaceItems.length > 0) {
@@ -306,7 +302,6 @@ export default function AgentsPage() {
     setShowPreviewDialog(false);
     setSelectedItem(null);
     
-    // Remove agent parameter from URL
     const currentUrl = new URL(window.location.href);
     if (currentUrl.searchParams.has('agent')) {
       currentUrl.searchParams.delete('agent');
@@ -348,9 +343,12 @@ export default function AgentsPage() {
       const regularRequirements = item.mcp_requirements?.filter(req => 
         !req.custom_type
       ) || [];
-      const missingProfiles = regularRequirements.filter(req => 
-        !profileMappings || !profileMappings[req.qualified_name] || profileMappings[req.qualified_name].trim() === ''
-      );
+      const missingProfiles = regularRequirements.filter(req => {
+        const profileKey = req.source === 'trigger' && req.trigger_index !== undefined
+          ? `${req.qualified_name}_trigger_${req.trigger_index}`
+          : req.qualified_name;
+        return !profileMappings || !profileMappings[profileKey] || profileMappings[profileKey].trim() === '';
+      });
       
       if (missingProfiles.length > 0) {
         const missingNames = missingProfiles.map(req => req.display_name).join(', ');
@@ -384,8 +382,33 @@ export default function AgentsPage() {
         setShowInstallDialog(false);
         handleTabChange('my-agents');
       } else if (result.status === 'configs_required') {
-        toast.error('Please provide all required configurations');
-        return;
+        if (result.missing_regular_credentials && result.missing_regular_credentials.length > 0) {
+          const updatedRequirements = [
+            ...(item.mcp_requirements || []),
+            ...result.missing_regular_credentials.map((cred: any) => ({
+              qualified_name: cred.qualified_name,
+              display_name: cred.display_name,
+              enabled_tools: cred.enabled_tools || [],
+              required_config: cred.required_config || [],
+              custom_type: cred.custom_type,
+              toolkit_slug: cred.toolkit_slug,
+              app_slug: cred.app_slug,
+              source: cred.source,
+              trigger_index: cred.trigger_index
+            }))
+          ];
+          
+          setSelectedItem({
+            ...item,
+            mcp_requirements: updatedRequirements
+          });
+          
+          toast.warning('Additional configurations required. Please complete the setup.');
+          return;
+        } else {
+          toast.error('Please provide all required configurations');
+          return;
+        }
       } else {
         toast.error('Unexpected response from server. Please try again.');
         return;
@@ -422,13 +445,25 @@ export default function AgentsPage() {
   };
 
   const getItemStyling = (item: MarketplaceTemplate) => {
-    if (item.avatar && item.avatar_color) {
-      return {
-        avatar: item.avatar,
-        color: item.avatar_color,
-      };
-    }
-    return getAgentAvatar(item.id);
+    return {
+      avatar: '🤖',
+      color: '#6366f1',
+    };
+  };
+
+  const handleAgentsPageSizeChange = (newPageSize: number) => {
+    setAgentsPageSize(newPageSize);
+    setAgentsPage(1);
+  };
+
+  const handleMarketplacePageSizeChange = (newPageSize: number) => {
+    setMarketplacePageSize(newPageSize);
+    setMarketplacePage(1);
+  };
+
+  const handleTemplatesPageSizeChange = (newPageSize: number) => {
+    setTemplatesPageSize(newPageSize);
+    setTemplatesPage(1);
   };
 
   const handleUnpublish = async (templateId: string, templateName: string) => {
@@ -489,7 +524,6 @@ export default function AgentsPage() {
         
         toast.success(`${publishDialog.templateName} has been published to the marketplace`);
       } else {
-        // Publishing an existing template
         setTemplatesActioningId(publishDialog.templateId);
         
         await publishMutation.mutateAsync({
@@ -509,13 +543,10 @@ export default function AgentsPage() {
   };
 
   const getTemplateStyling = (template: any) => {
-    if (template.avatar && template.avatar_color) {
-      return {
-        avatar: template.avatar,
-        color: template.avatar_color,
-      };
-    }
-    return getAgentAvatar(template.template_id);
+    return {
+      avatar: '🤖',
+      color: '#6366f1',
+    };
   };
 
   if (flagLoading) {
@@ -575,10 +606,19 @@ export default function AgentsPage() {
               onClearFilters={clearAgentsFilters}
               isDeletingAgent={isDeletingAgent}
               setAgentsPage={setAgentsPage}
+              agentsPageSize={agentsPageSize}
+              onAgentsPageSizeChange={handleAgentsPageSizeChange}
               myTemplates={myTemplates}
               templatesLoading={templatesLoading}
               templatesError={templatesError}
               templatesActioningId={templatesActioningId}
+              templatesPagination={templatesPagination}
+              templatesPage={templatesPage}
+              setTemplatesPage={setTemplatesPage}
+              templatesPageSize={templatesPageSize}
+              onTemplatesPageSizeChange={handleTemplatesPageSizeChange}
+              templatesSearchQuery={templatesSearchQuery}
+              setTemplatesSearchQuery={setTemplatesSearchQuery}
               onPublish={openPublishDialog}
               onUnpublish={handleUnpublish}
               getTemplateStyling={getTemplateStyling}
@@ -595,15 +635,18 @@ export default function AgentsPage() {
               setMarketplaceFilter={setMarketplaceFilter}
               marketplaceLoading={marketplaceLoading}
               allMarketplaceItems={allMarketplaceItems}
-              kortixTeamItems={kortixTeamItems}
-              communityItems={communityItems}
-              mineItems={mineItems}
+              mineItems={[]}
               installingItemId={installingItemId}
               onInstallClick={handleInstallClick}
               onDeleteTemplate={handleDeleteTemplate}
               getItemStyling={getItemStyling}
               currentUserId={user?.id}
               onAgentPreview={handleAgentPreview}
+              marketplacePage={marketplacePage}
+              setMarketplacePage={setMarketplacePage}
+              marketplacePageSize={marketplacePageSize}
+              onMarketplacePageSizeChange={handleMarketplacePageSizeChange}
+              marketplacePagination={marketplaceTemplates?.pagination}
             />
           )}
         </div>

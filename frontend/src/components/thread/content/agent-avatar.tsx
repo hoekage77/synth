@@ -3,7 +3,7 @@
 import React from 'react';
 import { useAgent } from '@/hooks/react-query/agents/use-agents';
 import { XeraLogo } from '@/components/sidebar/kortix-logo';
-import { Skeleton } from '@/components/ui/skeleton';
+import { DynamicIcon } from 'lucide-react/dynamic';
 
 interface AgentAvatarProps {
   agentId?: string;
@@ -38,6 +38,25 @@ export const AgentAvatar: React.FC<AgentAvatarProps> = ({
     return <XeraLogo size={size} />;
   }
 
+  if (agent?.icon_name) {
+    return (
+      <div 
+        className={`flex items-center justify-center rounded ${className}`}
+        style={{ 
+          width: size, 
+          height: size,
+          backgroundColor: agent.icon_background || '#F3F4F6'
+        }}
+      >
+        <DynamicIcon 
+          name={agent.icon_name as any} 
+          size={size * 0.6} 
+          color={agent.icon_color || '#000000'}
+        />
+      </div>
+    );
+  }
+
   if (agent?.profile_image_url) {
     return (
       <img 
@@ -46,17 +65,6 @@ export const AgentAvatar: React.FC<AgentAvatarProps> = ({
         className={`rounded object-cover ${className}`}
         style={{ width: size, height: size }}
       />
-    );
-  }
-
-  if (agent?.avatar) {
-    return (
-      <div 
-        className={`flex items-center justify-center text-xs ${className}`}
-        style={{ width: size, height: size, fontSize: size * 0.75 }}
-      >
-        {agent.avatar}
-      </div>
     );
   }
 

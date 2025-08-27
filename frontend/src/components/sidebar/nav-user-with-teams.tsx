@@ -19,7 +19,7 @@ import {
   Sun,
   Moon,
   KeyRound,
-  Users,
+  Plug,
 } from 'lucide-react';
 import { useAccounts } from '@/hooks/use-accounts';
 import NewTeamForm from '@/components/basejump/new-team-form';
@@ -53,7 +53,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useTheme } from 'next-themes';
 import { isLocalMode } from '@/lib/config';
 import { useFeatureFlag } from '@/lib/feature-flags';
-import { cn } from '@/lib/utils';
+import { clearUserLocalStorage } from '@/lib/utils/clear-local-storage';
 
 export function NavUserWithTeams({
   user,
@@ -159,6 +159,8 @@ export function NavUserWithTeams({
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
+    // Clear local storage after sign out
+    clearUserLocalStorage();
     router.push('/auth');
   };
 
@@ -210,22 +212,26 @@ export function NavUserWithTeams({
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-border/20" />
               <DropdownMenuGroup>
-                {defaultTeams.map((team) => (
-                  <DropdownMenuItem
-                    key={team.account_id}
-                    onClick={() => handleTeamSelect(team)}
-                    className="transition-all duration-200 font-light text-xs tracking-wide cursor-pointer hover:bg-muted/20 px-3 py-2.5"
-                  >
-                    <Avatar className="h-6 w-6 mr-3">
-                      <AvatarImage src={user?.avatar || ''} alt={user?.name || 'User'} />
-                      <AvatarFallback className="font-light text-xs bg-muted/30 text-foreground">
-                        {getInitials(user?.name || '')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                      <span className="font-medium text-foreground">{team.name}</span>
-                      <span className="text-xs text-muted-foreground/70">Switch Account</span>
-                    </div>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/billing">
+                    <CreditCard className="h-4 w-4" />
+                    Billing
+                  </Link>
+                </DropdownMenuItem>
+                {!flagLoading && customAgentsEnabled && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings/credentials">
+                      <Plug className="h-4 w-4" />
+                      Integrations
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                {!flagLoading && customAgentsEnabled && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings/api-keys">
+                      <Key className="h-4 w-4" />
+                      API Keys (Admin)
+                    </Link>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuGroup>

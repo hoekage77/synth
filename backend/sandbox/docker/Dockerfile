@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11-slim-bookworm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -73,13 +73,17 @@ RUN apt-get update && apt-get install -y \
     tesseract-ocr-eng \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js and npm
+# Install Node.js, npm, pnpm (via corepack) and useful global CLIs
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
-    && npm install -g npm@latest
+    && npm install -g npm@latest \
+    && corepack enable \
+    && corepack prepare pnpm@9.1.0 --activate
 
-# Install Cloudflare Wrangler CLI globally
-RUN npm install -g wrangler
+# pnpm config and store dir for faster installs
+ENV PNPM_HOME=/root/.local/share/pnpm
+ENV PATH="$PNPM_HOME:$PATH"
+RUN pnpm config set store-dir /root/.pnpm-store
 
 # Install noVNC
 RUN git clone https://github.com/novnc/noVNC.git /opt/novnc \
@@ -106,6 +110,12 @@ RUN npx playwright install chromium
 # Verify installation
 RUN node -e "import('playwright').then(() => console.log('Playwright installation verified')).catch(e => { console.error('Playwright verification failed:', e); process.exit(1); })"
 
+WORKDIR /opt/templates/next-app
+
+RUN npx --yes create-next-app@latest . --yes
+RUN npx --yes shadcn@latest init --yes -b neutral --force
+RUN npx --yes shadcn@latest add --all --yes
+
 # Copy server script
 COPY . /app
 COPY server.py /app/server.py
@@ -120,6 +130,8 @@ ENV VNC_PASSWORD=vncpassword
 ENV CHROME_PERSISTENT_SESSION=true
 ENV RESOLUTION_WIDTH=1024
 ENV RESOLUTION_HEIGHT=768
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS=--max-old-space-size=2048
 # Add Chrome flags to prevent multiple tabs/windows
 ENV CHROME_FLAGS="--single-process --no-first-run --no-default-browser-check --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-breakpad --disable-component-extensions-with-background-pages --disable-dev-shm-usage --disable-extensions --disable-features=TranslateUI --disable-ipc-flooding-protection --disable-renderer-backgrounding --enable-features=NetworkServiceInProcess2 --force-color-profile=srgb --metrics-recording-only --mute-audio --no-sandbox --disable-gpu"
 

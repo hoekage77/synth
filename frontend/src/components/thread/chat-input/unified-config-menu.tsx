@@ -14,15 +14,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Cpu, Search, Check, ChevronDown, Plus, ExternalLink, Crown, Bot } from 'lucide-react';
+import { Cpu, Search, Check, ChevronDown, Plus, ExternalLink } from 'lucide-react';
 import { useAgents } from '@/hooks/react-query/agents/use-agents';
 import { XeraLogo } from '@/components/sidebar/kortix-logo';
 import type { ModelOption, SubscriptionStatus } from './_use-model-selection';
-import { MODELS, STORAGE_KEY_CUSTOM_MODELS, STORAGE_KEY_MODEL, formatModelName, getCustomModels, MODEL_ICONS } from './_use-model-selection';
+import { MODELS } from './_use-model-selection';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { isLocalMode } from '@/lib/config';
-import { CustomModelDialog, type CustomModelFormData } from './custom-model-dialog';
 import { IntegrationsRegistry } from '@/components/agents/integrations-registry';
 import { useComposioToolkitIcon } from '@/hooks/react-query/composio/use-composio';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -30,6 +28,8 @@ import { NewAgentDialog } from '@/components/agents/new-agent-dialog';
 import { useAgentWorkflows } from '@/hooks/react-query/agents/use-agent-workflows';
 import { PlaybookExecuteDialog } from '@/components/playbooks/playbook-execute-dialog';
 import { AgentAvatar } from '@/components/thread/content/agent-avatar';
+import { AgentModelSelector } from '@/components/agents/config/model-selector';
+import { useRouter } from 'next/navigation';
 
 type UnifiedConfigMenuProps = {
     isLoggedIn?: boolean;
@@ -63,6 +63,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
     subscriptionStatus,
     onUpgradeRequest,
 }) => {
+    const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -70,10 +71,6 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
     const [showNewAgentDialog, setShowNewAgentDialog] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const [execDialog, setExecDialog] = useState<{ open: boolean; playbook: any | null; agentId: string | null }>({ open: false, playbook: null, agentId: null });
-    const [isCustomModelDialogOpen, setIsCustomModelDialogOpen] = useState(false);
-    const [dialogInitialData, setDialogInitialData] = useState<CustomModelFormData>({ id: '', label: '' });
-    const [customModels, setCustomModels] = useState<Array<{ id: string; label: string }>>([]);
-    const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
 
     const { data: agentsResponse } = useAgents({}, { enabled: isLoggedIn });
     const agents: any[] = agentsResponse?.agents || [];
@@ -97,55 +94,68 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
         }
     }, [isOpen]);
 
-    useEffect(() => {
-        if (isLocalMode()) {
-            setCustomModels(getCustomModels());
-        }
-    }, []);
+
 
     // Keep focus stable even when list size changes
     useEffect(() => {
         if (isOpen) searchInputRef.current?.focus();
     }, [isOpen]);
 
-    const filteredModels = useMemo(() => {
-        if (!searchQuery.trim()) return modelOptions;
-        const query = searchQuery.toLowerCase();
-        return modelOptions.filter(model => 
-            model.label.toLowerCase().includes(query) || 
-            model.id.toLowerCase().includes(query)
-        );
-    }, [modelOptions, searchQuery]);
+    const handleSearchInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        // Prevent Radix dropdown from stealing focus/navigation
+        e.stopPropagation();
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+        }
+    };
 
-    const handleModelSelect = (modelId: string) => {
-        onModelChange(modelId);
+    // Filtered agents with selected first
+    const filteredAgents = useMemo(() => {
+        const list = [...agents];
+        const selected = selectedAgentId ? list.find(a => a.agent_id === selectedAgentId) : undefined;
+        const rest = selected ? list.filter(a => a.agent_id !== selectedAgentId) : list;
+        const ordered = selected ? [selected, ...rest] : rest;
+        return ordered.filter(a => (
+            a?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            a?.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        ));
+    }, [agents, selectedAgentId, searchQuery]);
+
+    // Top 3 slice
+    const topAgents = useMemo(() => filteredAgents.slice(0, 3), [filteredAgents]);
+
+
+
+
+
+    const handleAgentClick = (agentId: string | undefined) => {
+        onAgentSelect?.(agentId);
         setIsOpen(false);
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Escape') {
-            setIsOpen(false);
+    const handleQuickAction = (action: 'instructions' | 'knowledge' | 'triggers') => {
+        if (!selectedAgentId && !displayAgent?.agent_id) {
             return;
         }
-
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            setHighlightedIndex(prev => 
-                prev < filteredModels.length - 1 ? prev + 1 : 0
-            );
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            setHighlightedIndex(prev => 
-                prev > 0 ? prev - 1 : filteredModels.length - 1
-            );
-        } else if (e.key === 'Enter' && highlightedIndex >= 0) {
-            e.preventDefault();
-            const selectedModel = filteredModels[highlightedIndex];
-            if (selectedModel) {
-                handleModelSelect(selectedModel.id);
-            }
-        }
+        const agentId = selectedAgentId || displayAgent?.agent_id;
+        router.push(`/agents/config/${agentId}?tab=configuration&accordion=${action}`);
+        setIsOpen(false);
     };
+
+
+
+    const renderAgentIcon = (agent: any) => {
+        return <AgentAvatar agentId={agent?.agent_id} size={16} className="h-4 w-4" fallbackName={agent?.name} />;
+    };
+
+    const displayAgent = useMemo(() => {
+        const found = agents.find(a => a.agent_id === selectedAgentId) || agents[0];
+        return found;
+    }, [agents, selectedAgentId]);
+
+    const currentAgentIdForPlaybooks = isLoggedIn ? displayAgent?.agent_id || '' : '';
+    const { data: playbooks = [], isLoading: playbooksLoading } = useAgentWorkflows(currentAgentIdForPlaybooks);
+    const [playbooksExpanded, setPlaybooksExpanded] = useState(true);
 
     return (
         <>
@@ -242,84 +252,93 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                             </div>
                         </div>
 
-                        {/* Model List */}
-                        <div className="max-h-[50vh] overflow-y-auto p-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/30">
-                            {filteredModels.length === 0 ? (
-                                <div className="p-6 text-center text-muted-foreground/70 font-light">
-                                    No models found matching "{searchQuery}"
-                                </div>
-                            ) : (
-                                filteredModels.map((model, index) => {
-                                    const isAccessible = canAccessModel(model.id);
-                                    const isSelected = model.id === selectedModel;
-                                    
-                                    return (
+                    {onAgentSelect && <DropdownMenuSeparator className="!mt-0" />}
+
+                    {/* Models */}
+                    <div className="px-1.5">
+                        <div className="px-3 py-1 text-[11px] font-medium text-muted-foreground">Models</div>
+                        <AgentModelSelector
+                            value={selectedModel}
+                            onChange={onModelChange}
+                            disabled={false}
+                            variant="menu-item"
+                        />
+                    </div>
+
+                    <DropdownMenuSeparator />
+
+                    {/* Quick Actions */}
+                    {onAgentSelect && (selectedAgentId || displayAgent?.agent_id) && (
+                        <div className="px-1.5">
+                            <DropdownMenuItem
+                                className="text-sm px-3 py-2 mx-0 my-0.5 flex items-center gap-2 cursor-pointer rounded-lg"
+                                onClick={() => handleQuickAction('instructions')}
+                            >
+                                <span className="font-medium">Instructions</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="text-sm px-3 py-2 mx-0 my-0.5 flex items-center gap-2 cursor-pointer rounded-lg"
+                                onClick={() => handleQuickAction('knowledge')}
+                            >
+                                <span className="font-medium">Knowledge</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="text-sm px-3 py-2 mx-0 my-0.5 flex items-center gap-2 cursor-pointer rounded-lg"
+                                onClick={() => handleQuickAction('triggers')}
+                            >
+                                <span className="font-medium">Triggers</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger className="flex items-center rounded-lg gap-2 px-3 py-2 mx-0 my-0.5">
+                                    <span className="font-medium">Playbooks</span>
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuPortal>
+                                    <DropdownMenuSubContent className="w-72 rounded-xl max-h-80 overflow-y-auto">
+                                        {playbooksLoading ? (
+                                            <div className="px-3 py-2 text-xs text-muted-foreground">Loading…</div>
+                                        ) : playbooks && playbooks.length > 0 ? (
+                                            playbooks.map((wf: any) => (
+                                                <DropdownMenuItem
+                                                    key={`pb-${wf.id}`}
+                                                    className="text-sm px-3 py-2 mx-0 my-0.5 flex items-center justify-between cursor-pointer rounded-lg"
+                                                    onClick={(e) => { e.stopPropagation(); setExecDialog({ open: true, playbook: wf, agentId: currentAgentIdForPlaybooks }); setIsOpen(false); }}
+                                                >
+                                                    <span className="truncate">{wf.name}</span>
+                                                </DropdownMenuItem>
+                                            ))
+                                        ) : (
+                                            <div className="px-3 py-2 text-xs text-muted-foreground">No playbooks</div>
+                                        )}
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuPortal>
+                            </DropdownMenuSub>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
                                         <DropdownMenuItem
-                                            key={model.id}
-                                            className={cn(
-                                                "flex items-center justify-between px-3 py-2.5 cursor-pointer transition-all duration-200 rounded-lg mx-1",
-                                                isSelected ? "bg-muted/30 text-foreground" : "hover:bg-muted/20 text-muted-foreground hover:text-foreground",
-                                                !isAccessible && "opacity-40 cursor-not-allowed",
-                                                highlightedIndex === index && "bg-muted/30"
-                                            )}
-                                            onClick={() => isAccessible && handleModelSelect(model.id)}
-                                            onMouseEnter={() => setHighlightedIndex(index)}
+                                            className="text-sm px-3 py-2 mx-0 my-0.5 flex items-center justify-between cursor-pointer rounded-lg"
+                                            onClick={() => setIntegrationsOpen(true)}
                                         >
-                                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                                                    {/* Dynamic Model Icon */}
-                                                    <div className="flex items-center justify-center w-4 h-4 flex-shrink-0">
-                                                        {(() => {
-                                                            const modelData = MODELS[model.id];
-                                                            const iconKey = modelData?.icon || 'custom';
-                                                            const iconData = MODEL_ICONS[iconKey];
-                                                            
-                                                            if (iconData) {
-                                                                return (
-                                                                    <div className={cn(
-                                                                        "w-4 h-4 rounded-sm flex items-center justify-center text-xs",
-                                                                        iconData.bgColor,
-                                                                        iconData.borderColor,
-                                                                        "border"
-                                                                    )}>
-                                                                        {iconData.icon}
-                                                                    </div>
-                                                                );
-                                                            }
-                                                            return <Cpu className="h-3.5 w-3.5 text-muted-foreground/70" />;
-                                                        })()}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="font-light text-sm truncate">
-                                                                {model.label}
-                                                            </span>
-                                                            {model.recommended && (
-                                                                <Crown className="h-3 w-3 text-amber-500/70 flex-shrink-0" />
-                                                            )}
-                                                            {model.top && (
-                                                                <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 flex-shrink-0" />
-                                                            )}
-                                                        </div>
-                                                        {model.description && (
-                                                            <p className="text-xs text-muted-foreground/60 truncate font-light">
-                                                                {model.description}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
+                                            <span className="font-medium">Integrations</span>
+                                            <div className="flex items-center gap-1.5">
+                                                {googleDriveIcon?.icon_url && slackIcon?.icon_url && notionIcon?.icon_url ? (
+                                                    <>
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img src={googleDriveIcon.icon_url} className="w-4 h-4" alt="Google Drive" />
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img src={slackIcon.icon_url} className="w-3.5 h-3.5" alt="Slack" />
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img src={notionIcon.icon_url} className="w-3.5 h-3.5" alt="Notion" />
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Skeleton className="w-4 h-4 rounded" />
+                                                        <Skeleton className="w-3.5 h-3.5 rounded" />
+                                                        <Skeleton className="w-3.5 h-3.5 rounded" />
+                                                    </>
+                                                )}
+                                                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
                                             </div>
-                                            
-                                            {isSelected && (
-                                                <Check className="h-4 w-4 text-foreground flex-shrink-0" />
-                                            )}
-                                            
-                                            {!isAccessible && (
-                                                <div className="flex items-center gap-1 text-xs text-muted-foreground/60 font-light">
-                                                    <Crown className="h-3 w-3" />
-                                                    <span>Upgrade</span>
-                                                </div>
-                                            )}
                                         </DropdownMenuItem>
                                     );
                                 })
@@ -430,6 +449,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                 agentId={execDialog.agentId || ''}
             />
 
+<<<<<<< HEAD
             <CustomModelDialog
                 isOpen={isCustomModelDialogOpen}
                 onClose={() => setIsCustomModelDialogOpen(false)}
@@ -437,6 +457,9 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                 initialData={dialogInitialData}
                 mode={"add"}
             />
+=======
+
+>>>>>>> upstream/main
         </>
     );
 };

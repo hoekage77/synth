@@ -5,7 +5,6 @@ const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
 
 export type Agent = {
   agent_id: string;
-  account_id: string;
   name: string;
   description?: string;
   system_prompt: string;
@@ -27,11 +26,10 @@ export type Agent = {
   tags?: string[];
   created_at: string;
   updated_at: string;
-  // Deprecated
-  avatar?: string;
-  avatar_color?: string;
-  // New
   profile_image_url?: string;
+  icon_name?: string | null;
+  icon_color?: string | null;
+  icon_background?: string | null;
   current_version_id?: string | null;
   version_count?: number;
   current_version?: AgentVersion | null;
@@ -52,10 +50,12 @@ export type Agent = {
 };
 
 export type PaginationInfo = {
-  page: number;
-  limit: number;
-  total: number;
-  pages: number;
+  current_page: number;
+  page_size: number;
+  total_items: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
 };
 
 export type AgentsResponse = {
@@ -73,6 +73,7 @@ export type AgentsParams = {
   has_mcp_tools?: boolean;
   has_agentpress_tools?: boolean;
   tools?: string;
+  content_type?: string;
 };
 
 export type ThreadAgentResponse = {
@@ -99,9 +100,10 @@ export type AgentCreateRequest = {
   is_default?: boolean;
   // New
   profile_image_url?: string;
-  // Legacy (unused by new UI)
-  avatar?: string;
-  avatar_color?: string;
+  // Icon system fields
+  icon_name?: string | null;
+  icon_color?: string | null;
+  icon_background?: string | null;
 };
 
 export type AgentVersionCreateRequest = {
@@ -157,9 +159,12 @@ export type AgentUpdateRequest = {
   is_default?: boolean;
   // New
   profile_image_url?: string;
-  // Legacy
-  avatar?: string;
-  avatar_color?: string;
+  // Icon system fields
+  icon_name?: string | null;
+  icon_color?: string | null;
+  icon_background?: string | null;
+  // MCP replacement flag
+  replace_mcps?: boolean;
 };
 
 export const getAgents = async (params: AgentsParams = {}): Promise<AgentsResponse> => {
@@ -185,6 +190,7 @@ export const getAgents = async (params: AgentsParams = {}): Promise<AgentsRespon
     if (params.has_mcp_tools !== undefined) queryParams.append('has_mcp_tools', params.has_mcp_tools.toString());
     if (params.has_agentpress_tools !== undefined) queryParams.append('has_agentpress_tools', params.has_agentpress_tools.toString());
     if (params.tools) queryParams.append('tools', params.tools);
+    if (params.content_type) queryParams.append('content_type', params.content_type);
 
     const url = `${API_URL}/agents${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
 
@@ -389,144 +395,7 @@ export const getThreadAgent = async (threadId: string): Promise<ThreadAgentRespo
   }
 };
 
-export const getAgentBuilderChatHistory = async (agentId: string): Promise<{messages: any[], thread_id: string | null}> => {
-  try {
-    const agentPlaygroundEnabled = await isFlagEnabled('custom_agents');
-    if (!agentPlaygroundEnabled) {
-      throw new Error('Custom agents is not enabled');
-    }
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
 
-    if (!session) {
-      throw new Error('You must be logged in to get agent builder chat history');
-    }
-
-    const response = await fetch(`${API_URL}/agents/${agentId}/builder-chat-history`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-      throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (err) {
-    console.error('Error fetching agent builder chat history:', err);
-    throw err;
-  }
-};
-
-// Agent Builder Chat Types
-export type AgentBuilderMessage = {
-  role: 'user' | 'assistant';
-  content: string;
-};
-
-export type AgentBuilderConfig = {
-  name?: string;
-  description?: string;
-  system_prompt?: string;
-  agentpress_tools?: Record<string, { enabled: boolean; description: string }>;
-  configured_mcps?: Array<{ name: string; qualifiedName: string; config: any; enabledTools?: string[] }>;
-  // Legacy style properties; not used for profile image feature
-  avatar?: string;
-  avatar_color?: string;
-};
-
-export type AgentBuilderChatRequest = {
-  message: string;
-  conversation_history: AgentBuilderMessage[];
-  agent_id: string;
-  partial_config?: AgentBuilderConfig;
-};
-
-export type AgentBuilderStreamData = {
-  type: 'content' | 'config' | 'done' | 'error';
-  content?: string;
-  config?: AgentBuilderConfig;
-  next_step?: string;
-  error?: string;
-};
-
-export const startAgentBuilderChat = async (
-  request: AgentBuilderChatRequest,
-  onData: (data: AgentBuilderStreamData) => void,
-  onComplete: () => void,
-  signal?: AbortSignal
-): Promise<void> => {
-  try {
-    const agentPlaygroundEnabled = await isFlagEnabled('custom_agents');
-    if (!agentPlaygroundEnabled) {
-      throw new Error('Custom agents is not enabled');
-    }
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session) {
-      throw new Error('You must be logged in to use the agent builder');
-    }
-
-    const response = await fetch(`${API_URL}/agents/builder/chat/${request.agent_id}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({
-        message: request.message,
-        conversation_history: request.conversation_history,
-        partial_config: request.partial_config
-      }),
-      signal,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-      throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const reader = response.body?.getReader();
-    const decoder = new TextDecoder();
-
-    if (!reader) {
-      throw new Error('No response body');
-    }
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          try {
-            const data = JSON.parse(line.slice(6));
-            onData(data);
-            
-            if (data.type === 'done') {
-              onComplete();
-              return;
-            }
-          } catch (e) {
-            console.error('Error parsing SSE data:', e);
-          }
-        }
-      }
-    }
-  } catch (err) {
-    console.error('Error in agent builder chat:', err);
-    throw err;
-  }
-};
 
 export const getAgentVersions = async (agentId: string): Promise<AgentVersion[]> => {
   try {

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Download, CheckCircle, Loader2, Globe, GlobeLock, GitBranch, Trash2, MoreVertical, User } from 'lucide-react';
+import { DynamicIcon } from 'lucide-react/dynamic';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,7 +10,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
@@ -21,7 +21,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import type { MarketplaceTemplate } from '@/components/agents/installation/types';
 import { XeraLogo } from '@/components/sidebar/kortix-logo';
 
 export type AgentCardMode = 'marketplace' | 'template' | 'agent';
@@ -32,8 +31,6 @@ interface BaseAgentData {
   description?: string;
   tags?: string[];
   created_at: string;
-  avatar?: string;
-  avatar_color?: string;
 }
 
 interface MarketplaceData extends BaseAgentData {
@@ -80,7 +77,7 @@ type AgentCardData = MarketplaceData | TemplateData | AgentData;
 interface AgentCardProps {
   mode: AgentCardMode;
   data: AgentCardData;
-  styling: {
+  styling?: {
     avatar: string;
     color: string;
   };
@@ -173,7 +170,7 @@ const TemplateMetadata: React.FC<{ data: TemplateData }> = ({ data }) => (
 
 const AgentMetadata: React.FC<{ data: AgentData }> = ({ data }) => (
   <div className="space-y-1 text-xs text-muted-foreground">
-    {data.is_public && data.marketplace_published_at && data.download_count && data.download_count > 0 && (
+    {data.is_public && data.marketplace_published_at && data.download_count != null && data.download_count > 0 && (
       <div className="flex items-center gap-1">
         <Download className="h-3 w-3" />
         <span>{data.download_count} downloads</span>
@@ -340,7 +337,21 @@ const TemplateActions: React.FC<{
   </div>
 );
 
-const CardAvatar: React.FC<{ avatar: string; color: string; isSunaAgent?: boolean; profileImageUrl?: string }> = ({ avatar, color, isSunaAgent = false, profileImageUrl }) => {
+const CardAvatar: React.FC<{ 
+  isSunaAgent?: boolean; 
+  profileImageUrl?: string; 
+  agentName?: string;
+  iconName?: string;
+  iconColor?: string;
+  iconBackground?: string;
+}> = ({ 
+  isSunaAgent = false, 
+  profileImageUrl, 
+  agentName,
+  iconName,
+  iconColor = '#000000',
+  iconBackground = '#F3F4F6'
+}) => {
   if (isSunaAgent) {
     return (
       <div className="h-14 w-14 bg-muted border flex items-center justify-center rounded-2xl">
@@ -348,12 +359,30 @@ const CardAvatar: React.FC<{ avatar: string; color: string; isSunaAgent?: boolea
       </div>
     )
   }
+  
+  if (iconName) {
+    return (
+      <div 
+        className="h-14 w-14 flex items-center justify-center rounded-2xl"
+        style={{ backgroundColor: iconBackground }}
+      >
+        <DynamicIcon 
+          name={iconName as any} 
+          size={28} 
+          color={iconColor}
+        />
+      </div>
+    );
+  }
+  
   if (profileImageUrl) {
     return (
       <img src={profileImageUrl} alt="Agent" className="h-14 w-14 rounded-2xl object-cover" />
     );
   }
+  
   return (
+<<<<<<< HEAD
     <div 
       className="relative h-14 w-14 flex items-center justify-center rounded-2xl" 
       style={{ backgroundColor: color }}
@@ -370,6 +399,10 @@ const CardAvatar: React.FC<{ avatar: string; color: string; isSunaAgent?: boolea
           boxShadow: `0 16px 48px -8px ${color}70, 0 8px 24px -4px ${color}50`
         }}
       />
+=======
+    <div className="h-14 w-14 bg-muted border flex items-center justify-center rounded-2xl">
+      <span className="text-lg font-semibold">{agentName?.charAt(0).toUpperCase() || '?'}</span>
+>>>>>>> upstream/main
     </div>
   )
 };
@@ -406,7 +439,6 @@ export const AgentCard: React.FC<AgentCardProps> = ({
   onClick,
   currentUserId
 }) => {
-  const { avatar, color } = styling;
   
   const isSunaAgent = mode === 'agent' && (data as AgentData).metadata?.is_suna_default === true;
   const isOwner = currentUserId && mode === 'marketplace' && (data as MarketplaceData).creator_id === currentUserId;
@@ -471,7 +503,14 @@ export const AgentCard: React.FC<AgentCardProps> = ({
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       <div className="relative p-6 flex flex-col flex-1">
         <div className="flex items-start justify-between mb-4">
-          <CardAvatar avatar={avatar} color={color} isSunaAgent={isSunaAgent} profileImageUrl={(data as any)?.profile_image_url} />
+          <CardAvatar 
+            isSunaAgent={isSunaAgent} 
+            profileImageUrl={(data as any)?.profile_image_url} 
+            agentName={data.name}
+            iconName={(data as any)?.icon_name}
+            iconColor={(data as any)?.icon_color}
+            iconBackground={(data as any)?.icon_background}
+          />
           <div className="flex items-center gap-2">
             {renderBadge()}
           </div>

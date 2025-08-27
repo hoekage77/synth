@@ -31,7 +31,7 @@ import { useBillingError } from '@/hooks/useBillingError';
 import { useAccounts } from '@/hooks/use-accounts';
 import { isLocalMode, config } from '@/lib/config';
 import { toast } from 'sonner';
-import { useModal } from '@/hooks/use-modal-store';
+import { BillingModal } from '@/components/billing/billing-modal';
 import GitHubSignIn from '@/components/GithubSignIn';
 
 
@@ -222,7 +222,7 @@ export function HeroSection() {
     useBillingError();
   const { data: accounts } = useAccounts();
   const personalAccount = accounts?.find((account) => account.personal_account);
-  const { onOpen } = useModal();
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const initiateAgentMutation = useInitiateAgentMutation();
   const [initiatedThreadId, setInitiatedThreadId] = useState<string | null>(null);
   const threadQuery = useThreadQuery(initiatedThreadId || '');
@@ -512,7 +512,7 @@ export function HeroSection() {
         setPendingFiles([]);
     } catch (error: any) {
       if (error instanceof BillingError) {
-        onOpen("paymentRequiredDialog");
+        setShowPaymentModal(true);
       } else if (error instanceof AgentRunLimitError) {
         const { running_thread_ids, running_count } = error.detail;
         

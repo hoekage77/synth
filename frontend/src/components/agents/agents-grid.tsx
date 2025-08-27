@@ -5,11 +5,11 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
-import { getAgentAvatar } from '../../lib/utils/get-agent-style';
 import { useCreateTemplate, useUnpublishTemplate } from '@/hooks/react-query/secure-mcp/use-secure-mcp';
 import { toast } from 'sonner';
 import { AgentCard } from './custom-agents-page/agent-card';
 import { XeraLogo } from '../sidebar/kortix-logo';
+import { DynamicIcon } from 'lucide-react/dynamic';
 
 interface Agent {
   agent_id: string;
@@ -24,8 +24,6 @@ interface Agent {
   updated_at?: string;
   configured_mcps?: Array<{ name: string }>;
   agentpress_tools?: Record<string, any>;
-  avatar?: string;
-  avatar_color?: string;
   template_id?: string;
   current_version_id?: string;
   version_count?: number;
@@ -46,6 +44,10 @@ interface Agent {
     };
   };
   profile_image_url?: string;
+  // Icon system fields
+  icon_name?: string | null;
+  icon_color?: string | null;
+  icon_background?: string | null;
 }
 
 interface AgentsGridProps {
@@ -84,17 +86,6 @@ const AgentModal: React.FC<AgentModalProps> = ({
 }) => {
   if (!agent) return null;
 
-  const getAgentStyling = (agent: Agent) => {
-    if (agent.avatar && agent.avatar_color) {
-      return {
-        avatar: agent.avatar,
-        color: agent.avatar_color,
-      };
-    }
-    return getAgentAvatar(agent.agent_id);
-  };
-
-  const { avatar, color } = getAgentStyling(agent);
   const isSunaAgent = agent.metadata?.is_suna_default || false;
   
   const truncateDescription = (text?: string, maxLength = 120) => {
@@ -112,11 +103,22 @@ const AgentModal: React.FC<AgentModalProps> = ({
               <div className="p-6">
                 <XeraLogo size={48} />
               </div>
+            ) : agent.icon_name ? (
+              <div 
+                className="h-16 w-16 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: agent.icon_background || '#F3F4F6' }}
+              >
+                <DynamicIcon 
+                  name={agent.icon_name as any} 
+                  size={32} 
+                  color={agent.icon_color || '#000000'}
+                />
+              </div>
             ) : agent.profile_image_url ? (
               <img src={agent.profile_image_url} alt={agent.name} className="h-16 w-16 rounded-xl object-cover" />
             ) : (
-              <div className="text-6xl">
-                {avatar}
+              <div className="h-16 w-16 rounded-xl bg-muted flex items-center justify-center">
+                <span className="text-lg font-semibold">{agent.name.charAt(0).toUpperCase()}</span>
               </div>
             )}
           </div>
@@ -272,15 +274,6 @@ export const AgentsGrid: React.FC<AgentsGridProps> = ({
     }
   };
 
-  const getAgentStyling = (agent: Agent) => {
-    if (agent.avatar && agent.avatar_color) {
-      return {
-        avatar: agent.avatar,
-        color: agent.avatar_color,
-      };
-    }
-    return getAgentAvatar(agent.agent_id);
-  };
 
   return (
     <>
@@ -296,7 +289,6 @@ export const AgentsGrid: React.FC<AgentsGridProps> = ({
           
           return (
             <div key={agent.agent_id} className="relative group flex flex-col h-full">
-              {/* Deletion overlay */}
               {isDeleting && (
                 <div className="absolute inset-0 bg-destructive/10 backdrop-blur-sm rounded-lg z-20 flex items-center justify-center">
                   <div className="bg-background/95 backdrop-blur-sm rounded-lg px-4 py-3 flex items-center gap-2 shadow-lg border">
@@ -310,12 +302,10 @@ export const AgentsGrid: React.FC<AgentsGridProps> = ({
                 <AgentCard
                   mode="agent"
                   data={agentData}
-                  styling={getAgentStyling(agent)}
+                  styling={undefined}
                   onClick={() => !isDeleting && handleAgentClick(agent)}
                 />
               </div>
-              
-              {/* Delete button overlay */}
               <div className={`absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity ${isDeleting ? 'pointer-events-none' : ''}`}>
                 {!agent.is_default && (
                   <AlertDialog>

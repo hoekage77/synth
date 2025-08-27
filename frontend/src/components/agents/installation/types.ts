@@ -8,9 +8,12 @@ export interface MarketplaceTemplate {
   creator_name: string;
   created_at: string;
   marketplace_published_at?: string;
+  profile_image_url?: string;
   avatar?: string;
   avatar_color?: string;
-  profile_image_url?: string;
+  icon_name?: string;
+  icon_color?: string;
+  icon_background?: string;
   template_id: string;
   is_kortix_team?: boolean;
   model?: string;
@@ -21,6 +24,10 @@ export interface MarketplaceTemplate {
     enabled_tools?: string[];
     required_config: string[];
     custom_type?: 'sse' | 'http' | 'composio';
+    toolkit_slug?: string;
+    app_slug?: string;
+    source?: 'trigger' | 'tool';
+    trigger_index?: number;
   }>;
   metadata?: {
     source_agent_id?: string;
@@ -33,17 +40,18 @@ export interface SetupStep {
   id: string;
   title: string;
   description: string;
-  type: 'credential_profile' | 'custom_server' | 'composio_profile';
+  type: 'credential_profile' | 'composio_profile' | 'custom_server';
   service_name: string;
   qualified_name: string;
+  custom_type?: string;
+  app_slug?: string;
+  app_name?: string;
   required_fields?: Array<{
     key: string;
     label: string;
-    type: 'text' | 'url' | 'password';
+    type: string;
     placeholder: string;
     description?: string;
   }>;
-  custom_type?: 'sse' | 'http' | 'composio'; 
-  app_slug?: string;
-  app_name?: string;
+  source?: 'trigger' | 'tool';
 }
