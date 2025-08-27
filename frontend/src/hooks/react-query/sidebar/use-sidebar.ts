@@ -89,6 +89,57 @@ export type ThreadWithProject = {
   updatedAt: string;
 };
 
+export type GroupedThreads = Record<string, ThreadWithProject[]>;
+
+const formatDateGroup = (date: Date): string => {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const weekAgo = new Date(today);
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const monthAgo = new Date(today);
+  monthAgo.setMonth(monthAgo.getMonth() - 1);
+
+  if (date >= today) {
+    return 'Today';
+  } else if (date >= yesterday) {
+    return 'Yesterday';
+  } else if (date >= weekAgo) {
+    return 'This Week';
+  } else if (date >= monthAgo) {
+    return 'This Month';
+  } else {
+    return 'Older';
+  }
+};
+
+export const groupThreadsByDate = (threads: ThreadWithProject[]): GroupedThreads => {
+  const groups: GroupedThreads = {};
+  
+  threads.forEach(thread => {
+    const date = new Date(thread.updatedAt);
+    const group = formatDateGroup(date);
+    
+    if (!groups[group]) {
+      groups[group] = [];
+    }
+    groups[group].push(thread);
+  });
+  
+  // Sort groups by a predefined order
+  const orderedGroups: GroupedThreads = {};
+  const groupOrder = ['Today', 'Yesterday', 'This Week', 'This Month', 'Older'];
+  
+  groupOrder.forEach(groupName => {
+    if (groups[groupName]) {
+      orderedGroups[groupName] = groups[groupName];
+    }
+  });
+  
+  return orderedGroups;
+};
+
 export const processThreadsWithProjects = (
   threads: Thread[],
   projects: Project[]

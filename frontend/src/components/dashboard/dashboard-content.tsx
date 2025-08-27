@@ -39,7 +39,14 @@ import { CustomAgentsSection } from './custom-agents-section';
 import { toast } from 'sonner';
 import { ReleaseBadge } from '../auth/release-badge';
 import { Ripple } from '@/components/ui/ripple';
-import { Bot, Cpu, Network, BookOpen, ArrowUpRight, Zap, FileText, Play } from 'lucide-react';
+import { Cpu, Network, BookOpen, ArrowUpRight, Zap, FileText, Play, Brain, Globe, Code, Briefcase, Workflow, Database } from 'lucide-react';
+import { IntegrationsRegistry } from '@/components/agents/integrations-registry';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const PENDING_PROMPT_KEY = 'pendingAgentPrompt';
 
@@ -47,6 +54,7 @@ export function DashboardContent() {
   const [inputValue, setInputValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [autoSubmit, setAutoSubmit] = useState(false);
+  const [registryDialogOpen, setRegistryDialogOpen] = useState(false);
   const { 
     selectedAgentId, 
     setSelectedAgent, 
@@ -220,143 +228,297 @@ export function DashboardContent() {
   }, [autoSubmit, inputValue, isSubmitting]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <div className="flex-1 flex flex-col items-center justify-center p-3 sm:p-4 md:p-8">
-        <div className="w-full max-w-4xl mx-auto">
-          {/* Sleek ChatGPT-5 Inspired Design */}
-          <div className="space-y-8 mb-8">
-            {/* Hero Section - Minimal and Elegant */}
-            <div className="text-center space-y-6">
-              {/* Subtle gradient accent */}
-              <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-gray-400 to-transparent mx-auto opacity-60 animate-pulse"></div>
-              
-              {/* Main heading - Clean and modern */}
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-foreground animate-in fade-in duration-1000">
-                Welcome to{' '}
-                <span className="font-medium bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-gray-100 dark:via-gray-300 dark:to-gray-100 bg-clip-text text-transparent">
+    <>
+      <div className="flex flex-col h-screen bg-background">
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 md:py-0 relative">
+          {/* Centered Content */}
+          <div className="w-full max-w-3xl mx-auto space-y-6 md:space-y-8">
+            {/* Welcome Header */}
+            <div className="text-center space-y-2 md:space-y-3">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light text-foreground tracking-tight leading-tight">
+                Hello, I'm{' '}
+                <span className="font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
                   Xera
                 </span>
               </h1>
-              
-              {/* Subtitle - Minimal and elegant */}
-              <p className="text-base sm:text-lg text-muted-foreground font-light max-w-2xl mx-auto leading-relaxed animate-in fade-in duration-1000 delay-200">
-                Your AI workspace is ready. Start a conversation or explore what's possible.
+              <p className="text-base md:text-lg text-muted-foreground font-light">
+                How can I help you today?
               </p>
             </div>
 
-            {/* Main Chat Input - Centered and Prominent */}
-            <div className="w-full max-w-2xl mx-auto">
-              {/* Custom ChatGPT-5 inspired styling */}
-              <style jsx>{`
-                .chatgpt5-input .bg-background {
-                  background: transparent !important;
-                }
-                .chatgpt5-input .border {
-                  border: 1px solid hsl(var(--border) / 0.2) !important;
-                  border-radius: 24px !important;
-                  background: hsl(var(--background)) !important;
-                  backdrop-filter: blur(20px) !important;
-                  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.08) !important;
-                }
-                .chatgpt5-input .border:hover {
-                  border-color: hsl(var(--border) / 0.4) !important;
-                  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.12) !important;
-                }
-                .chatgpt5-input textarea {
-                  font-size: 16px !important;
-                  line-height: 1.5 !important;
-                  padding: 16px 20px !important;
-                }
-                .chatgpt5-input textarea::placeholder {
-                  color: hsl(var(--muted-foreground) / 0.6) !important;
-                  font-weight: 400 !important;
-                }
-                .chatgpt5-input button[type="submit"] {
-                  background: hsl(var(--foreground)) !important;
-                  color: hsl(var(--background)) !important;
-                  border-radius: 16px !important;
-                  width: 32px !important;
-                  height: 32px !important;
-                  transition: all 0.2s ease !important;
-                  position: relative !important;
-                  margin: 0 !important;
-                }
-                .chatgpt5-input button[type="submit"]:hover {
-                  transform: scale(1.05) !important;
-                  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
-                }
-                .chatgpt5-input button[type="submit"]:disabled {
-                  opacity: 0.4 !important;
-                  transform: none !important;
-                }
-                .chatgpt5-input .flex.items-center.justify-between {
-                  position: relative !important;
-                  z-index: 1 !important;
-                }
-              `}</style>
-              
-              <div className="chatgpt5-input">
-                <ChatInput
-                  ref={chatInputRef}
-                  onSubmit={handleSubmit}
-                  placeholder="Message Xera..."
-                  loading={isSubmitting}
-                  disabled={isSubmitting}
-                  value={inputValue}
-                  onChange={setInputValue}
-                  onFileBrowse={() => {}}
-                  selectedAgentId={selectedAgentId}
-                  onAgentSelect={setSelectedAgent}
-                  agentName={displayName}
-                  messages={[]}
-                  bgColor="bg-background"
-                  toolCalls={[]}
-                  toolCallIndex={0}
-                  showToolPreview={false}
-                  onExpandToolPreview={() => {}}
-                  onStopAgent={() => {}}
-                  isAgentRunning={false}
-                  autoFocus={false}
-                  hideAttachments={true}
-                  hideAgentSelection={false}
-                  defaultShowSnackbar={false}
-                  showToLowCreditUsers={false}
-                  agentMetadata={{}}
-                  showScrollToBottomIndicator={false}
-                  onScrollToBottom={() => {}}
-                  isLoggedIn={true}
-                  enableAdvancedConfig={true}
-                  onConfigureAgent={() => {}}
-                  sandboxId={undefined}
-                />
-              </div>
-            </div>
+            {/* Example Grid */}
+            <div className={cn(
+              "grid gap-3 mx-auto",
+              isMobile ? "grid-cols-1 max-w-full" : "grid-cols-1 md:grid-cols-2 max-w-2xl"
+            )}>
+              <button
+                onClick={() => {
+                  setInputValue("Explain quantum computing");
+                  handleSubmit("Explain quantum computing");
+                }}
+                className={cn(
+                  "group rounded-xl border border-border/50 hover:border-border transition-all duration-200 text-left hover:bg-muted/30 bg-card/50",
+                  isMobile ? "p-4 min-h-[80px] active:scale-[0.98]" : "p-4"
+                )}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                    <Brain className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <div className={cn(
+                      "font-medium text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors",
+                      isMobile ? "text-sm" : "text-base"
+                    )}>
+                      Explain quantum computing
+                    </div>
+                    <div className={cn(
+                      "text-muted-foreground mt-1",
+                      isMobile ? "text-xs" : "text-sm"
+                    )}>
+                      Learn about quantum mechanics and computing
+                    </div>
+                  </div>
+                </div>
+              </button>
 
-            {/* Quick Actions */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 animate-in fade-in duration-1000 delay-400">
-              <Button
-                variant="ghost"
-                onClick={() => router.push('/agents/config/new')}
-                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-300 hover:scale-105"
+              <button
+                onClick={() => {
+                  setInputValue("Plan a 7-day trip to Japan");
+                  handleSubmit("Plan a 7-day trip to Japan");
+                }}
+                className={cn(
+                  "group rounded-xl border border-border/50 hover:border-border transition-all duration-200 text-left hover:bg-muted/30 bg-card/50",
+                  isMobile ? "p-4 min-h-[80px] active:scale-[0.98]" : "p-4"
+                )}
               >
-                <Bot className="h-4 w-4 mr-2" />
-                Create Agent
-              </Button>
-              
-              <div className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-pulse" />
-              
-              <Button
-                variant="ghost"
-                onClick={() => router.push('/agents')}
-                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-300 hover:scale-105"
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                    <Globe className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div>
+                    <div className={cn(
+                      "font-medium text-foreground group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors",
+                      isMobile ? "text-sm" : "text-base"
+                    )}>
+                      Plan a 7-day trip to Japan
+                    </div>
+                    <div className={cn(
+                      "text-muted-foreground mt-1",
+                      isMobile ? "text-xs" : "text-sm"
+                    )}>
+                      Get a detailed itinerary with recommendations
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => {
+                  setInputValue("Write a Python script to analyze data");
+                  handleSubmit("Write a Python script to analyze data");
+                }}
+                className={cn(
+                  "group rounded-xl border border-border/50 hover:border-border transition-all duration-200 text-left hover:bg-muted/30 bg-card/50",
+                  isMobile ? "p-4 min-h-[80px] active:scale-[0.98]" : "p-4"
+                )}
               >
-                <Cpu className="h-4 w-4 mr-2" />
-                Manage Agents
-              </Button>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                    <Code className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div>
+                    <div className={cn(
+                      "font-medium text-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors",
+                      isMobile ? "text-sm" : "text-base"
+                    )}>
+                      Write a Python script
+                    </div>
+                    <div className={cn(
+                      "text-muted-foreground mt-1",
+                      isMobile ? "text-xs" : "text-sm"
+                    )}>
+                      Generate code with explanations
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => {
+                  setInputValue("Create a business plan for a startup");
+                  handleSubmit("Create a business plan for a startup");
+                }}
+                className={cn(
+                  "group rounded-xl border border-border/50 hover:border-border transition-all duration-200 text-left hover:bg-muted/30 bg-card/50",
+                  isMobile ? "p-4 min-h-[80px] active:scale-[0.98]" : "p-4"
+                )}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
+                    <Briefcase className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <div>
+                    <div className={cn(
+                      "font-medium text-foreground group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors",
+                      isMobile ? "text-sm" : "text-base"
+                    )}>
+                      Create a business plan
+                    </div>
+                    <div className={cn(
+                      "text-muted-foreground mt-1",
+                      isMobile ? "text-xs" : "text-sm"
+                    )}>
+                      Develop a comprehensive startup strategy
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Input Area */}
+        <div className="w-full border-t border-border/50 bg-background/80 backdrop-blur-sm">
+          <div className={cn(
+            "w-full mx-auto space-y-3 md:space-y-4",
+            isMobile ? "px-3 py-3 max-w-full" : "px-4 py-4 max-w-4xl"
+          )}>
+            <ChatInput
+              ref={chatInputRef}
+              onSubmit={handleSubmit}
+              placeholder="Message Xera..."
+              loading={isSubmitting}
+              disabled={isSubmitting}
+              value={inputValue}
+              onChange={setInputValue}
+              onFileBrowse={() => {}}
+              selectedAgentId={selectedAgentId}
+              onAgentSelect={setSelectedAgent}
+              agentName={displayName}
+              messages={[]}
+              bgColor="bg-background"
+              toolCalls={[]}
+              toolCallIndex={0}
+              showToolPreview={false}
+              onExpandToolPreview={() => {}}
+              onStopAgent={() => {}}
+              isAgentRunning={false}
+              autoFocus={false}
+              hideAttachments={false}
+              hideAgentSelection={false}
+              defaultShowSnackbar={false}
+              showToLowCreditUsers={false}
+              agentMetadata={{}}
+              showScrollToBottomIndicator={false}
+              onScrollToBottom={() => {}}
+              isLoggedIn={true}
+              enableAdvancedConfig={false}
+              onConfigureAgent={() => {}}
+              sandboxId={undefined}
+            />
+            
+            {/* Quick Access Tools */}
+            <div className={cn(
+              "flex items-center justify-center",
+              isMobile ? "gap-3 flex-wrap" : "gap-6"
+            )}>
+              <button 
+                onClick={() => setRegistryDialogOpen(true)}
+                className={cn(
+                  "flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors",
+                  isMobile ? "text-xs p-2 min-h-[44px] active:scale-95" : "text-sm"
+                )}
+              >
+                <div className="flex items-center gap-1">
+                  <div className="w-4 h-4 bg-blue-500 rounded-sm" />
+                  <div className="w-4 h-4 bg-green-500 rounded-sm -ml-1" />
+                  <div className="w-4 h-4 bg-orange-500 rounded-sm -ml-1" />
+                </div>
+                <span className="font-medium">Integrations</span>
+              </button>
+              
+              <button 
+                onClick={() => {
+                  if (selectedAgentId) {
+                    router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=instructions`);
+                  } else {
+                    toast.error('Please select an agent first');
+                  }
+                }}
+                className={cn(
+                  "flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors",
+                  isMobile ? "text-xs p-2 min-h-[44px] active:scale-95" : "text-sm"
+                )}
+              >
+                <div className="w-4 h-4 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                  <Brain className="h-2.5 w-2.5 text-white" />
+                </div>
+                <span className="font-medium">Instructions</span>
+              </button>
+              
+              <button 
+                onClick={() => {
+                  if (selectedAgentId) {
+                    router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=knowledge`);
+                  } else {
+                    toast.error('Please select an agent first');
+                  }
+                }}
+                className={cn(
+                  "flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors",
+                  isMobile ? "text-xs p-2 min-h-[44px] active:scale-95" : "text-sm"
+                )}
+              >
+                <div className="w-4 h-4 bg-gradient-to-br from-gray-600 to-gray-800 rounded flex items-center justify-center">
+                  <BookOpen className="h-2.5 w-2.5 text-white" />
+                </div>
+                <span className="font-medium">Knowledge</span>
+              </button>
+              
+              <button 
+                onClick={() => {
+                  if (selectedAgentId) {
+                    router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=triggers`);
+                  } else {
+                    toast.error('Please select an agent first');
+                  }
+                }}
+                className={cn(
+                  "flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors",
+                  isMobile ? "text-xs p-2 min-h-[44px] active:scale-95" : "text-sm"
+                )}
+              >
+                <div className="w-4 h-4 bg-gradient-to-br from-yellow-500 to-orange-500 rounded flex items-center justify-center">
+                  <Zap className="h-2.5 w-2.5 text-white" />
+                </div>
+                <span className="font-medium">Triggers</span>
+              </button>
+              
+              <button 
+                onClick={() => {
+                  if (selectedAgentId) {
+                    router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=workflows`);
+                  } else {
+                    toast.error('Please select an agent first');
+                  }
+                }}
+                className={cn(
+                  "flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors",
+                  isMobile ? "text-xs p-2 min-h-[44px] active:scale-95" : "text-sm"
+                )}
+              >
+                <div className="w-4 h-4 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center">
+                  <Workflow className="h-2.5 w-2.5 text-white" />
+                </div>
+                <span className="font-medium">Playbooks</span>
+              </button>
             </div>
           </div>
         </div>
       </div>
+      
       <BillingErrorAlert
         message={billingError?.message}
         currentUsage={billingError?.currentUsage}
@@ -375,6 +537,20 @@ export function DashboardContent() {
           projectId={undefined}
         />
       )}
-    </div>
+      
+      <Dialog open={registryDialogOpen} onOpenChange={setRegistryDialogOpen}>
+        <DialogContent className="p-0 max-w-6xl h-[90vh] overflow-hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Integrations</DialogTitle>
+          </DialogHeader>
+          <IntegrationsRegistry
+            showAgentSelector={true}
+            selectedAgentId={selectedAgentId}
+            onAgentChange={setSelectedAgent}
+            onClose={() => setRegistryDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

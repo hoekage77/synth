@@ -2,267 +2,220 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Bot, Menu, Store, Plus, Zap, Plug, ChevronRight, Loader2, Cpu, Power, Terminal, PanelLeft, Network } from 'lucide-react';
+import { Bot, Menu, Store, Plus, Zap, Loader2 } from 'lucide-react';
 
-import { NavUserWithTeams } from '@/components/sidebar/nav-user-with-teams';
 import { NavAgents } from '@/components/sidebar/nav-agents';
+import { NavUserWithTeams } from '@/components/sidebar/nav-user-with-teams';
 import { XeraLogo } from '@/components/sidebar/kortix-logo';
-
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarRail,
   SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
-import { useEffect, useState, useRef } from 'react';
+import { NewAgentDialog } from '@/components/agents/new-agent-dialog';
+import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useFeatureFlags } from '@/lib/feature-flags';
-import { useTheme } from 'next-themes';
-import { NewAgentDialog } from '@/components/agents/new-agent-dialog';
-import { motion } from 'motion/react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/components/AuthProvider';
 import posthog from 'posthog-js';
+
+// Floating mobile menu button component
+function FloatingMobileMenuButton() {
+  const { setOpenMobile, openMobile } = useSidebar();
+  const isMobile = useIsMobile();
+  const pathname = usePathname();
+
+  // Hide on thread/chat screens for cleaner mobile experience
+  const isThreadPage = pathname?.includes('/thread/') || pathname?.includes('/agents/');
+  
+  if (!isMobile || openMobile || isThreadPage) return null;
+
+  return (
+    <div className="fixed top-6 left-4 z-50 md:hidden">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            onClick={() => setOpenMobile(true)}
+            size="icon"
+            className="h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all duration-200 hover:scale-105 active:scale-95 touch-manipulation"
+            aria-label="Open menu"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          Open menu
+        </TooltipContent>
+      </Tooltip>
+    </div>
+  );
+}
 
 export function SidebarLeft({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
-  const { state, setOpen } = useSidebar();
-  const [showNewAgentDialog, setShowNewAgentDialog] = useState(false);
-  const { user } = useAuth();
+  const { state, setOpen, setOpenMobile } = useSidebar();
   const isMobile = useIsMobile();
+  const [user, setUser] = useState<{
+    name: string;
+    email: string;
+    avatar: string;
+  }>({
+    name: 'Loading...',
+    email: 'loading@example.com',
+    avatar: '',
+  });
+
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { flags, loading: flagsLoading } = useFeatureFlags(['custom_agents']);
+  const { flags, loading: flagsLoading } = useFeatureFlags(['custom_agents', 'agent_marketplace']);
   const customAgentsEnabled = flags.custom_agents;
-  const { theme, systemTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  const sidebarRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+  const marketplaceEnabled = flags.agent_marketplace;
+  const [showNewAgentDialog, setShowNewAgentDialog] = useState(false);
 
-  // After mount, we can access the theme and ensure mobile detection is working
+  // Close mobile menu on page navigation
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  }, [pathname, searchParams, isMobile, setOpenMobile]);
 
-  const isDarkMode = mounted && (
-    theme === 'dark' || (theme === 'system' && systemTheme === 'dark')
-  );
-
+  
   useEffect(() => {
-    const supabase = createClient();
-  }, []);
+    const fetchUserData = async () => {
+      const supabase = createClient();
+      const { data } = await supabase.auth.getUser();
 
-  // Click outside handler to collapse sidebar
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
-        if (state === 'expanded') {
-          setOpen(false);
-        }
+      if (data.user) {
+        setUser({
+          name:
+            data.user.user_metadata?.name ||
+            data.user.email?.split('@')[0] ||
+            'User',
+          email: data.user.email || '',
+          avatar: data.user.user_metadata?.avatar_url || '',
+        });
       }
     };
 
-    // Only add listener when sidebar is expanded
-    if (state === 'expanded') {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
+    fetchUserData();
+  }, []);
 
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'b') {
+        event.preventDefault();
+        setOpen(!state.startsWith('expanded'));
+        window.dispatchEvent(
+          new CustomEvent('sidebar-left-toggled', {
+            detail: { expanded: !state.startsWith('expanded') },
+          }),
+        );
+      }
     };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [state, setOpen]);
 
-  const handleNewAgentClick = () => {
-    setShowNewAgentDialog(true);
-    if (posthog) {
-      posthog.capture('new_agent_clicked', { location: 'sidebar' });
-    }
-  };
+
+
 
   return (
-    <Sidebar ref={sidebarRef} className="bg-background/95 backdrop-blur-xl border-r border-border/20 scrollbar-hide fixed left-0 top-0 h-full z-50 shadow-lg">
-      <SidebarHeader className="border-b border-border/20 bg-background/95 backdrop-blur-xl">
-        <div className="flex items-center gap-3 px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-foreground to-foreground/80 rounded-lg flex items-center justify-center">
-              <span className="text-background font-semibold text-sm">X</span>
+    <Sidebar
+      collapsible="icon"
+      className="border-r-0 bg-background/95 backdrop-blur-sm [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
+      {...props}
+    >
+      <SidebarHeader className="px-2 py-2">
+        <div className="flex h-[40px] items-center px-1 relative">
+          <Link href="/dashboard" className="flex-shrink-0" onClick={() => isMobile && setOpenMobile(false)}>
+            <XeraLogo size={24} />
+          </Link>
+          {state !== 'collapsed' && (
+            <div className="ml-2 transition-all duration-200 ease-in-out whitespace-nowrap">
             </div>
-            {state !== 'collapsed' && (
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-foreground">Xera</span>
-                <span className="text-xs text-muted-foreground/70 font-light">AI Platform</span>
-              </div>
-            )}
+          )}
+          <div className="ml-auto flex items-center gap-2">
+            {/* Sidebar trigger removed to prevent double toggles - only show in footer when collapsed */}
           </div>
         </div>
       </SidebarHeader>
-
-      <SidebarContent className="bg-background/95 backdrop-blur-xl scrollbar-hide overflow-y-auto border-r border-border/20">
+      <SidebarContent className="[&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-muted-foreground/70 font-light text-xs tracking-wide px-4 py-2">
-            Quick Actions
-          </SidebarGroupLabel>
-          
-          <SidebarMenu>
-            <SidebarMenuItem>
+          <Link href="/dashboard">
+            <SidebarMenuButton 
+              className={cn('touch-manipulation', {
+                'bg-accent text-accent-foreground font-medium': pathname === '/dashboard',
+              })} 
+              onClick={() => {
+                posthog.capture('new_task_clicked');
+                if (isMobile) setOpenMobile(false);
+              }}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              <span className="flex items-center justify-between w-full">
+                New Task
+              </span>
+            </SidebarMenuButton>
+          </Link>
+          {!flagsLoading && customAgentsEnabled && (
+            <Link href="/agents">
               <SidebarMenuButton 
-                onClick={() => router.push('/dashboard')}
-                className="transition-all duration-200 text-sm tracking-wide text-muted-foreground hover:text-foreground hover:bg-muted/20 rounded-lg mx-2 font-light"
+                className={cn('touch-manipulation', {
+                  'bg-accent text-accent-foreground font-medium': pathname === '/agents',
+                })} 
+                onClick={() => {
+                  if (isMobile) setOpenMobile(false);
+                }}
+                tooltip="Command Center"
               >
-                <Plus className="h-4 w-4 mr-2 text-muted-foreground/70" />
-                <span>New Chat</span>
+                <Bot className="h-4 w-4 mr-1" />
+                <span>Command Center</span>
               </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
+            </Link>
+          )}
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-muted-foreground/70 font-light text-xs tracking-wide px-4 py-2">
-            Agent Management
-          </SidebarGroupLabel>
-          
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton 
-                asChild 
-                isActive={pathname === '/agents'}
-                className={cn(
-                  "transition-all duration-200 text-sm tracking-wide rounded-lg mx-2",
-                  {
-                    'bg-muted/30 text-foreground': pathname === '/agents',
-                    'text-muted-foreground hover:text-foreground hover:bg-muted/20': pathname !== '/agents',
-                  },
-                  "font-light"
-                )}
-              >
-                <Link href="/agents">
-                  <Bot className="h-4 w-4 mr-2 text-muted-foreground/70" />
-                  <span>Agent Hub</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            
-            <SidebarMenuItem>
-              <SidebarMenuButton 
-                asChild 
-                isActive={pathname === '/agents/mcp'}
-                className={cn(
-                  "transition-all duration-200 text-sm tracking-wide rounded-lg mx-2",
-                  {
-                    'bg-muted/30 text-foreground': pathname === '/agents/mcp',
-                    'text-muted-foreground hover:text-foreground hover:bg-muted/20': pathname !== '/agents/mcp',
-                  },
-                  "font-light"
-                )}
-              >
-                <Link href="/agents/mcp">
-                  <Network className="h-4 w-4 mr-2 text-muted-foreground/70" />
-                  <span>MCP Hub</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
         </SidebarGroup>
-
-        <SidebarGroup className="mt-0.5">
-          <SidebarGroupLabel className="text-muted-foreground/70 font-light text-xs tracking-wide px-4 py-2">
-            Message History
-          </SidebarGroupLabel>
-          
-          <NavAgents />
-        </SidebarGroup>
+        <NavAgents />
       </SidebarContent>
-      
-      <SidebarFooter className="border-t border-border/20 bg-background/95 backdrop-blur-xl mt-auto">
+      <SidebarFooter>
         {state === 'collapsed' && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.2 }}
-            className="p-3 flex justify-center"
-          >
+          <div className="mt-2 flex justify-center">
             <Tooltip>
               <TooltipTrigger asChild>
-                <SidebarTrigger className={cn(
-                  "h-8 w-8 transition-all duration-200 text-muted-foreground/70 hover:text-foreground hover:bg-muted/20",
-                  "border border-border/30 rounded-lg"
-                )} />
+                <SidebarTrigger className="h-8 w-8" />
               </TooltipTrigger>
-              <TooltipContent className="bg-background/95 border border-border/20 text-foreground font-light">
-                Expand Sidebar (Cmd+B)
-              </TooltipContent>
+              <TooltipContent>Expand sidebar (CMD+B)</TooltipContent>
             </Tooltip>
-          </motion.div>
-        )}
-        
-        {state === 'expanded' && user && (
-          <div className="p-3">
-            <NavUserWithTeams user={{ 
-              name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User', 
-              email: user.email || 'user@example.com', 
-              avatar: user.user_metadata?.avatar_url || '' 
-            }} />
           </div>
         )}
+        <NavUserWithTeams user={user} />
       </SidebarFooter>
       <SidebarRail />
       <NewAgentDialog 
         open={showNewAgentDialog} 
         onOpenChange={setShowNewAgentDialog}
       />
-      
-      {/* Mobile Sidebar Toggle Button - always visible on mobile */}
-      {isMobile && (
-        <motion.button
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          onClick={() => setOpen(true)}
-          className="fixed left-4 top-4 z-[9999] bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white p-3 rounded-full shadow-2xl shadow-blue-500/25 border border-blue-500/30 backdrop-blur-sm transition-all duration-300 hover:scale-110"
-          title="Open Sidebar"
-        >
-          <Menu className="w-5 h-5" />
-        </motion.button>
-      )}
-
-      {/* Fallback Button - shows when sidebar is collapsed on any device */}
-      {state === 'collapsed' && !isMobile && (
-        <motion.button
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          onClick={() => setOpen(true)}
-          className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-50 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white p-4 rounded-full shadow-2xl shadow-blue-500/25 border-2 border-blue-400 backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:shadow-blue-400/50"
-          title="Open Sidebar"
-        >
-          <PanelLeft className="w-6 h-6" />
-        </motion.button>
-      )}
     </Sidebar>
   );
 }
+
+// Export the floating button so it can be used in the layout
+export { FloatingMobileMenuButton };

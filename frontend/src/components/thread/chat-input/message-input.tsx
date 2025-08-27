@@ -182,27 +182,56 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
     }
 
     return (
-      <div className="relative flex flex-col w-full h-full gap-2 justify-between">
-
-        <div className="flex flex-col gap-1 px-2">
-          <Textarea
-            ref={ref}
-            value={value}
-            onChange={onChange}
-            onKeyDown={handleKeyDown}
-            onPaste={handlePaste}
-            placeholder={placeholder}
+      <div className="relative flex flex-col w-full">
+        <div className="flex items-end gap-2 px-2">
+          <div className="flex-1 flex flex-col gap-1">
+            <Textarea
+              ref={ref}
+              value={value}
+              onChange={onChange}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              placeholder={placeholder}
+              className={cn(
+                'w-full bg-transparent dark:bg-transparent border-none shadow-none focus-visible:ring-0 px-0.5 py-3 !text-[15px] min-h-[40px] max-h-[200px] overflow-y-auto resize-none',
+                isDraggingOver ? 'opacity-40' : '',
+              )}
+              disabled={loading || (disabled && !isAgentRunning)}
+              rows={1}
+            />
+          </div>
+          
+          {/* Submit/Stop Button - positioned at bottom right */}
+          <Button
+            type="submit"
+            onClick={isAgentRunning && onStopAgent ? onStopAgent : onSubmit}
+            size="sm"
             className={cn(
-              'w-full bg-transparent dark:bg-transparent border-none shadow-none focus-visible:ring-0 px-0.5 pb-6 pt-4 !text-[15px] min-h-[36px] max-h-[200px] overflow-y-auto resize-none',
-              isDraggingOver ? 'opacity-40' : '',
+              'w-8 h-8 flex-shrink-0 rounded-xl mb-1',
+              (!value.trim() && uploadedFiles.length === 0 && !isAgentRunning) ||
+                loading ||
+                (disabled && !isAgentRunning)
+                ? 'opacity-50'
+                : '',
             )}
-            disabled={loading || (disabled && !isAgentRunning)}
-            rows={1}
-          />
+            disabled={
+              (!value.trim() && uploadedFiles.length === 0 && !isAgentRunning) ||
+              loading ||
+              (disabled && !isAgentRunning)
+            }
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : isAgentRunning ? (
+              <Square className="h-3 w-3" />
+            ) : (
+              <ArrowUp className="h-4 w-4" />
+            )}
+          </Button>
         </div>
 
-
-        <div className="flex items-center justify-between mt-0 mb-1 px-2">
+        {/* Bottom controls row */}
+        <div className="flex items-center justify-between mt-2 px-2">
           <div className="flex items-center gap-3">
             {!hideAttachments && (
               <FileUploadHandler
@@ -220,69 +249,23 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
               />
             )}
 
+            {isLoggedIn && (
+              <VoiceRecorder
+                onTranscription={onTranscription}
+                disabled={loading || (disabled && !isAgentRunning)}
+              />
+            )}
           </div>
 
-          {/* {subscriptionStatus === 'no_subscription' && !isLocalMode() &&
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <p role='button' className='text-sm text-amber-500 hidden sm:block cursor-pointer' onClick={() => setBillingModalOpen(true)}>Upgrade for more usage</p>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>The free tier is severely limited by the amount of usage. Upgrade to experience the full power of Xera.</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          } */}
-
-          <div className='flex items-center gap-2'>
+          <div className="flex items-center gap-2">
             {renderDropdown()}
             <BillingModal
               open={billingModalOpen}
               onOpenChange={setBillingModalOpen}
               returnUrl={typeof window !== 'undefined' ? window.location.href : '/'}
             />
-
-            {isLoggedIn && <VoiceRecorder
-              onTranscription={onTranscription}
-              disabled={loading || (disabled && !isAgentRunning)}
-            />}
-
-            <Button
-              type="submit"
-              onClick={isAgentRunning && onStopAgent ? onStopAgent : onSubmit}
-              size="sm"
-              className={cn(
-                'w-8 h-8 flex-shrink-0 self-end rounded-xl',
-                (!value.trim() && uploadedFiles.length === 0 && !isAgentRunning) ||
-                  loading ||
-                  (disabled && !isAgentRunning)
-                  ? 'opacity-50'
-                  : '',
-              )}
-              disabled={
-                (!value.trim() && uploadedFiles.length === 0 && !isAgentRunning) ||
-                loading ||
-                (disabled && !isAgentRunning)
-              }
-            >
-              {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : isAgentRunning ? (
-                <div className="min-h-[14px] min-w-[14px] w-[14px] h-[14px] rounded-sm bg-current" />
-              ) : (
-                <ArrowUp className="h-5 w-5" />
-              )}
-            </Button>
           </div>
         </div>
-        {/* {subscriptionStatus === 'no_subscription' && !isLocalMode() &&
-          <div className='sm:hidden absolute -bottom-8 left-0 right-0 flex justify-center'>
-            <p className='text-xs text-amber-500 px-2 py-1'>
-              Upgrade for better performance
-            </p>
-          </div>
-        } */}
       </div>
     );
   },

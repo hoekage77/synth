@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
@@ -22,12 +21,18 @@ export function XeraLogo({ size = 32 }: XeraLogoProps) {
   );
 
   return (
-    <Image
-      src={isDarkMode ? "/xera-logo-white.svg" : "/xera-logo.svg"}
-      alt="Xera"
-      width={size * 3.6}
-      height={size * 3.6}
-      className="transition-all duration-300"
-    />
+    <div 
+      className="flex items-center justify-center transition-all duration-300"
+      style={{ width: size * 3.6, height: size * 3.6 }}
+    >
+      <span 
+        className={`font-bold tracking-tight transition-colors duration-300 ${
+          isDarkMode ? 'text-white' : 'text-gray-900'
+        }`}
+        style={{ fontSize: size * 0.8 }}
+      >
+        XERA
+      </span>
+    </div>
   );
 }

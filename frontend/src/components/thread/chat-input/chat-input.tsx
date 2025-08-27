@@ -425,75 +425,73 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
 
           {enableAdvancedConfig && selectedAgentId && (
             <div className="w-full max-w-4xl mx-auto mt-4 relative z-10">
-              <div className="bg-background/95 backdrop-blur-xl border border-border/20 rounded-xl shadow-lg transition-all duration-300 ease-out p-4">
-                <div className="flex items-center justify-center gap-3 overflow-x-auto scrollbar-none">
+              <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl shadow-sm transition-all duration-300 ease-out p-3">
+                <div className="flex items-center justify-center gap-2 overflow-x-auto scrollbar-none">
                   <button
                     onClick={() => setRegistryDialogOpen(true)}
-                    className="flex items-center gap-2.5 text-muted-foreground/70 hover:text-foreground transition-all duration-200 px-4 py-2.5 rounded-lg hover:bg-muted/20 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer font-light text-sm tracking-wide"
+                    className="group flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-200 px-3 py-2 rounded-lg hover:bg-muted/30 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer text-sm bg-card/50"
                   >
                     <div className="flex items-center -space-x-1">
                       {googleDriveIcon?.icon_url && slackIcon?.icon_url && notionIcon?.icon_url ? (
                         <>
-                          <div className="w-5 h-5 bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-border/20 rounded-lg flex items-center justify-center shadow-sm">
+                          <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 border border-border/20 rounded-lg flex items-center justify-center shadow-sm">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={googleDriveIcon.icon_url} className="w-3 h-3" alt="Google Drive" />
                           </div>
-                          <div className="w-5 h-5 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-border/20 rounded-lg flex items-center justify-center shadow-sm">
+                          <div className="w-6 h-6 bg-green-100 dark:bg-green-900/30 border border-border/20 rounded-lg flex items-center justify-center shadow-sm -ml-1">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={slackIcon.icon_url} className="w-3 h-3" alt="Slack" />
                           </div>
-                          <div className="w-5 h-5 bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-border/20 rounded-lg flex items-center justify-center shadow-sm">
+                          <div className="w-6 h-6 bg-orange-100 dark:bg-orange-900/30 border border-border/20 rounded-lg flex items-center justify-center shadow-sm -ml-1">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={notionIcon.icon_url} className="w-3 h-3" alt="Notion" />
                           </div>
                         </>
                       ) : (
-                        <div className="w-5 h-5 bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-border/20 rounded-lg flex items-center justify-center shadow-sm">
-                          <Network className="h-3 w-3 text-blue-500/70" />
+                        <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 border border-border/20 rounded-lg flex items-center justify-center shadow-sm">
+                          <Network className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                         </div>
                       )}
                     </div>
                     <span className="font-medium">Integrations</span>
                   </button>
                   
-                  <div className="w-px h-6 bg-border/20" />
-                  
                   <button
                     onClick={() => router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=instructions`)}
-                    className="flex items-center gap-2.5 text-muted-foreground/70 hover:text-foreground transition-all duration-200 px-4 py-2.5 rounded-lg hover:bg-muted/20 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer font-light text-sm tracking-wide"
+                    className="group flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-200 px-3 py-2 rounded-lg hover:bg-muted/30 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer text-sm bg-card/50"
                   >
-                    <div className="w-5 h-5 bg-gradient-to-br from-indigo-500/20 to-blue-500/20 border border-border/20 rounded-lg flex items-center justify-center">
-                      <Brain className="h-3 w-3 text-indigo-500/70" />
+                    <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900/30 border border-border/20 rounded-lg flex items-center justify-center">
+                      <Brain className="h-3 w-3 text-purple-600 dark:text-purple-400" />
                     </div>
                     <span className="font-medium">Instructions</span>
                   </button>
                   
                   <button
                     onClick={() => router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=knowledge`)}
-                    className="flex items-center gap-2.5 text-muted-foreground/70 hover:text-foreground transition-all duration-200 px-4 py-2.5 rounded-lg hover:bg-muted/20 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer font-light text-sm tracking-wide"
+                    className="group flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-200 px-3 py-2 rounded-lg hover:bg-muted/30 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer text-sm bg-card/50"
                   >
-                    <div className="w-5 h-5 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-border/20 rounded-lg flex items-center justify-center">
-                      <Database className="h-3 w-3 text-green-500/70" />
+                    <div className="w-6 h-6 bg-green-100 dark:bg-green-900/30 border border-border/20 rounded-lg flex items-center justify-center">
+                      <Database className="h-3 w-3 text-green-600 dark:text-green-400" />
                     </div>
                     <span className="font-medium">Knowledge</span>
                   </button>
                   
                   <button
                     onClick={() => router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=triggers`)}
-                    className="flex items-center gap-2.5 text-muted-foreground/70 hover:text-foreground transition-all duration-200 px-4 py-2.5 rounded-lg hover:bg-muted/20 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer font-light text-sm tracking-wide"
+                    className="group flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-200 px-3 py-2 rounded-lg hover:bg-muted/30 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer text-sm bg-card/50"
                   >
-                    <div className="w-5 h-5 bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-border/20 rounded-lg flex items-center justify-center">
-                      <Zap className="h-3 w-3 text-orange-500/70" />
+                    <div className="w-6 h-6 bg-orange-100 dark:bg-orange-900/30 border border-border/20 rounded-lg flex items-center justify-center">
+                      <Zap className="h-3 w-3 text-orange-600 dark:text-orange-400" />
                     </div>
                     <span className="font-medium">Triggers</span>
                   </button>
                   
                   <button
                     onClick={() => router.push(`/agents/config/${selectedAgentId}?tab=configuration&accordion=workflows`)}
-                    className="flex items-center gap-2.5 text-muted-foreground/70 hover:text-foreground transition-all duration-200 px-4 py-2.5 rounded-lg hover:bg-muted/20 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer font-light text-sm tracking-wide"
+                    className="group flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-200 px-3 py-2 rounded-lg hover:bg-muted/30 border border-transparent hover:border-border/30 flex-shrink-0 cursor-pointer text-sm bg-card/50"
                   >
-                    <div className="w-5 h-5 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-border/20 rounded-lg flex items-center justify-center">
-                      <Workflow className="h-3 w-3 text-purple-500/70" />
+                    <div className="w-6 h-6 bg-pink-100 dark:bg-pink-900/30 border border-border/20 rounded-lg flex items-center justify-center">
+                      <Workflow className="h-3 w-3 text-pink-600 dark:text-pink-400" />
                     </div>
                     <span className="font-medium">Playbooks</span>
                   </button>

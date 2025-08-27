@@ -215,12 +215,9 @@ export function useToolCalls(
         setCurrentToolIndex(historicalToolPairs.length - 1);
       } else if (isSidePanelOpen && !userClosedPanelRef.current && !userNavigatedRef.current) {
         setCurrentToolIndex(historicalToolPairs.length - 1);
-      } else if (!isSidePanelOpen && !autoOpenedPanel && !userClosedPanelRef.current && !isMobile) {
-        // Only auto-open on desktop, not on mobile
-        setCurrentToolIndex(historicalToolPairs.length - 1);
-        setIsSidePanelOpen(true);
-        setAutoOpenedPanel(true);
       }
+      // Auto-open logic removed - tool calls will only show in floating preview mode
+      // Users must manually click to expand the tool call panel
     }
   }, [messages, isSidePanelOpen, autoOpenedPanel, agentStatus, isMobile]);
 
@@ -373,7 +370,8 @@ export function useToolCalls(
         });
       }
       
-      setIsSidePanelOpen(true);
+      // Auto-open logic removed - streaming tool calls will only show in floating preview mode
+      // Users must manually click to expand the tool call panel
     },
     [toolCalls.length],
   );

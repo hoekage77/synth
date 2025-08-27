@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { SidebarLeft } from '@/components/sidebar/sidebar-left';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarLeft, FloatingMobileMenuButton } from '@/components/sidebar/sidebar-left';
+import { SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 // import { PricingAlert } from "@/components/billing/pricing-alert"
 import { MaintenanceAlert } from '@/components/maintenance-alert';
 import { useAccounts } from '@/hooks/use-accounts';
@@ -16,6 +16,12 @@ import { StatusOverlay } from '@/components/ui/status-overlay';
 import { MaintenanceNotice } from './maintenance-notice';
 import { MaintenanceBanner } from './maintenance-banner';
 import { useMaintenanceNoticeQuery } from '@/hooks/react-query/edge-flags';
+import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface DashboardLayoutContentProps {
   children: React.ReactNode;
@@ -99,13 +105,16 @@ export default function DashboardLayoutContent({
 
   return (
     <DeleteOperationProvider>
-      <SidebarProvider defaultOpen={false}>
-        <div className="relative w-full h-full">
-          {/* Sidebar overlays on top */}
+      <SidebarProvider defaultOpen={true}>
+        <div className="flex h-screen w-full">
+          {/* Floating mobile menu button */}
+          <FloatingMobileMenuButton />
+          
+          {/* Sidebar - takes up space and pushes content */}
           <SidebarLeft />
           
-          {/* Main content area - full width, not affected by sidebar */}
-          <main className="w-full h-full bg-background">
+          {/* Main content area - flex-1 to take remaining space */}
+          <main className="flex-1 bg-background overflow-hidden">
             {mantenanceBanner}
             <div className="w-full h-full">{children}</div>
           </main>
