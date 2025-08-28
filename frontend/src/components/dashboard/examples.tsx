@@ -168,70 +168,64 @@ export const Examples = ({
   return (
     <div className="w-full">
       <div className="group relative">
-        <div className="flex gap-3 justify-center py-2 flex-wrap">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 py-2">
           {displayedPrompts.map((prompt, index) => (
             <motion.div
               key={`${prompt.title}-${index}`}
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{
-                duration: 0.3,
-                delay: index * 0.1,
+                duration: 0.2,
+                delay: index * 0.05,
                 ease: "easeOut"
               }}
-              whileHover={{ scale: 1.05, y: -2 }}
+              whileHover={{ scale: 1.02, y: -1 }}
             >
               <Button
                 variant="outline"
-                className="relative w-fit h-fit px-4 py-3 rounded-lg border-cyan-500/30 bg-black/60 hover:bg-cyan-600/20 text-sm font-mono font-medium text-cyan-400 hover:text-cyan-300 transition-all duration-300 backdrop-blur-sm group/button"
+                className="relative w-full h-auto px-4 py-3 rounded-xl border-border/50 bg-card hover:bg-muted/50 text-left text-foreground hover:text-foreground transition-all duration-200 backdrop-blur-sm group/button shadow-sm hover:shadow-md text-sm"
                 onClick={() => onSelectPrompt && onSelectPrompt(prompt.query)}
               >
-                {/* Holographic glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-lg opacity-0 group-hover/button:opacity-100 transition-opacity duration-300" />
+                {/* Subtle hover glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent rounded-xl opacity-0 group-hover/button:opacity-100 transition-opacity duration-200" />
                 
-                {/* Scanning line on hover */}
-                <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-0 group-hover/button:opacity-100 transition-opacity duration-300" />
-                
-                <div className="relative flex items-center gap-3">
+                <div className="relative flex items-center gap-3 w-full">
                   <div className="flex-shrink-0">
                     {React.cloneElement(prompt.icon as React.ReactElement, { 
                       size: 16,
-                      className: "text-cyan-400 group-hover/button:text-cyan-300 transition-colors duration-300"
+                      className: "text-muted-foreground group-hover/button:text-foreground transition-colors duration-200"
                     })}
                   </div>
-                  <span className="whitespace-nowrap tracking-wide">{prompt.title}</span>
+                  <span className="text-left whitespace-normal font-medium">{prompt.title}</span>
                 </div>
               </Button>
             </motion.div>
           ))}
         </div>
 
-        {/* Enhanced refresh button with futuristic styling */}
+        {/* Clean refresh button */}
         <motion.div
-          className="absolute -top-6 right-2"
+          className="absolute -top-8 right-0"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.3 }}
+          transition={{ delay: 0.3, duration: 0.2 }}
         >
           <motion.div
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
             <Button
               variant="ghost"
               size="sm"
               onClick={handleRefresh}
-              className="relative h-8 w-8 p-0 rounded-lg border border-cyan-500/30 bg-black/60 hover:bg-cyan-600/20 transition-all duration-300 backdrop-blur-sm group/refresh"
+              className="h-8 w-8 p-0 rounded-lg hover:bg-muted transition-all duration-200 group/refresh"
             >
-            {/* Refresh button glow */}
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-lg opacity-0 group-hover/refresh:opacity-100 transition-opacity duration-300" />
-            
-                          <motion.div
+              <motion.div
                 className="relative"
                 animate={{ rotate: isRefreshing ? 360 : 0 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
               >
-                <RefreshCw size={14} className="text-cyan-400 group-hover/refresh:text-cyan-300 transition-colors duration-300" />
+                <RefreshCw size={14} className="text-muted-foreground group-hover/refresh:text-foreground transition-colors duration-200" />
               </motion.div>
             </Button>
           </motion.div>

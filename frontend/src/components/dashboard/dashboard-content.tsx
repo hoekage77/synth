@@ -378,14 +378,25 @@ export function DashboardContent() {
                     hideAttachments={false}
                     selectedAgentId={selectedAgentId}
                     onAgentSelect={setSelectedAgent}
-                    enableAdvancedConfig={true}
+                    hideAgentSelection={true}
+                    enableAdvancedConfig={false}
                     onConfigureAgent={(agentId) => router.push(`/agents/config/${agentId}`)}
                   />
                 </div>
                 
-                {/* Example Prompts */}
-                <div className="w-full max-w-4xl" data-tour="examples">
-                  <Examples onSelectPrompt={setInputValue} count={isMobile ? 2 : 4} />
+                {/* Featured Examples - Moved to main content area with improved styling */}
+                <div className="w-full max-w-4xl mt-8" data-tour="examples">
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                      Featured Examples
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Get started with these powerful automation examples
+                    </p>
+                  </div>
+                  <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 shadow-sm">
+                    <Examples onSelectPrompt={setInputValue} count={isMobile ? 2 : 6} />
+                  </div>
                 </div>
               </div>
             </div>
