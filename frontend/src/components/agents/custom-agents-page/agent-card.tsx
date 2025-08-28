@@ -382,27 +382,8 @@ const CardAvatar: React.FC<{
   }
   
   return (
-<<<<<<< HEAD
-    <div 
-      className="relative h-14 w-14 flex items-center justify-center rounded-2xl" 
-      style={{ backgroundColor: color }}
-    >
-      <div className="text-2xl">{avatar}</div>
-      {isSunaAgent && (
-        <div className="absolute -top-1 -right-1 h-5 w-5 bg-background rounded-full border border-border flex items-center justify-center">
-          <XeraLogo size={12} />
-        </div>
-      )}
-      <div
-        className="absolute inset-0 rounded-2xl pointer-events-none opacity-0 dark:opacity-100 transition-opacity"
-        style={{
-          boxShadow: `0 16px 48px -8px ${color}70, 0 8px 24px -4px ${color}50`
-        }}
-      />
-=======
     <div className="h-14 w-14 bg-muted border flex items-center justify-center rounded-2xl">
       <span className="text-lg font-semibold">{agentName?.charAt(0).toUpperCase() || '?'}</span>
->>>>>>> upstream/main
     </div>
   )
 };

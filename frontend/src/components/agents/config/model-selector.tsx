@@ -20,14 +20,13 @@ import {
   useModelSelection, 
   MODELS,
   DEFAULT_FREE_MODEL_ID,
-  MODELS,
+  DEFAULT_PREMIUM_MODEL_ID,
   MODEL_ICONS
 } from '@/components/thread/chat-input/_use-model-selection';
 import { formatModelName, getPrefixedModelId } from '@/lib/stores/model-store';
-import { useAvailableModels } from '@/hooks/react-query/subscriptions/use-billing';
+import { useAvailableModels } from '@/hooks/react-query/subscriptions/use-model';
 import { isLocalMode } from '@/lib/config';
 import { CustomModelDialog, CustomModelFormData } from '@/components/thread/chat-input/custom-model-dialog';
-import { useAvailableModels } from '@/hooks/react-query/subscriptions/use-model';
 
 import Link from 'next/link';
 
@@ -212,6 +211,11 @@ export function AgentModelSelector({
     }
   };
 
+  const handleUpgradeClick = () => {
+    // Add upgrade logic here
+    console.log('Upgrade clicked');
+  };
+
   
 
   const closePaywallDialog = () => {
@@ -321,96 +325,96 @@ export function AgentModelSelector({
     return (
       <Tooltip key={`model-${model.id}-${index}`}>
         <TooltipTrigger asChild>
-            <div className='w-full'>
-              <DropdownMenuItem
-                className={cn(
-                  "text-sm px-4 py-3 mx-2 my-1 rounded-xl flex items-center justify-between cursor-pointer transition-all duration-200",
-                  isHighlighted && "bg-accent/50 scale-[1.02]",
-                  !accessible && !disabled && "opacity-70",
-                  isSelected && "bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20"
-                )}
-                onClick={() => !disabled && handleSelect(model.id)}
-                onMouseEnter={() => setHighlightedIndex(index)}
-              >
-                <div className="flex items-center gap-3 flex-1">
-                  {/* Model Icon with Brand Colors */}
-                  <div className={cn(
-                    "relative flex items-center justify-center w-8 h-8 rounded-lg border-2 transition-all duration-200",
-                    modelIcon.bgColor,
-                    modelIcon.borderColor,
-                    isSelected && "scale-110 shadow-lg"
-                  )}>
-                    <span className="text-lg">{modelIcon.icon}</span>
-                    
-                    {/* Quality indicator overlay */}
-                    {isLowQuality && (
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full border-2 border-background flex items-center justify-center">
-                        <AlertTriangle className="w-2 h-2 text-white" />
-                      </div>
-                    )}
-                  </div>
+          <div className='w-full'>
+            <DropdownMenuItem
+              className={cn(
+                "text-sm px-4 py-3 mx-2 my-1 rounded-xl flex items-center justify-between cursor-pointer transition-all duration-200",
+                isHighlighted && "bg-accent/50 scale-[1.02]",
+                !accessible && !disabled && "opacity-70",
+                isSelected && "bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20"
+              )}
+              onClick={() => !disabled && handleSelect(model.id)}
+              onMouseEnter={() => setHighlightedIndex(index)}
+            >
+              <div className="flex items-center gap-3 flex-1">
+                {/* Model Icon with Brand Colors */}
+                <div className={cn(
+                  "relative flex items-center justify-center w-8 h-8 rounded-lg border-2 transition-all duration-200",
+                  modelIcon.bgColor,
+                  modelIcon.borderColor,
+                  isSelected && "scale-110 shadow-lg"
+                )}>
+                  <span className="text-lg">{modelIcon.icon}</span>
                   
-                  {/* Model Info */}
-                  <div className="flex flex-col items-start min-w-0 flex-1">
-                    <span className={cn(
-                      "font-semibold text-foreground truncate w-full",
-                      isSelected && "text-primary"
-                    )}>
-                      {model.label}
-                    </span>
-                    
-                    {/* Model provider badge */}
-                    <div className="flex items-center gap-2 mt-1">
-                      {isRecommended && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-600 dark:text-blue-300 font-medium border border-blue-500/30">
-                          ⭐ Recommended
-                        </span>
-                      )}
-                      
-                      {isCustom && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-gray-500/20 to-gray-600/20 text-gray-600 dark:text-gray-300 font-medium border border-gray-500/30">
-                          Custom
-                        </span>
-                      )}
+                  {/* Quality indicator overlay */}
+                  {isLowQuality && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full border-2 border-background flex items-center justify-center">
+                      <AlertTriangle className="w-2 h-2 text-white" />
                     </div>
-                  </div>
+                  )}
                 </div>
                 
-                {/* Right side actions */}
-                <div className="flex items-center gap-2 ml-2">
-                  {isLocalMode() && isCustom && (
-                    <>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEditCustomModelDialog(model, e);
-                        }}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteCustomModel(model.id, e);
-                        }}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                      >
-                        <Trash className="h-3.5 w-3.5" />
-                      </button>
-                    </>
-                  )}
+                {/* Model Info */}
+                <div className="flex flex-col items-start min-w-0 flex-1">
+                  <span className={cn(
+                    "font-semibold text-foreground truncate w-full",
+                    isSelected && "text-primary"
+                  )}>
+                    {model.label}
+                  </span>
                   
-                  {/* Selection indicator */}
-                  {isSelected && (
-                    <div className="w-5 h-5 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center">
-                      <Check className="h-3 w-3 text-white" />
-                    </div>
-                  )}
+                  {/* Model provider badge */}
+                  <div className="flex items-center gap-2 mt-1">
+                    {isRecommended && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-600 dark:text-blue-300 font-medium border border-blue-500/30">
+                        ⭐ Recommended
+                      </span>
+                    )}
+                    
+                    {isCustom && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-gray-500/20 to-gray-600/20 text-gray-600 dark:text-gray-300 font-medium border border-gray-500/30">
+                        Custom
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </DropdownMenuItem>
-            </div>
-          </TooltipTrigger>
+              </div>
+              
+              {/* Right side actions */}
+              <div className="flex items-center gap-2 ml-2">
+                {isLocalMode() && isCustom && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditCustomModelDialog(model, e);
+                      }}
+                      className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteCustomModel(model.id, e);
+                      }}
+                      className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                    >
+                      <Trash className="h-3.5 w-3.5" />
+                    </button>
+                  </>
+                )}
+                
+                {/* Selection indicator */}
+                {isSelected && (
+                  <div className="w-5 h-5 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center">
+                    <Check className="h-3 w-3 text-white" />
+                  </div>
+                )}
+              </div>
+            </DropdownMenuItem>
+          </div>
+        </TooltipTrigger>
           {!accessible && !isLocalMode() ? (
             <TooltipContent side="left" className="text-xs max-w-xs">
               <p>Upgrade required to access this model</p>
@@ -437,57 +441,57 @@ export function AgentModelSelector({
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <Tooltip>
           <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild disabled={disabled}>
-                {variant === 'menu-item' ? (
-                  <div
-                    className={cn(
-                      "flex items-center justify-between cursor-pointer rounded-lg px-3 py-2 mx-0 my-0.5 text-sm hover:bg-accent",
-                      disabled && "opacity-50 cursor-not-allowed",
-                      className
-                    )}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="relative flex items-center justify-center">
-                        <Cpu className="h-4 w-4" />
-                        {MODELS[selectedModel]?.lowQuality && (
-                          <AlertTriangle className="h-2.5 w-2.5 text-amber-500 absolute -top-1 -right-1" />
-                        )}
-                      </div>
-                      <span className="truncate">{selectedModelDisplay}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {MODELS[selectedModel]?.recommended && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium">
-                          Recommended
-                        </span>
-                      )}
-                      <Check className="h-4 w-4 text-blue-500" />
-                    </div>
-                  </div>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                      "h-8 px-4 py-2",
-                      disabled && "opacity-50 cursor-not-allowed",
-                      className
-                    )}
-                  >
+            <DropdownMenuTrigger asChild disabled={disabled}>
+              {variant === 'menu-item' ? (
+                <div
+                  className={cn(
+                    "flex items-center justify-between cursor-pointer rounded-lg px-3 py-2 mx-0 my-0.5 text-sm hover:bg-accent",
+                    disabled && "opacity-50 cursor-not-allowed",
+                    className
+                  )}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
                     <div className="relative flex items-center justify-center">
                       <Cpu className="h-4 w-4" />
                       {MODELS[selectedModel]?.lowQuality && (
                         <AlertTriangle className="h-2.5 w-2.5 text-amber-500 absolute -top-1 -right-1" />
                       )}
                     </div>
-                    <span className="text-sm">{selectedModelDisplay}</span>
-                  </Button>
-                )}
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent side={variant === 'menu-item' ? 'left' : 'top'} className="text-xs">
-              <p>Choose a model for this agent</p>
-            </TooltipContent>
+                    <span className="truncate">{selectedModelDisplay}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {MODELS[selectedModel]?.recommended && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium">
+                        Recommended
+                      </span>
+                    )}
+                    <Check className="h-4 w-4 text-blue-500" />
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    "h-8 px-4 py-2",
+                    disabled && "opacity-50 cursor-not-allowed",
+                    className
+                  )}
+                >
+                  <div className="relative flex items-center justify-center">
+                    <Cpu className="h-4 w-4" />
+                    {MODELS[selectedModel]?.lowQuality && (
+                      <AlertTriangle className="h-2.5 w-2.5 text-amber-500 absolute -top-1 -right-1" />
+                    )}
+                  </div>
+                  <span className="text-sm">{selectedModelDisplay}</span>
+                </Button>
+              )}
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent side={variant === 'menu-item' ? 'left' : 'top'} className="text-xs">
+            <p>Choose a model for this agent</p>
+          </TooltipContent>
         </Tooltip>
         <DropdownMenuContent
           align={variant === 'menu-item' ? 'end' : 'start'}
@@ -500,37 +504,23 @@ export function AgentModelSelector({
                 <span className="text-xs font-medium text-muted-foreground p-2 px-4">All Models</span>
                 {isLocalMode() && (
                   <div className="flex items-center gap-1 p-2">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                          <Link
-                            href="/settings/env-manager"
-                            className="h-6 w-6 p-0 flex items-center justify-center"
-                          >
-                            <KeyRound className="h-3.5 w-3.5" />
-                          </Link>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="text-xs">
-                          Local .Env Manager
-                        </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-6 w-6 p-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openAddCustomModelDialog(e);
-                            }}
-                          >
-                            <Plus className="h-3.5 w-3.5" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="text-xs">
-                          Add a custom model
-                        </TooltipContent>
-                    </Tooltip>
+                    <Link
+                      href="/settings/env-manager"
+                      className="h-6 w-6 p-0 flex items-center justify-center"
+                    >
+                      <KeyRound className="h-3.5 w-3.5" />
+                    </Link>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 w-6 p-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openAddCustomModelDialog(e);
+                      }}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 )}
               </div>
@@ -571,40 +561,40 @@ export function AgentModelSelector({
                             return (
                               <Tooltip key={`premium-${model.id}-${index}`}>
                                 <TooltipTrigger asChild>
-                                    <div className='w-full'>
-                                      <DropdownMenuItem
-                                        className={cn(
-                                          "text-sm px-3 rounded-lg py-2 mx-2 my-0.5 flex items-center justify-between cursor-pointer",
-                                          !canAccess && "opacity-70"
+                                  <div className='w-full'>
+                                    <DropdownMenuItem
+                                      className={cn(
+                                        "text-sm px-3 rounded-lg py-2 mx-2 my-0.5 flex items-center justify-between cursor-pointer",
+                                        !canAccess && "opacity-70"
+                                      )}
+                                      onClick={() => handleSelect(model.id)}
+                                    >
+                                      <div className="flex items-center">
+                                        <span className="font-medium">{model.label}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        {isRecommended && (
+                                          <span className="text-xs px-1.5 py-0.5 rounded-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium whitespace-nowrap">
+                                            Recommended
+                                          </span>
                                         )}
-                                        onClick={() => handleSelect(model.id)}
-                                      >
-                                        <div className="flex items-center">
-                                          <span className="font-medium">{model.label}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                          {isRecommended && (
-                                            <span className="text-xs px-1.5 py-0.5 rounded-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium whitespace-nowrap">
-                                              Recommended
-                                            </span>
-                                          )}
-                                          {!canAccess && <Crown className="h-3.5 w-3.5 text-blue-500" />}
-                                          {selectedModel === model.id && (
-                                            <Check className="h-4 w-4 text-blue-500" />
-                                          )}
-                                        </div>
-                                      </DropdownMenuItem>
-                                    </div>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="left" className="text-xs max-w-xs">
-                                    <p>
-                                      {canAccess 
-                                        ? (isRecommended ? 'Recommended for optimal performance' : 'Premium model') 
-                                        : 'Requires subscription to access premium model'
-                                      }
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
+                                        {!canAccess && <Crown className="h-3.5 w-3.5 text-blue-500" />}
+                                        {selectedModel === model.id && (
+                                          <Check className="h-4 w-4 text-blue-500" />
+                                        )}
+                                      </div>
+                                    </DropdownMenuItem>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="left" className="text-xs max-w-xs">
+                                  <p>
+                                    {canAccess 
+                                      ? (isRecommended ? 'Recommended for optimal performance' : 'Premium model') 
+                                      : 'Requires subscription to access premium model'
+                                    }
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
                             );
                           })}
                           {subscriptionStatus !== 'active' && (
@@ -645,6 +635,7 @@ export function AgentModelSelector({
                     </div>
                   )}
                 </div>
+              )}
             </div>
           </div>
         </DropdownMenuContent>

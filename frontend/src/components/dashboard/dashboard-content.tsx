@@ -18,7 +18,6 @@ import { BillingErrorAlert } from '@/components/billing/usage-limit-alert';
 import { useAccounts } from '@/hooks/use-accounts';
 import { config, isLocalMode, isStagingMode } from '@/lib/config';
 import { useInitiateAgentWithInvalidation } from '@/hooks/react-query/dashboard/use-initiate-agent';
-
 import { useAgents } from '@/hooks/react-query/agents/use-agents';
 import { cn } from '@/lib/utils';
 import { BillingModal } from '@/components/billing/billing-modal';
@@ -34,13 +33,20 @@ import { ReleaseBadge } from '../auth/release-badge';
 import { useDashboardTour } from '@/hooks/use-dashboard-tour';
 import { TourConfirmationDialog } from '@/components/tour/TourConfirmationDialog';
 import { Calendar, MessageSquare, Plus, Sparkles, Zap } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { IntegrationsRegistry } from '@/components/agents/integrations-registry';
 
 const PENDING_PROMPT_KEY = 'pendingAgentPrompt';
 
 const dashboardTourSteps: Step[] = [
   {
     target: '[data-tour="chat-input"]',
-    content: 'Type your questions or tasks here. Suna can help with research, analysis, automation, and much more.',
+    content: 'Type your questions or tasks here. Xera can help with research, analysis, automation, and much more.',
     title: 'Start a Conversation',
     placement: 'top',
     disableBeacon: true,
@@ -334,30 +340,39 @@ export function DashboardContent() {
         onOpenChange={setShowPaymentModal}
         showUsageLimitAlert={true}
       />
-      <div className="flex flex-col h-screen w-full overflow-hidden">
+      <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
         <div className="flex-1 overflow-y-auto">
           <div className="min-h-full flex flex-col">
+            {/* Header Section */}
             {customAgentsEnabled && (
-              <div className="flex justify-center px-4 pt-4 md:pt-8">
+              <div className="flex justify-center px-4 pt-6">
                 <ReleaseBadge text="Custom Agents, Playbooks, and more!" link="/agents?tab=my-agents" />
               </div>
             )}
-            <div className="flex-1 flex items-center justify-center px-4 py-8">
-              <div className="w-full max-w-[650px] flex flex-col items-center justify-center space-y-4 md:space-y-6">
-                <div className="flex flex-col items-center text-center w-full">
-                  <p 
-                    className="tracking-tight text-2xl md:text-3xl font-normal text-foreground/90"
-                    data-tour="dashboard-title"
-                  >
-                    What would you like to do today?
+            
+            {/* Main Content - ChatGPT-like centered layout */}
+            <div className="flex-1 flex items-center justify-center px-4 py-12">
+              <div className="w-full max-w-3xl flex flex-col items-center justify-center space-y-8">
+                {/* Logo/Branding Area */}
+                <div className="flex flex-col items-center text-center space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/10 flex items-center justify-center mb-2">
+                    <div className="text-xl font-bold text-primary">X</div>
+                  </div>
+                  <h1 className="text-4xl md:text-5xl font-light text-foreground tracking-tight">
+                    How can I help you today?
+                  </h1>
+                  <p className="text-lg text-muted-foreground font-light max-w-md">
+                    I'm Xera, your AI assistant. I can help with research, analysis, automation, and much more.
                   </p>
                 </div>
-                <div className="w-full" data-tour="chat-input">
+                
+                {/* Chat Input */}
+                <div className="w-full max-w-2xl" data-tour="chat-input">
                   <ChatInput
                     ref={chatInputRef}
                     onSubmit={handleSubmit}
                     loading={isSubmitting}
-                    placeholder="Describe what you need help with..."
+                    placeholder="Message Xera..."
                     value={inputValue}
                     onChange={setInputValue}
                     hideAttachments={false}
@@ -367,14 +382,18 @@ export function DashboardContent() {
                     onConfigureAgent={(agentId) => router.push(`/agents/config/${agentId}`)}
                   />
                 </div>
-                <div className="w-full" data-tour="examples">
-                  <Examples onSelectPrompt={setInputValue} count={isMobile ? 3 : 4} />
+                
+                {/* Example Prompts */}
+                <div className="w-full max-w-4xl" data-tour="examples">
+                  <Examples onSelectPrompt={setInputValue} count={isMobile ? 2 : 4} />
                 </div>
               </div>
             </div>
+            
+            {/* Bottom Section - Custom Agents */}
             {enabledEnvironment && customAgentsEnabled && (
-              <div className="w-full px-4 pb-8" data-tour="custom-agents">
-                <div className="max-w-7xl mx-auto">
+              <div className="w-full px-4 pb-8 bg-muted/20 border-t border-border/10" data-tour="custom-agents">
+                <div className="max-w-7xl mx-auto py-8">
                   <CustomAgentsSection 
                     onAgentSelect={setSelectedAgent}
                   />
