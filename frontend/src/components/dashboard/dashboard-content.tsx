@@ -51,13 +51,6 @@ const dashboardTourSteps: Step[] = [
     disableBeacon: true,
   },
   {
-    target: '[data-tour="my-agents"]',
-    content: 'Create and manage your custom AI agents here. Build specialized agents for different tasks and workflows.',
-    title: 'Manage Your Agents',
-    placement: 'right',
-    disableBeacon: true,
-  },
-  {
     target: '[data-tour="examples"]',
     content: 'Get started quickly with these featured examples. Click any example to try it out and see what Xera can do for you.',
     title: 'Featured Examples',
