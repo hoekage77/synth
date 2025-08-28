@@ -27,7 +27,6 @@ import { useThreadQuery } from '@/hooks/react-query/threads/use-threads';
 import { normalizeFilenameToNFC } from '@/lib/utils/unicode';
 import { AgentRunLimitDialog } from '@/components/thread/agent-run-limit-dialog';
 import { useFeatureFlag } from '@/lib/feature-flags';
-import { CustomAgentsSection } from './custom-agents-section';
 import { toast } from 'sonner';
 import { ReleaseBadge } from '../auth/release-badge';
 import { useDashboardTour } from '@/hooks/use-dashboard-tour';
@@ -400,17 +399,6 @@ export function DashboardContent() {
                 </div>
               </div>
             </div>
-            
-            {/* Bottom Section - Custom Agents */}
-            {enabledEnvironment && customAgentsEnabled && (
-              <div className="w-full px-4 pb-8 bg-muted/20 border-t border-border/10" data-tour="custom-agents">
-                <div className="max-w-7xl mx-auto py-8">
-                  <CustomAgentsSection 
-                    onAgentSelect={setSelectedAgent}
-                  />
-                </div>
-              </div>
-            )}
           </div>
         </div>
         
