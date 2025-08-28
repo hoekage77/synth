@@ -11,6 +11,7 @@ import { HtmlRenderer } from './html-renderer';
 import { constructHtmlPreviewUrl } from '@/lib/utils/url';
 import { CsvRenderer } from './csv-renderer';
 import { XlsxRenderer } from './xlsx-renderer';
+import type { Project } from '@/lib/api';
 
 export type FileType =
   | 'markdown'
@@ -28,14 +29,7 @@ interface FileRendererProps {
   fileName: string;
   filePath?: string;
   className?: string;
-  project?: {
-    sandbox?: {
-      id?: string;
-      sandbox_url?: string;
-      vnc_preview?: string;
-      pass?: string;
-    };
-  };
+  project?: Project;
   markdownRef?: React.RefObject<HTMLDivElement>;
   onDownload?: () => void;
   isDownloading?: boolean;
@@ -179,7 +173,10 @@ export function FileRenderer({
   // Construct HTML file preview URL if we have a sandbox and the file is HTML
   const htmlPreviewUrl =
     isHtmlFile && project?.sandbox?.sandbox_url && (filePath || fileName)
-      ? constructHtmlPreviewUrl(project.sandbox.sandbox_url, filePath || fileName)
+      ? constructHtmlPreviewUrl(
+          project.sandbox.sandbox_url,
+          filePath || fileName,
+        )
       : blobHtmlUrl; // Use blob URL as fallback
 
   // Clean up blob URL on unmount
@@ -191,46 +188,71 @@ export function FileRenderer({
     };
   }, [blobHtmlUrl]);
 
-  return (
-    <div className={cn('w-full h-full', className)}>
-      {fileType === 'binary' ? (
-        <BinaryRenderer url={binaryUrl || ''} fileName={fileName} onDownload={onDownload} isDownloading={isDownloading} />
-      ) : fileType === 'image' && binaryUrl ? (
-        <ImageRenderer url={binaryUrl} />
-      ) : fileType === 'pdf' && binaryUrl ? (
-        <PdfRenderer url={binaryUrl} />
-      ) : fileType === 'markdown' ? (
-        <MarkdownRenderer content={content || ''} ref={markdownRef} project={project} />
-      ) : fileType === 'csv' ? (
-        <CsvRenderer content={content || ''} />
-      ) : fileType === 'xlsx' ? (
-        <XlsxRenderer 
-          content={content}
-          filePath={filePath}
-          fileName={fileName}
-          project={project}
-          onDownload={onDownload}
-          isDownloading={isDownloading}
-        />
-      ) : isHtmlFile ? (
+  const renderFile = () => {
+    if (isHtmlFile) {
+      return (
         <HtmlRenderer
           content={content || ''}
           previewUrl={htmlPreviewUrl || ''}
           className="w-full h-full"
         />
-      ) : fileType === 'code' || fileType === 'text' ? (
-        <CodeRenderer
-          content={content || ''}
-          language={language}
-          className="w-full h-full"
-        />
-      ) : (
-        <div className="w-full h-full p-4">
-          <pre className="text-sm font-mono whitespace-pre-wrap break-words leading-relaxed bg-muted/30 p-4 rounded-lg overflow-auto max-h-full">
-            {content || ''}
-          </pre>
-        </div>
-      )}
-    </div>
-  );
+      );
+    }
+
+    switch (fileType) {
+      case 'binary':
+        return (
+          <BinaryRenderer
+            url={binaryUrl || ''}
+            fileName={fileName}
+            onDownload={onDownload}
+            isDownloading={isDownloading}
+          />
+        );
+      case 'image':
+        return binaryUrl ? <ImageRenderer url={binaryUrl} /> : null;
+      case 'pdf':
+        return binaryUrl ? <PdfRenderer url={binaryUrl} /> : null;
+      case 'markdown':
+        return (
+          <MarkdownRenderer
+            content={content || ''}
+            ref={markdownRef}
+            project={project}
+          />
+        );
+      case 'code':
+      case 'text':
+        return (
+          <CodeRenderer
+            content={content || ''}
+            language={language}
+            className="w-full h-full"
+          />
+        );
+      case 'csv':
+        return <CsvRenderer content={content || ''} />;
+      case 'xlsx':
+        return (
+          <XlsxRenderer
+            content={content}
+            filePath={filePath}
+            fileName={fileName}
+            project={project}
+            onDownload={onDownload}
+            isDownloading={isDownloading}
+          />
+        );
+      default:
+        return (
+          <div className="w-full h-full p-4">
+            <pre className="text-sm font-mono whitespace-pre-wrap break-words leading-relaxed bg-muted/30 p-4 rounded-lg overflow-auto max-h-full">
+              {content || ''}
+            </pre>
+          </div>
+        );
+    }
+  };
+
+  return <div className={cn('w-full h-full', className)}>{renderFile()}</div>;
 }

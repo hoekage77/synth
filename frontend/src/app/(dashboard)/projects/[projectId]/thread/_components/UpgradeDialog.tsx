@@ -97,3 +97,4 @@ export function UpgradeDialog({ open, onOpenChange, onDismiss }: UpgradeDialogPr
         />
       </>
     ); 
+} 
