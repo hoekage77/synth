@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Cpu, Search, Check, ChevronDown, Plus, ExternalLink } from 'lucide-react';
+import { Cpu, Search, Check, ChevronDown, Plus, ExternalLink, Crown, Bot } from 'lucide-react';
 import { useAgents } from '@/hooks/react-query/agents/use-agents';
 import { XeraLogo } from '@/components/sidebar/kortix-logo';
 import type { ModelOption, SubscriptionStatus } from './_use-model-selection';
@@ -30,6 +30,26 @@ import { PlaybookExecuteDialog } from '@/components/playbooks/playbook-execute-d
 import { AgentAvatar } from '@/components/thread/content/agent-avatar';
 import { AgentModelSelector } from '@/components/agents/config/model-selector';
 import { useRouter } from 'next/navigation';
+import { isLocalMode } from '@/lib/config';
+
+// Model icons definition
+const MODEL_ICONS = {
+    openai: {
+        icon: 'AI',
+        bgColor: 'bg-green-100',
+        borderColor: 'border-green-300'
+    },
+    anthropic: {
+        icon: 'A',
+        bgColor: 'bg-orange-100',
+        borderColor: 'border-orange-300'
+    },
+    custom: {
+        icon: 'C',
+        bgColor: 'bg-blue-100',
+        borderColor: 'border-blue-300'
+    }
+};
 
 type UnifiedConfigMenuProps = {
     isLoggedIn?: boolean;
@@ -71,9 +91,31 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
     const [showNewAgentDialog, setShowNewAgentDialog] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const [execDialog, setExecDialog] = useState<{ open: boolean; playbook: any | null; agentId: string | null }>({ open: false, playbook: null, agentId: null });
+    const [isCustomModelDialogOpen, setIsCustomModelDialogOpen] = useState(false);
+    const [dialogInitialData, setDialogInitialData] = useState(null);
 
     const { data: agentsResponse } = useAgents({}, { enabled: isLoggedIn });
     const agents: any[] = agentsResponse?.agents || [];
+
+    // Filtered models for display
+    const filteredModels = useMemo(() => {
+        if (!searchQuery.trim()) return modelOptions.filter(m => canAccessModel(m.id));
+        const query = searchQuery.toLowerCase();
+        return modelOptions.filter(model => 
+            canAccessModel(model.id) && (
+                model.label.toLowerCase().includes(query) || 
+                model.id.toLowerCase().includes(query)
+            )
+        );
+    }, [modelOptions, searchQuery, canAccessModel]);
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            setIsOpen(false);
+            return;
+        }
+        e.stopPropagation();
+    };
 
     // Get current model info
     const currentModel = modelOptions.find(m => m.id === selectedModel);
@@ -340,10 +382,11 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                                                 <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
                                             </div>
                                         </DropdownMenuItem>
-                                    );
-                                })
-                            )}
+                                    </TooltipTrigger>
+                                </Tooltip>
+                            </TooltipProvider>
                         </div>
+                    )}
 
                         {/* Footer Actions - Minimal and Clean */}
                         <div className="p-4 border-t border-border/10 bg-muted/10">
@@ -448,18 +491,6 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                 playbook={execDialog.playbook as any}
                 agentId={execDialog.agentId || ''}
             />
-
-<<<<<<< HEAD
-            <CustomModelDialog
-                isOpen={isCustomModelDialogOpen}
-                onClose={() => setIsCustomModelDialogOpen(false)}
-                onSave={() => {}}
-                initialData={dialogInitialData}
-                mode={"add"}
-            />
-=======
-
->>>>>>> upstream/main
         </>
     );
 };

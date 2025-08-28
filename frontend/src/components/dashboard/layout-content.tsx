@@ -24,7 +24,6 @@ import {
 } from '@/components/ui/tooltip';
 
 import { useProjects, useThreads } from '@/hooks/react-query/sidebar/use-sidebar';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { useAgents } from '@/hooks/react-query/agents/use-agents';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 
@@ -133,22 +132,6 @@ export default function DashboardLayoutContent({
 
   return (
     <DeleteOperationProvider>
-<<<<<<< HEAD
-      <SidebarProvider defaultOpen={true}>
-        <div className="flex h-screen w-full">
-          {/* Floating mobile menu button */}
-          <FloatingMobileMenuButton />
-          
-          {/* Sidebar - takes up space and pushes content */}
-          <SidebarLeft />
-          
-          {/* Main content area - flex-1 to take remaining space */}
-          <main className="flex-1 bg-background overflow-hidden">
-            {mantenanceBanner}
-            <div className="w-full h-full">{children}</div>
-          </main>
-        </div>
-=======
       <SubscriptionProvider>
         <SidebarProvider>
           <SidebarLeft />
@@ -156,7 +139,6 @@ export default function DashboardLayoutContent({
             {mantenanceBanner}
             <div className="bg-background">{children}</div>
           </SidebarInset>
->>>>>>> upstream/main
 
           {/* <PricingAlert 
           open={showPricingAlert} 
