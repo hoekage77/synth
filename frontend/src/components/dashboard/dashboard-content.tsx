@@ -60,8 +60,8 @@ const dashboardTourSteps: Step[] = [
   },
   {
     target: '[data-tour="examples"]',
-    content: 'Get started quickly with these example prompts. Click any example to try it out.',
-    title: 'Example Prompts',
+    content: 'Get started quickly with these featured examples. Click any example to try it out and see what Xera can do for you.',
+    title: 'Featured Examples',
     placement: 'top',
     disableBeacon: true,
   },
@@ -378,8 +378,8 @@ export function DashboardContent() {
                     hideAttachments={false}
                     selectedAgentId={selectedAgentId}
                     onAgentSelect={setSelectedAgent}
-                    hideAgentSelection={true}
-                    enableAdvancedConfig={false}
+                    hideAgentSelection={false}
+                    enableAdvancedConfig={true}
                     onConfigureAgent={(agentId) => router.push(`/agents/config/${agentId}`)}
                   />
                 </div>
