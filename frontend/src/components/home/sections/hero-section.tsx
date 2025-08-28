@@ -51,7 +51,6 @@ import { useFeatureFlag } from '@/lib/feature-flags';
 import { TooltipContent } from '@/components/ui/tooltip';
 import { Tooltip } from '@/components/ui/tooltip';
 import { TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip';
-import { BillingModal } from '@/components/billing/billing-modal';
 
 // Custom dialog overlay with blur effect
 const BlurredDialogOverlay = () => (

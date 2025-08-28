@@ -124,7 +124,7 @@ export function useToolCalls(
           return metadata.assistant_message_id === assistantMsg.message_id;
         } catch (e) {
           return false;
-
+        }
       });
 
       if (resultMessage) {

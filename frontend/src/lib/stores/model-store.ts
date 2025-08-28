@@ -45,7 +45,7 @@ const DEFAULT_PREMIUM_MODEL_ID = 'claude-sonnet-4';
 export const useModelStore = create<ModelStore>()(
   persist(
     (set, get) => ({
-      selectedModel: DEFAULT_FREE_MODEL_ID,
+      selectedModel: DEFAULT_PREMIUM_MODEL_ID, // Use Claude Sonnet 4 as default
       customModels: [],
       hasHydrated: false,
       
@@ -76,7 +76,7 @@ export const useModelStore = create<ModelStore>()(
         
         const updates: Partial<ModelStore> = { customModels: newCustomModels };
         if (selectedModel === id) {
-          updates.selectedModel = DEFAULT_FREE_MODEL_ID;
+          updates.selectedModel = DEFAULT_PREMIUM_MODEL_ID; // Use Claude Sonnet 4 as default
         }
         
         set(updates);
@@ -91,15 +91,13 @@ export const useModelStore = create<ModelStore>()(
       },
       
       getDefaultModel: (subscriptionStatus: SubscriptionStatus) => {
-        if (isLocalMode()) {
-          return DEFAULT_PREMIUM_MODEL_ID;
-        }
-        return subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
+        // All models are free now, so always use Claude Sonnet 4 as default
+        return DEFAULT_PREMIUM_MODEL_ID;
       },
       
       resetToDefault: (subscriptionStatus: SubscriptionStatus) => {
-        const defaultModel = get().getDefaultModel(subscriptionStatus);
-        set({ selectedModel: defaultModel });
+        // All models are free now, so always use Claude Sonnet 4 as default
+        set({ selectedModel: DEFAULT_PREMIUM_MODEL_ID });
       },
     }),
     {

@@ -61,7 +61,7 @@ export function WorkflowLayout({
     return (
         <div className="flex h-screen">
             <div
-                className={`flex flex-col flex-1 overflow-hidden transition-all duration-200 ease-in-out ${isSidePanelOpen
+                className={`flex flex-col flex-1 transition-all duration-200 ease-in-out ${isSidePanelOpen
                     ? 'mr-[90%] sm:mr-[450px] md:mr-[500px] lg:mr-[550px] xl:mr-[650px]'
                     : ''
                     }`}
@@ -78,6 +78,7 @@ export function WorkflowLayout({
                     onDescriptionChange={onDescriptionChange}
                 />
 
+                {/* Main content area with proper scroll isolation */}
                 <div className="flex-1 overflow-y-auto overflow-x-hidden">
                     {children}
                 </div>

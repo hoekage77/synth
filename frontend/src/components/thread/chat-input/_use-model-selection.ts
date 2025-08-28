@@ -177,10 +177,8 @@ export const canAccessModel = (
   subscriptionStatus: SubscriptionStatus,
   requiresSubscription: boolean,
 ): boolean => {
-  if (isLocalMode()) {
-    return true;
-  }
-  return subscriptionStatus === 'active' || !requiresSubscription;
+  // Make all models available to all users
+  return true;
 };
 
 export const formatModelName = (name: string): string => {
@@ -336,14 +334,10 @@ export const useModelSelectionOld = () => {
     return sortedModels;
   }, [modelsData, isLoadingModels, customModels]);
 
-  // Get filtered list of models the user can access (no additional sorting)
+  // Get filtered list of models the user can access (all models are free now)
   const availableModels = useMemo(() => {
-    return isLocalMode() 
-      ? MODEL_OPTIONS 
-      : MODEL_OPTIONS.filter(model => 
-          canAccessModel(subscriptionStatus, model.requiresSubscription)
-        );
-  }, [MODEL_OPTIONS, subscriptionStatus]);
+    return MODEL_OPTIONS; // All models are available to all users
+  }, [MODEL_OPTIONS]);
 
   // Initialize selected model from localStorage ONLY ONCE
   useEffect(() => {
@@ -402,19 +396,19 @@ export const useModelSelectionOld = () => {
         }
       }
       
-      // Fallback to default model
-      const defaultModel = subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
+      // Fallback to default model - all models are free now
+      const defaultModel = DEFAULT_PREMIUM_MODEL_ID; // Use Claude Sonnet 4 as default
       console.log('🔧 useModelSelection: Using default model:', defaultModel);
-      console.log('🔧 useModelSelection: Subscription status:', subscriptionStatus, '-> Default:', subscriptionStatus === 'active' ? 'PREMIUM (Claude Sonnet 4)' : 'FREE (KIMi K2)');
+      console.log('🔧 useModelSelection: All models are free - using Claude Sonnet 4 as default');
       setSelectedModel(defaultModel);
       saveModelPreference(defaultModel);
       setHasInitialized(true);
       
     } catch (error) {
       console.warn('❌ useModelSelection: Failed to load preferences from localStorage:', error);
-      const defaultModel = subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
+      const defaultModel = DEFAULT_PREMIUM_MODEL_ID; // Use Claude Sonnet 4 as default
       console.log('🔧 useModelSelection: Using fallback default model:', defaultModel);
-      console.log('🔧 useModelSelection: Subscription status:', subscriptionStatus, '-> Fallback:', subscriptionStatus === 'active' ? 'PREMIUM (Claude Sonnet 4)' : 'FREE (KIMi K2)');
+      console.log('🔧 useModelSelection: All models are free - using Claude Sonnet 4 as fallback');
       setSelectedModel(defaultModel);
       saveModelPreference(defaultModel);
       setHasInitialized(true);
@@ -436,49 +430,26 @@ export const useModelSelectionOld = () => {
     // If the saved model is now invalid, switch to default
     if (!modelOption && !isCustomModel) {
       console.warn('⚠️ useModelSelection: Saved model is invalid after loading, switching to default');
-      const defaultModel = subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
+      const defaultModel = DEFAULT_PREMIUM_MODEL_ID; // Use Claude Sonnet 4 as default
       setSelectedModel(defaultModel);
       saveModelPreference(defaultModel);
-    } else if (modelOption && !isLocalMode()) {
-      // Check subscription access for non-custom models
-      const isAccessible = canAccessModel(subscriptionStatus, modelOption.requiresSubscription);
-      if (!isAccessible) {
-        console.warn('⚠️ useModelSelection: Saved model not accessible after subscription check, switching to default');
-        const defaultModel = subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
-        setSelectedModel(defaultModel);
-        saveModelPreference(defaultModel);
-      }
     }
+    // All models are free now, so no subscription checks needed
   }, [isLoadingModels, hasInitialized, MODEL_OPTIONS, customModels, subscriptionStatus]);
 
-  // Re-validate current model when subscription status changes
+  // All models are free now, so no subscription validation needed
+  // This effect is kept for compatibility but doesn't do anything
   useEffect(() => {
     if (!hasInitialized || typeof window === 'undefined') return;
     
-    console.log('🔧 useModelSelection: Subscription status changed, re-validating current model...');
+    console.log('🔧 useModelSelection: All models are free - no subscription validation needed');
     console.log('🔧 useModelSelection: Current selected model:', selectedModel);
-    console.log('🔧 useModelSelection: New subscription status:', subscriptionStatus);
     
     // Skip validation if models are still loading
     if (isLoadingModels) return;
     
-    // Check if current model is still accessible
-    const modelOption = MODEL_OPTIONS.find(option => option.id === selectedModel);
-    const isCustomModel = isLocalMode() && customModels.some(model => model.id === selectedModel);
-    
-    if (modelOption && !isCustomModel && !isLocalMode()) {
-      const isAccessible = canAccessModel(subscriptionStatus, modelOption.requiresSubscription);
-      
-      if (!isAccessible) {
-        console.warn('⚠️ useModelSelection: Current model no longer accessible, switching to default');
-        const defaultModel = subscriptionStatus === 'active' ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
-        console.log('🔧 useModelSelection: Subscription-based default switch:', subscriptionStatus === 'active' ? 'PREMIUM (Claude Sonnet 4)' : 'FREE (KIMi K2)');
-        setSelectedModel(defaultModel);
-        saveModelPreference(defaultModel);
-      } else {
-        console.log('✅ useModelSelection: Current model still accessible');
-      }
-    }
+    // All models are accessible now, so no validation needed
+    console.log('✅ useModelSelection: All models are accessible');
   }, [subscriptionStatus, selectedModel, hasInitialized, isLoadingModels]);
 
   // Handle model selection change
@@ -505,19 +476,14 @@ export const useModelSelectionOld = () => {
       console.warn('🔧 useModelSelection: Model not found in options:', modelId, MODEL_OPTIONS, isCustomModel, customModels);
       
       // Reset to default model when the selected model is not found
-      const defaultModel = isLocalMode() ? DEFAULT_PREMIUM_MODEL_ID : DEFAULT_FREE_MODEL_ID;
+      const defaultModel = DEFAULT_PREMIUM_MODEL_ID; // Use Claude Sonnet 4 as default
       console.log('🔧 useModelSelection: Resetting to default model:', defaultModel);
       setSelectedModel(defaultModel);
       saveModelPreference(defaultModel);
       return;
     }
 
-    // Check access permissions (except for custom models in local mode)
-    if (!isCustomModel && !isLocalMode() && 
-        !canAccessModel(subscriptionStatus, modelOption?.requiresSubscription ?? false)) {
-      console.warn('🔧 useModelSelection: Model not accessible:', modelId);
-      return;
-    }
+    // All models are free now, so no access permission checks needed
     
     console.log('✅ useModelSelection: Setting model to:', modelId);
     setSelectedModel(modelId);
@@ -559,7 +525,7 @@ export const useModelSelectionOld = () => {
       console.log('  isLoadingModels:', isLoadingModels);
       console.log('  localStorage value:', localStorage.getItem(STORAGE_KEY_MODEL));
       console.log('  localStorage test passes:', testLocalStorage());
-      console.log('  defaultModel would be:', subscriptionStatus === 'active' ? `${DEFAULT_PREMIUM_MODEL_ID} (Claude Sonnet 4)` : `${DEFAULT_FREE_MODEL_ID} (KIMi K2)`);
+      console.log('  defaultModel would be:', `${DEFAULT_PREMIUM_MODEL_ID} (Claude Sonnet 4) - All models are free`);
       console.log('  availableModels:', availableModels.map(m => ({ id: m.id, requiresSubscription: m.requiresSubscription })));
     }
   };

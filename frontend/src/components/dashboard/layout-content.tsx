@@ -137,7 +137,7 @@ export default function DashboardLayoutContent({
           <SidebarLeft />
           <SidebarInset>
             {mantenanceBanner}
-            <div className="bg-background">{children}</div>
+            <div className="bg-background h-full">{children}</div>
           </SidebarInset>
 
           {/* <PricingAlert 

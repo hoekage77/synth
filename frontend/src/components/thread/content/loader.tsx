@@ -1,55 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
-import { AnimatedShinyText } from '@/components/ui/animated-shiny-text';
-
-const items = [
-    { id: 1, content: "Initializing neural pathways..." },
-    { id: 2, content: "Analyzing query complexity..." },
-    { id: 3, content: "Assembling cognitive framework..." },
-    { id: 4, content: "Orchestrating thought processes..." },
-    { id: 5, content: "Synthesizing contextual understanding..." },
-    { id: 6, content: "Calibrating response parameters..." },
-    { id: 7, content: "Engaging reasoning algorithms..." },
-    { id: 8, content: "Processing semantic structures..." },
-    { id: 9, content: "Formulating strategic approach..." },
-    { id: 10, content: "Optimizing solution pathways..." },
-    { id: 11, content: "Harmonizing data streams..." },
-    { id: 12, content: "Architecting intelligent response..." },
-    { id: 13, content: "Fine-tuning cognitive models..." },
-    { id: 14, content: "Weaving narrative threads..." },
-    { id: 15, content: "Crystallizing insights..." },
-    { id: 16, content: "Preparing comprehensive analysis..." }
-  ];
+import React from 'react';
+import { motion } from 'framer-motion';
 
 export const AgentLoader = () => {
-  const [index, setIndex] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => {
-      setIndex((state) => {
-        if (state >= items.length - 1) return 0;
-        return state + 1;
-      });
-    }, 1500);
-    return () => clearInterval(id);
-  }, []);
-
   return (
-    <div className="flex py-2 items-center w-full">
-      <div>✨</div>
-      <AnimatePresence>
-      <motion.div
-          key={items[index].id}
-          initial={{ y: 20, opacity: 0, filter: "blur(8px)" }}
-          animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-          exit={{ y: -20, opacity: 0, filter: "blur(8px)" }}
-          transition={{ ease: "easeInOut" }}
-          style={{ position: "absolute" }}
-          className='ml-7'
+    <div className="flex items-center gap-2">
+      {/* Sleek animated dots */}
+      <div className="flex items-center gap-1">
+        {[0, 1, 2].map((index) => (
+          <motion.div
+            key={index}
+            className="w-1.5 h-1.5 bg-primary/60 rounded-full"
+            animate={{
+              scale: [0.8, 1.2, 0.8],
+              opacity: [0.4, 1, 0.4],
+            }}
+            transition={{
+              duration: 1.2,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: index * 0.2
+            }}
+          />
+        ))}
+      </div>
+      
+      {/* Subtle text indicator */}
+      <motion.span
+        className="text-xs text-muted-foreground font-medium"
+        animate={{
+          opacity: [0.6, 1, 0.6]
+        }}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
       >
-          <AnimatedShinyText className='text-xs'>{items[index].content}</AnimatedShinyText>
-      </motion.div>
-      </AnimatePresence>
+        Thinking...
+      </motion.span>
     </div>
   );
 };

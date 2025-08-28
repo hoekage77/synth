@@ -309,27 +309,9 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
 
                     <DropdownMenuSeparator />
 
-                    {/* Quick Actions */}
+                    {/* Playbooks Section */}
                     {onAgentSelect && (selectedAgentId || displayAgent?.agent_id) && (
                         <div className="px-1.5">
-                            <DropdownMenuItem
-                                className="text-sm px-3 py-2 mx-0 my-0.5 flex items-center gap-2 cursor-pointer rounded-lg"
-                                onClick={() => handleQuickAction('instructions')}
-                            >
-                                <span className="font-medium">Instructions</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                className="text-sm px-3 py-2 mx-0 my-0.5 flex items-center gap-2 cursor-pointer rounded-lg"
-                                onClick={() => handleQuickAction('knowledge')}
-                            >
-                                <span className="font-medium">Knowledge</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                className="text-sm px-3 py-2 mx-0 my-0.5 flex items-center gap-2 cursor-pointer rounded-lg"
-                                onClick={() => handleQuickAction('triggers')}
-                            >
-                                <span className="font-medium">Triggers</span>
-                            </DropdownMenuItem>
                             <DropdownMenuSub>
                                 <DropdownMenuSubTrigger className="flex items-center rounded-lg gap-2 px-3 py-2 mx-0 my-0.5">
                                     <span className="font-medium">Playbooks</span>
@@ -375,6 +357,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
                                                 ) : (
                                                     <>
                                                         <Skeleton className="w-4 h-4 rounded" />
+                                                        <Skeleton className="w-3.5 h-3.5 rounded" />
                                                         <Skeleton className="w-3.5 h-3.5 rounded" />
                                                         <Skeleton className="w-3.5 h-3.5 rounded" />
                                                     </>

@@ -523,7 +523,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                 // Render scrollable content container with column-reverse
                 <div
                     ref={scrollContainerRef || messagesContainerRef}
-                    className={`${containerClassName} flex flex-col-reverse ${shouldJustifyToTop ? 'justify-end min-h-full' : ''}`}
+                    className={`${containerClassName} thread-scroll-container flex flex-col-reverse ${shouldJustifyToTop ? 'justify-end min-h-full' : ''} h-full`}
                     onScroll={handleScroll}
                 >
                     <div ref={contentRef} className="mx-auto max-w-4xl md:px-8 min-w-0 w-full">
@@ -993,9 +993,9 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                             {((agentStatus === 'running' || agentStatus === 'connecting') && !streamingTextContent &&
                                 !readOnly &&
                                 (messages.length === 0 || messages[messages.length - 1].type === 'user')) && (
-                                    <div ref={latestMessageRef} className='w-full h-22 rounded'>
+                                    <div ref={latestMessageRef} className='w-full rounded'>
                                         <div className="flex flex-col gap-2">
-                                            {/* Logo positioned above the loader */}
+                                            {/* Logo and agent name */}
                                             <div className="flex items-center">
                                                 <div className="rounded-md flex items-center justify-center">
                                                     {getAgentInfo().avatar}
@@ -1005,10 +1005,10 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                                 </p>
                                             </div>
 
-                                            {/* Loader content */}
-                                            <div className="space-y-2 w-full h-12">
-                                                <AgentLoader />
-                                            </div>
+                                                                                         {/* Loader positioned directly below agent name text */}
+                                             <div className="flex justify-start ml-2">
+                                                 <AgentLoader />
+                                             </div>
                                         </div>
                                     </div>
                                 )}

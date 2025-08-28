@@ -1,7 +1,7 @@
-import React, { forwardRef, useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useState, useMemo } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Square, Loader2, ArrowUp } from 'lucide-react';
+import { Square, Loader2, ArrowUp, Brain, Database, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UploadedFile } from './chat-input';
 import { FileUploadHandler } from './file-upload-handler';
@@ -15,6 +15,8 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip';
 import { BillingModal } from '@/components/billing/billing-modal';
 import { handleFiles } from './file-upload-handler';
+import { useAgents } from '@/hooks/react-query/agents/use-agents';
+import { useRouter } from 'next/navigation';
 
 interface MessageInputProps {
   value: string;
@@ -95,6 +97,28 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
     const [billingModalOpen, setBillingModalOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const { enabled: customAgentsEnabled, loading: flagsLoading } = useFeatureFlag('custom_agents');
+    const router = useRouter();
+    
+    // Fetch agents to get the selected agent's data
+    const { data: agentsResponse } = useAgents({
+      limit: 100,
+      sort_by: 'name',
+      sort_order: 'asc'
+    });
+    
+    const agents = agentsResponse?.agents || [];
+    const displayAgent = useMemo(() => {
+      const found = agents.find(a => a.agent_id === selectedAgentId) || agents[0];
+      return found;
+    }, [agents, selectedAgentId]);
+    
+    const handleQuickAction = (action: 'instructions' | 'knowledge' | 'triggers') => {
+      if (!selectedAgentId && !displayAgent?.agent_id) {
+        return;
+      }
+      const agentId = selectedAgentId || displayAgent?.agent_id;
+      router.push(`/agents/config/${agentId}?tab=configuration&accordion=${action}`);
+    };
 
     useEffect(() => {
       setMounted(true);
@@ -183,6 +207,39 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
 
     return (
       <div className="relative flex flex-col w-full">
+                 {/* Quick Actions - Compact version above chat input */}
+         {onAgentSelect && (selectedAgentId || displayAgent?.agent_id) && (
+           <div className="flex items-center gap-1.5 px-2 mb-3">
+             <Button
+               variant="ghost"
+               size="sm"
+               className="h-6 px-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/20 rounded-md transition-colors"
+               onClick={() => handleQuickAction('instructions')}
+             >
+               <Brain className="h-3 w-3 mr-1.5 text-purple-600 dark:text-purple-400" />
+               Instructions
+             </Button>
+             <Button
+               variant="ghost"
+               size="sm"
+               className="h-6 px-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/20 rounded-md transition-colors"
+               onClick={() => handleQuickAction('knowledge')}
+             >
+               <Database className="h-3 w-3 mr-1.5 text-green-600 dark:text-green-400" />
+               Knowledge
+             </Button>
+             <Button
+               variant="ghost"
+               size="sm"
+               className="h-6 px-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/20 rounded-md transition-colors"
+               onClick={() => handleQuickAction('triggers')}
+             >
+               <Zap className="h-3 w-3 mr-1.5 text-orange-600 dark:text-orange-400" />
+               Triggers
+             </Button>
+           </div>
+         )}
+        
         <div className="flex items-end gap-2 px-2">
           <div className="flex-1 flex flex-col gap-1">
             <Textarea

@@ -66,6 +66,10 @@ function FloatingMobileMenuButton() {
   );
 }
 
+
+
+
+
 export function SidebarLeft({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
@@ -140,6 +144,7 @@ export function SidebarLeft({
     <Sidebar
       collapsible="icon"
       className="border-r-0 bg-background/95 backdrop-blur-sm [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
+      data-tour="command-center"
       {...props}
     >
       <SidebarHeader className="px-2 py-2">
@@ -152,12 +157,22 @@ export function SidebarLeft({
             </div>
           )}
           <div className="ml-auto flex items-center gap-2">
-            {state !== 'collapsed' && !isMobile && (
+            {/* Always show the trigger button, but with different styling based on state */}
+            {!isMobile && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <SidebarTrigger className="h-8 w-8" />
+                  <SidebarTrigger 
+                    className={cn(
+                      "h-8 w-8 transition-all duration-200",
+                      state === 'collapsed' 
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg" 
+                        : "hover:bg-accent"
+                    )} 
+                  />
                 </TooltipTrigger>
-                <TooltipContent>Toggle sidebar (CMD+B)</TooltipContent>
+                <TooltipContent>
+                  {state === 'collapsed' ? 'Expand sidebar (CMD+B)' : 'Collapse sidebar (CMD+B)'}
+                </TooltipContent>
               </Tooltip>
             )}
           </div>
@@ -174,6 +189,7 @@ export function SidebarLeft({
                 posthog.capture('new_task_clicked');
                 if (isMobile) setOpenMobile(false);
               }}
+              data-tour="new-task"
             >
               <Plus className="h-4 w-4 mr-1" />
               <span className="flex items-center justify-between w-full">
@@ -191,6 +207,7 @@ export function SidebarLeft({
                   if (isMobile) setOpenMobile(false);
                 }}
                 tooltip="Command Center"
+                data-tour="command-center"
               >
                 <Bot className="h-4 w-4 mr-1" />
                 <span>Command Center</span>
@@ -202,16 +219,6 @@ export function SidebarLeft({
         <NavAgents />
       </SidebarContent>
       <SidebarFooter>
-        {state === 'collapsed' && (
-          <div className="mt-2 flex justify-center">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <SidebarTrigger className="h-8 w-8" />
-              </TooltipTrigger>
-              <TooltipContent>Expand sidebar (CMD+B)</TooltipContent>
-            </Tooltip>
-          </div>
-        )}
         <NavUserWithTeams user={user} />
       </SidebarFooter>
       <SidebarRail />

@@ -126,12 +126,8 @@ export const useModelSelection = () => {
   }, [modelsData, isLoadingModels, customModels]);
 
   const availableModels = useMemo(() => {
-    return isLocalMode() 
-      ? MODEL_OPTIONS 
-      : MODEL_OPTIONS.filter(model => 
-          canAccessModel(subscriptionStatus, model.requiresSubscription)
-        );
-  }, [MODEL_OPTIONS, subscriptionStatus]);
+    return MODEL_OPTIONS; // All models are available to all users
+  }, [MODEL_OPTIONS]);
 
   // Validate model selection only after hydration and when subscription status changes
   useEffect(() => {
@@ -150,14 +146,7 @@ export const useModelSelection = () => {
       return;
     }
     
-    // For non-local mode, check if user still has access to the selected model
-    if (!isLocalMode()) {
-      const modelOption = MODEL_OPTIONS.find(m => m.id === selectedModel);
-      if (modelOption && !canAccessModel(subscriptionStatus, modelOption.requiresSubscription)) {
-        console.log('🔧 ModelSelection: User lost access to model, resetting to default');
-        resetToDefault(subscriptionStatus);
-      }
-    }
+    // All models are free now, so no subscription validation needed
   }, [hasHydrated, selectedModel, subscriptionStatus, MODEL_OPTIONS, customModels, isLoadingModels, resetToDefault]);
 
   const handleModelChange = (modelId: string) => {
@@ -170,10 +159,7 @@ export const useModelSelection = () => {
       return;
     }
 
-    if (!isCustomModel && !isLocalMode() && 
-        !canAccessModel(subscriptionStatus, modelOption?.requiresSubscription ?? false)) {
-      return;
-    }
+    // All models are free now, so no access permission checks needed
     
     setSelectedModel(modelId);
   };
@@ -218,12 +204,10 @@ export const useModelSelection = () => {
     refreshCustomModels,
     getActualModelId,
     canAccessModel: (modelId: string) => {
-      if (isLocalMode()) return true;
-      const model = MODEL_OPTIONS.find(m => m.id === modelId);
-      return model ? canAccessModel(subscriptionStatus, model.requiresSubscription) : false;
+      return true; // All models are free now
     },
     isSubscriptionRequired: (modelId: string) => {
-      return MODEL_OPTIONS.find(m => m.id === modelId)?.requiresSubscription || false;
+      return false; // All models are free now
     },
     subscriptionStatus,
   };

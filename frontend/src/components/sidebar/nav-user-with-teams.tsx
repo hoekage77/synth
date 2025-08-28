@@ -20,6 +20,10 @@ import {
   Moon,
   KeyRound,
   Plug,
+  Sparkles,
+  Zap,
+  Shield,
+  Activity,
 } from 'lucide-react';
 import { useAccounts } from '@/hooks/use-accounts';
 import NewTeamForm from '@/components/basejump/new-team-form';
@@ -183,126 +187,201 @@ export function NavUserWithTeams({
 
   return (
     <Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <SidebarMenuButton className="transition-all duration-200 text-sm tracking-wide text-muted-foreground hover:text-foreground hover:bg-muted/20 rounded-lg mx-2 font-light">
-                <Avatar className="h-8 w-8 mr-3">
-                  <AvatarImage src={user?.avatar || ''} alt={user?.name || 'User'} />
-                  <AvatarFallback className="font-light text-sm bg-muted/30 text-foreground">
-                    {getInitials(user?.name || '')}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="flex items-center justify-between w-full">
-                  <div className="flex flex-col items-start">
-                    <span className="font-medium text-foreground">{user?.name || 'User'}</span>
-                    <span className="text-xs text-muted-foreground/70 font-light">View Profile</span>
-                  </div>
-                  <ChevronDown className="h-4 w-4 ml-auto text-muted-foreground/70" />
-                </span>
-              </SidebarMenuButton>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="w-64 rounded-lg transition-all duration-200 border border-border/20 bg-background/95 backdrop-blur-xl shadow-lg"
-              side="right"
-              align="start"
-            >
-              <DropdownMenuLabel className="transition-all duration-200 font-light text-xs tracking-wide text-muted-foreground/70 px-3 py-2">
-                Account Settings
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-border/20" />
-              <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings/billing">
-                    <CreditCard className="h-4 w-4" />
-                    Billing
-                  </Link>
-                </DropdownMenuItem>
-                {!flagLoading && customAgentsEnabled && (
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings/credentials">
-                      <Plug className="h-4 w-4" />
-                      Integrations
-                    </Link>
-                  </DropdownMenuItem>
-                )}
-                {!flagLoading && customAgentsEnabled && (
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings/api-keys">
-                      <Key className="h-4 w-4" />
-                      API Keys (Admin)
-                    </Link>
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator className="bg-border/20" />
-              <DropdownMenuItem
-                onClick={() => setShowNewTeamDialog(true)}
-                className="transition-all duration-200 font-light text-xs tracking-wide cursor-pointer hover:bg-muted/20 px-3 py-2.5"
-              >
-                <Plus className="mr-3 h-4 w-4 text-muted-foreground/70" />
-                <span>Create New Team</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-border/20" />
-              <DropdownMenuItem
-                onClick={() => router.push('/settings/billing')}
-                className="transition-all duration-200 font-light text-xs tracking-wide cursor-pointer hover:bg-muted/20 px-3 py-2.5"
-              >
-                <CreditCard className="mr-3 h-4 w-4 text-muted-foreground/70" />
-                <span>Billing & Subscription</span>
-              </DropdownMenuItem>
-              {!flagLoading && customAgentsEnabled && (
-                <DropdownMenuItem
-                  onClick={() => router.push('/settings/api-keys')}
-                  className="transition-all duration-200 font-light text-xs tracking-wide cursor-pointer hover:bg-muted/20 px-3 py-2.5"
-                >
-                  <Key className="mr-3 h-4 w-4 text-muted-foreground/70" />
-                  <span>API Keys</span>
-                </DropdownMenuItem>
-              )}
-              {isLocalMode() && (
-                <DropdownMenuItem
-                  onClick={() => router.push('/settings/env-manager')}
-                  className="transition-all duration-200 font-light text-xs tracking-wide cursor-pointer hover:bg-muted/20 px-3 py-2.5"
-                >
-                  <Settings className="mr-3 h-4 w-4 text-muted-foreground/70" />
-                  <span>Environment Manager</span>
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator className="bg-border/20" />
-              <DropdownMenuItem
-                onClick={() => router.push('/settings')}
-                className="transition-all duration-200 font-light text-xs tracking-wide cursor-pointer hover:bg-muted/20 px-3 py-2.5"
-              >
-                <Settings className="mr-3 h-4 w-4 text-muted-foreground/70" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={handleLogout}
-                className="transition-all duration-200 font-light text-xs tracking-wide cursor-pointer hover:bg-red-500/10 text-red-500/70 hover:text-red-500 px-3 py-2.5"
-              >
-                <LogOut className="mr-3 h-4 w-4" />
-                <span>Sign Out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </SidebarMenuItem>
-      </SidebarMenu>
+      {/* Enhanced Footer Container */}
+      <div className="border-t border-border/20 bg-gradient-to-t from-background/80 to-background/40 backdrop-blur-sm">
+        {/* Status Indicator */}
+        <div className="px-3 py-2 border-b border-border/10">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-green-500/60 animate-pulse" />
+              <span className="font-mono tracking-wide">SYSTEM_ACTIVE</span>
+            </div>
+            <div className="flex items-center gap-1.5 ml-auto">
+              <Activity className="w-3 h-3" />
+              <span className="font-mono tracking-wide">XERA_AI</span>
+            </div>
+          </div>
+        </div>
 
+        {/* User Profile Section */}
+        <SidebarMenu className="p-2">
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton className="group w-full transition-all duration-300 text-sm tracking-wide text-muted-foreground hover:text-foreground hover:bg-gradient-to-r hover:from-primary/10 hover:to-purple-500/10 rounded-xl mx-0 font-light border border-transparent hover:border-primary/20">
+                  <div className="flex items-center w-full p-2">
+                    {/* Enhanced Avatar with Glow Effect */}
+                    <div className="relative mr-3">
+                      <Avatar className="h-9 w-9 ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300">
+                        <AvatarImage src={user?.avatar || ''} alt={user?.name || 'User'} />
+                        <AvatarFallback className="font-light text-sm bg-gradient-to-br from-primary/20 to-purple-500/20 text-primary-foreground border border-primary/30">
+                          {getInitials(user?.name || '')}
+                        </AvatarFallback>
+                      </Avatar>
+                      {/* Status indicator dot */}
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background shadow-sm" />
+                    </div>
+                    
+                    {/* User Info with Enhanced Typography */}
+                    <div className="flex flex-col items-start flex-1 min-w-0">
+                      <span className="font-semibold text-foreground truncate w-full">
+                        {user?.name || 'User'}
+                      </span>
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
+                        <Sparkles className="w-3 h-3 text-primary/60" />
+                        <span className="font-mono tracking-wide truncate">View Profile</span>
+                      </div>
+                    </div>
+                    
+                    {/* Enhanced Chevron */}
+                    <ChevronDown className="h-4 w-4 ml-2 text-muted-foreground/70 group-hover:text-primary/60 transition-all duration-300 group-hover:rotate-180" />
+                  </div>
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              
+              {/* Enhanced Dropdown Menu */}
+              <DropdownMenuContent
+                className="w-72 rounded-xl transition-all duration-300 border border-border/30 bg-background/95 backdrop-blur-xl shadow-2xl shadow-primary/5"
+                side="right"
+                align="start"
+              >
+                {/* Header with Gradient */}
+                <div className="bg-gradient-to-r from-primary/5 to-purple-500/5 border-b border-border/20 rounded-t-xl p-3">
+                  <DropdownMenuLabel className="transition-all duration-200 font-semibold text-sm tracking-wide text-foreground px-0 py-0">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-primary/60" />
+                      Account Settings
+                    </div>
+                  </DropdownMenuLabel>
+                  <p className="text-xs text-muted-foreground/70 mt-1 font-light">
+                    Manage your Xera AI workspace
+                  </p>
+                </div>
+                
+                <DropdownMenuSeparator className="bg-border/20" />
+                
+                {/* Quick Actions Group */}
+                <DropdownMenuGroup>
+                  <DropdownMenuItem asChild className="group">
+                    <Link href="/settings/billing" className="flex items-center gap-3 p-3 hover:bg-gradient-to-r hover:from-primary/5 hover:to-purple-500/5 rounded-lg transition-all duration-200">
+                      <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-all duration-200">
+                        <CreditCard className="h-4 w-4 text-primary/60" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-medium text-foreground">Billing</span>
+                        <span className="text-xs text-muted-foreground/70">Manage subscription</span>
+                      </div>
+                    </Link>
+                  </DropdownMenuItem>
+                  
+                  {!flagLoading && customAgentsEnabled && (
+                    <DropdownMenuItem asChild className="group">
+                      <Link href="/settings/credentials" className="flex items-center gap-3 p-3 hover:bg-gradient-to-r hover:from-primary/5 hover:to-purple-500/5 rounded-lg transition-all duration-200">
+                        <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-all duration-200">
+                          <Plug className="h-4 w-4 text-primary/60" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-foreground">Integrations</span>
+                          <span className="text-xs text-muted-foreground/70">Connect services</span>
+                        </div>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  
+                  {!flagLoading && customAgentsEnabled && (
+                    <DropdownMenuItem asChild className="group">
+                      <Link href="/settings/api-keys" className="flex items-center gap-3 p-3 hover:bg-gradient-to-r hover:from-primary/5 hover:to-purple-500/5 rounded-lg transition-all duration-200">
+                        <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-all duration-200">
+                          <Key className="h-4 w-4 text-primary/60" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-foreground">API Keys</span>
+                          <span className="text-xs text-muted-foreground/70">Admin access</span>
+                        </div>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuGroup>
+                
+                <DropdownMenuSeparator className="bg-border/20" />
+                
+                {/* Team Management */}
+                <DropdownMenuItem
+                  onClick={() => setShowNewTeamDialog(true)}
+                  className="group flex items-center gap-3 p-3 hover:bg-gradient-to-r hover:from-primary/5 hover:to-purple-500/5 rounded-lg transition-all duration-200 cursor-pointer"
+                >
+                  <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-all duration-200">
+                    <Plus className="h-4 w-4 text-primary/60" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-medium text-foreground">Create New Team</span>
+                    <span className="text-xs text-muted-foreground/70">Collaborate with others</span>
+                  </div>
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator className="bg-border/20" />
+                
+                {/* Settings & Logout */}
+                <DropdownMenuItem
+                  onClick={() => router.push('/settings')}
+                  className="group flex items-center gap-3 p-3 hover:bg-gradient-to-r hover:from-primary/5 hover:to-purple-500/5 rounded-lg transition-all duration-200 cursor-pointer"
+                >
+                  <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-all duration-200">
+                    <Settings className="h-4 w-4 text-primary/60" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-medium text-foreground">Settings</span>
+                    <span className="text-xs text-muted-foreground/70">Preferences & config</span>
+                  </div>
+                </DropdownMenuItem>
+                
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="group flex items-center gap-3 p-3 hover:bg-gradient-to-r hover:from-red-500/5 hover:to-red-600/5 rounded-lg transition-all duration-200 cursor-pointer border border-transparent hover:border-red-500/20"
+                >
+                  <div className="p-1.5 rounded-lg bg-red-500/10 group-hover:bg-red-500/20 transition-all duration-200">
+                    <LogOut className="h-4 w-4 text-red-500/60" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-medium text-red-500/80 group-hover:text-red-500">Sign Out</span>
+                    <span className="text-xs text-red-500/60">End session</span>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+
+        {/* Footer Status Bar */}
+        <div className="px-3 py-2 border-t border-border/10">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5 text-muted-foreground/60">
+              <Zap className="w-3 h-3 text-primary/40" />
+              <span className="font-mono tracking-wide">v2.1.0</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-muted-foreground/60">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+              <span className="font-mono tracking-wide">ONLINE</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Dialog Content */}
       <DialogContent className={cn(
         "sm:max-w-md transition-all duration-300",
         isDarkMode 
-          ? "bg-black/95 border-cyan-500/30 backdrop-blur-lg" 
-          : "bg-white/95 border-cyan-500/30 backdrop-blur-lg"
+          ? "bg-black/95 border-primary/30 backdrop-blur-lg" 
+          : "bg-white/95 border-primary/30 backdrop-blur-lg"
       )}>
         <DialogHeader>
           <DialogTitle className={cn(
-            "font-mono text-lg tracking-wide",
+            "font-mono text-lg tracking-wide flex items-center gap-2",
             isDarkMode 
               ? "text-white" 
               : "text-gray-800"
           )}>
+            <Sparkles className="w-5 h-5 text-primary/60" />
             CREATE_NEW_TEAM
           </DialogTitle>
           <DialogDescription className={cn(

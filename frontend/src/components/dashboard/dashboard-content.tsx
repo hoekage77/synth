@@ -22,7 +22,7 @@ import { useAgents } from '@/hooks/react-query/agents/use-agents';
 import { cn } from '@/lib/utils';
 import { BillingModal } from '@/components/billing/billing-modal';
 import { useAgentSelection } from '@/lib/stores/agent-selection-store';
-import { Examples } from './examples';
+
 import { useThreadQuery } from '@/hooks/react-query/threads/use-threads';
 import { normalizeFilenameToNFC } from '@/lib/utils/unicode';
 import { AgentRunLimitDialog } from '@/components/thread/agent-run-limit-dialog';
@@ -44,17 +44,32 @@ const PENDING_PROMPT_KEY = 'pendingAgentPrompt';
 
 const dashboardTourSteps: Step[] = [
   {
+    target: '[data-tour="dashboard-main"]',
+    content: 'Welcome to your Xera dashboard! This is your central hub for AI-powered tasks and conversations.',
+    title: 'Welcome to Xera',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
     target: '[data-tour="chat-input"]',
     content: 'Type your questions or tasks here. Xera can help with research, analysis, automation, and much more.',
     title: 'Start a Conversation',
     placement: 'top',
     disableBeacon: true,
   },
+
   {
-    target: '[data-tour="examples"]',
-    content: 'Get started quickly with these featured examples. Click any example to try it out and see what Xera can do for you.',
-    title: 'Featured Examples',
-    placement: 'top',
+    target: '[data-tour="new-task"]',
+    content: 'Start a new task or conversation with Xera. This button takes you to the main dashboard where you can begin your AI-powered workflow.',
+    title: 'New Task',
+    placement: 'right',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="command-center"]',
+    content: 'Access your command center in the sidebar. Here you can manage agents, view threads, and access all your AI tools in one place.',
+    title: 'Command Center',
+    placement: 'right',
     disableBeacon: true,
   },
 ];
@@ -263,60 +278,86 @@ export function DashboardContent() {
         showSkipButton
         disableOverlayClose
         disableScrollParentFix
+        scrollToFirstStep
+        scrollOffset={100}
+        spotlightClicks
         styles={{
           options: {
-            primaryColor: '#000000',
-            backgroundColor: '#ffffff',
-            textColor: '#000000',
-            overlayColor: 'rgba(0, 0, 0, 0.7)',
-            arrowColor: '#ffffff',
-            zIndex: 1000,
+            primaryColor: '#3b82f6',
+            backgroundColor: '#0f172a',
+            textColor: '#ffffff',
+            overlayColor: 'rgba(0, 0, 0, 0.85)',
+            arrowColor: '#0f172a',
+            zIndex: 10000,
           },
           tooltip: {
-            backgroundColor: '#ffffff',
-            borderRadius: 8,
-            fontSize: 14,
-            padding: 20,
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            border: '1px solid #e5e7eb',
+            backgroundColor: 'transparent',
+            borderRadius: 20,
+            fontSize: 15,
+            padding: 0,
+            boxShadow: 'none',
+            border: 'none',
           },
           tooltipTitle: {
-            color: '#000000',
-            fontSize: 16,
-            fontWeight: 600,
-            marginBottom: 8,
+            color: 'transparent',
+            fontSize: 20,
+            fontWeight: 700,
+            marginBottom: 16,
+            background: 'linear-gradient(135deg, #ffffff 0%, #93c5fd 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
           },
           tooltipContent: {
-            color: '#000000',
-            fontSize: 14,
-            lineHeight: 1.5,
+            color: '#cbd5e1',
+            fontSize: 15,
+            lineHeight: 1.6,
+            marginBottom: 20,
           },
           buttonNext: {
-            backgroundColor: '#000000',
+            backgroundColor: 'transparent',
+            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
             color: '#ffffff',
-            fontSize: 12,
-            padding: '8px 16px',
-            borderRadius: 6,
+            fontSize: 14,
+            padding: '14px 20px',
+            borderRadius: 12,
             border: 'none',
-            fontWeight: 500,
+            fontWeight: 600,
+            boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
           },
           buttonBack: {
-            color: '#6b7280',
-            backgroundColor: 'transparent',
-            fontSize: 12,
-            padding: '8px 16px',
-            border: '1px solid #e5e7eb',
-            borderRadius: 6,
+            color: '#94a3b8',
+            backgroundColor: 'rgba(148, 163, 184, 0.1)',
+            fontSize: 14,
+            padding: '14px 20px',
+            border: '1px solid rgba(148, 163, 184, 0.2)',
+            borderRadius: 12,
+            fontWeight: 600,
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
           },
           buttonSkip: {
-            color: '#6b7280',
+            color: '#94a3b8',
             backgroundColor: 'transparent',
-            fontSize: 12,
-            border: 'none',
+            fontSize: 14,
+            fontWeight: 500,
+            padding: '8px 16px',
+            borderRadius: 8,
+            transition: 'all 0.2s ease',
           },
           buttonClose: {
-            color: '#6b7280',
-            backgroundColor: 'transparent',
+            color: '#94a3b8',
+            backgroundColor: 'rgba(148, 163, 184, 0.1)',
+            fontSize: 16,
+            padding: '8px',
+            borderRadius: 8,
+            transition: 'all 0.2s ease',
+            border: '1px solid rgba(148, 163, 184, 0.2)',
+          },
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
           },
         }}
       />
@@ -332,8 +373,9 @@ export function DashboardContent() {
         onOpenChange={setShowPaymentModal}
         showUsageLimitAlert={true}
       />
-      <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
-        <div className="flex-1 overflow-y-auto">
+      <div className="dashboard-scroll-container flex flex-col h-full w-full bg-background" data-tour="dashboard-main">
+        {/* Scrollable Content Area */}
+        <div className="dashboard-scroll-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
           <div className="min-h-full flex flex-col">
             {/* Header Section */}
             {customAgentsEnabled && (
@@ -342,9 +384,9 @@ export function DashboardContent() {
               </div>
             )}
             
-            {/* Main Content - ChatGPT-like centered layout */}
-            <div className="flex-1 flex items-center justify-center px-4 py-12">
-              <div className="w-full max-w-3xl flex flex-col items-center justify-center space-y-8">
+            {/* Main Content - Centered layout with examples above chat input */}
+            <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 pb-32">
+              <div className="w-full max-w-3xl flex flex-col items-center justify-center space-y-6">
                 {/* Logo/Branding Area */}
                 <div className="flex flex-col items-center text-center space-y-3">
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/10 flex items-center justify-center mb-2">
@@ -358,40 +400,29 @@ export function DashboardContent() {
                   </p>
                 </div>
                 
-                {/* Chat Input */}
-                <div className="w-full max-w-2xl" data-tour="chat-input">
-                  <ChatInput
-                    ref={chatInputRef}
-                    onSubmit={handleSubmit}
-                    loading={isSubmitting}
-                    placeholder="Message Xera..."
-                    value={inputValue}
-                    onChange={setInputValue}
-                    hideAttachments={false}
-                    selectedAgentId={selectedAgentId}
-                    onAgentSelect={setSelectedAgent}
-                    hideAgentSelection={false}
-                    enableAdvancedConfig={true}
-                    onConfigureAgent={(agentId) => router.push(`/agents/config/${agentId}`)}
-                  />
-                </div>
-                
-                {/* Featured Examples - Moved to main content area with improved styling */}
-                <div className="w-full max-w-4xl mt-8" data-tour="examples">
-                  <div className="text-center mb-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      Featured Examples
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      Get started with these powerful automation examples
-                    </p>
-                  </div>
-                  <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 shadow-sm">
-                    <Examples onSelectPrompt={setInputValue} count={isMobile ? 2 : 6} />
-                  </div>
-                </div>
+
               </div>
             </div>
+          </div>
+        </div>
+        
+        {/* Fixed Chat Input at Bottom */}
+        <div className="flex-shrink-0 px-4 pb-8 pt-4 bg-background/95 backdrop-blur-sm border-t border-border/20 sticky bottom-0" data-tour="chat-input">
+          <div className="w-full max-w-2xl mx-auto">
+            <ChatInput
+              ref={chatInputRef}
+              onSubmit={handleSubmit}
+              loading={isSubmitting}
+              placeholder="Message Xera..."
+              value={inputValue}
+              onChange={setInputValue}
+              hideAttachments={false}
+              selectedAgentId={selectedAgentId}
+              onAgentSelect={setSelectedAgent}
+              hideAgentSelection={false}
+              enableAdvancedConfig={true}
+              onConfigureAgent={(agentId) => router.push(`/agents/config/${agentId}`)}
+            />
           </div>
         </div>
         

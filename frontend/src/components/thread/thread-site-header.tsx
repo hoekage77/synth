@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from "@/components/ui/button"
-import { FolderOpen, ExternalLink, Monitor } from "lucide-react"
+import { FolderOpen, ExternalLink, Monitor, ChevronRight } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { toast } from "sonner"
 import {
@@ -21,6 +21,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { projectKeys } from "@/hooks/react-query/sidebar/keys";
 import { threadKeys } from "@/hooks/react-query/threads/keys";
 import { useFeatureFlags } from "@/lib/feature-flags";
+import { useSidebar } from "@/components/ui/sidebar";
 
 interface ThreadSiteHeaderProps {
   threadId: string;
@@ -55,6 +56,9 @@ export function SiteHeader({
 
   const isMobile = useIsMobile() || isMobileView
   const updateProjectMutation = useUpdateProject()
+  
+  // Get sidebar state to show/hide expand button
+  const { state, setOpen } = useSidebar();
 
   const openShareModal = () => {
     setShowShareModal(true)
@@ -133,6 +137,29 @@ export function SiteHeader({
 
 
         <div className="flex flex-1 items-center gap-2 px-3">
+          {/* Expand sidebar button - only show when sidebar is collapsed and not on mobile */}
+          {!isMobile && state === 'collapsed' && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => setOpen(true)}
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 mr-2 hover:bg-accent"
+                  aria-label="Expand sidebar"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <div className="text-center">
+                  <div className="font-medium">Expand Sidebar</div>
+                  <div className="text-xs text-muted-foreground">CMD+B</div>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          )}
+          
           {isEditing ? (
             <Input
               ref={inputRef}
