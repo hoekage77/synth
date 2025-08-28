@@ -74,7 +74,7 @@ export const useModelSelection = () => {
         { 
           id: 'claude-sonnet-4', 
           label: 'Claude Sonnet 4', 
-          requiresSubscription: true, 
+          requiresSubscription: false, // Make all models free
           priority: 100,
           recommended: true
         },
@@ -87,7 +87,7 @@ export const useModelSelection = () => {
         return {
           id: shortName,
           label: displayName,
-          requiresSubscription: model.requires_subscription || false,
+          requiresSubscription: false, // Make all models free
           priority: model.priority || 0,
           recommended: model.recommended || false,
           top: (model.priority || 0) >= 90,

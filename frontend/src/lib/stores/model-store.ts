@@ -121,10 +121,8 @@ export const canAccessModel = (
   subscriptionStatus: SubscriptionStatus,
   requiresSubscription: boolean,
 ): boolean => {
-  if (isLocalMode()) {
-    return true;
-  }
-  return subscriptionStatus === 'active' || !requiresSubscription;
+  // Make all models free - always return true
+  return true;
 };
 
 export const formatModelName = (name: string): string => {

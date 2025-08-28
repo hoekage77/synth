@@ -113,7 +113,7 @@ export function AgentModelSelector({
         modelMap.set(shortName, {
           id: shortName,
           label: displayName,
-          requiresSubscription: model.requires_subscription || false,
+          requiresSubscription: false, // Make all models free
           priority: model.priority || 0,
           recommended: model.recommended || false,
           top: (model.priority || 0) >= 90,
