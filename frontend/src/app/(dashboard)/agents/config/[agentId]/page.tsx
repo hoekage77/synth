@@ -20,75 +20,6 @@ import { AgentHeader, VersionAlert, ConfigurationTab } from '@/components/agents
 
 import { DEFAULT_AGENTPRESS_TOOLS } from '@/components/agents/tools';
 import { useExportAgent } from '@/hooks/react-query/agents/use-agent-export-import';
-import { useAgentConfigTour } from '@/hooks/use-agent-config-tour';
-import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
-import { TourConfirmationDialog } from '@/components/tour/TourConfirmationDialog';
-
-const agentConfigTourSteps: Step[] = [
-  {
-    target: '[data-tour="agent-header"]',
-    content: 'This is your agent\'s profile. You can edit the name and profile picture to personalize your agent.',
-    title: 'Agent Profile',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="model-section"]',
-    content: 'Choose the AI model that powers your agent. Different models have different capabilities and pricing.',
-    title: 'Model Configuration',
-    placement: 'right',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="system-prompt"]',
-    content: 'Define how your agent behaves and responds. This is the core instruction that guides your agent\'s personality and capabilities.',
-    title: 'System Prompt',
-    placement: 'right',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="tools-section"]',
-    content: 'Configure the tools and capabilities your agent can use. Enable browser automation, web development, and more.',
-    title: 'Agent Tools',
-    placement: 'right',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="integrations-section"]',
-    content: 'Connect your agent to external services. Add integrations to extend your agent\'s capabilities.',
-    title: 'Integrations',
-    placement: 'right',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="knowledge-section"]',
-    content: 'Add knowledge to your agent to provide it with context and information.',
-    title: 'Knowledge Base',
-    placement: 'right',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="playbooks-section"]',
-    content: 'Add playbooks to your agent to help it perform tasks and automate workflows.',
-    title: 'Playbooks',
-    placement: 'right',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="triggers-section"]',
-    content: 'Set up automated triggers for your agent to run on schedules or events.',
-    title: 'Triggers & Automation',
-    placement: 'right',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="preview-agent"]',
-    content: 'Build and test your agent by previewing how it will behave and respond. Here you can also ask the agent to self-configure',
-    title: 'Build & Test Your Agent',
-    placement: 'left',
-    disableBeacon: true,
-  },
-];
 
 interface FormData {
   name: string;
@@ -450,7 +381,7 @@ function AgentConfigurationContent() {
                     />
                   </div>
                 )}
-                <div data-tour="agent-header">
+                <div>
                   <AgentHeader
                     agentId={agentId}
                     displayData={displayData}
@@ -497,7 +428,7 @@ function AgentConfigurationContent() {
             </div>
           </div>
           
-          <div className="bg-muted/20 h-full flex flex-col relative" data-tour="preview-agent">
+          <div className="bg-muted/20 h-full flex flex-col relative">
             <div className="absolute inset-0">
               <AgentPreview agent={previewAgent} />
             </div>
@@ -588,131 +519,5 @@ function AgentConfigurationContent() {
 }
 
 export default function AgentConfigurationPage() {
-  const {
-    run,
-    stepIndex,
-    setStepIndex,
-    stopTour,
-    showWelcome,
-    handleWelcomeAccept,
-    handleWelcomeDecline,
-  } = useAgentConfigTour();
-
-  // OPTIMIZED: Simple function instead of useCallback with stable dependencies
-  const handleTourCallback = (data: CallBackProps) => {
-    const { status, type, index } = data;
-    
-    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-      stopTour();
-    } else if (type === 'step:after') {
-      setStepIndex(index + 1);
-    }
-  };
-
-  return (
-    <>
-      <Joyride
-        steps={agentConfigTourSteps}
-        run={run}
-        stepIndex={stepIndex}
-        callback={handleTourCallback}
-        continuous
-        showProgress
-        showSkipButton
-        disableOverlayClose
-        disableScrollParentFix
-        scrollToFirstStep
-        scrollOffset={100}
-        spotlightClicks
-        styles={{
-          options: {
-            primaryColor: '#3b82f6',
-            backgroundColor: '#0f172a',
-            textColor: '#ffffff',
-            overlayColor: 'rgba(0, 0, 0, 0.85)',
-            arrowColor: '#0f172a',
-            zIndex: 10000,
-          },
-          tooltip: {
-            backgroundColor: 'transparent',
-            borderRadius: 20,
-            fontSize: 15,
-            padding: 0,
-            boxShadow: 'none',
-            border: 'none',
-          },
-          tooltipContainer: {
-            textAlign: 'left',
-          },
-          tooltipTitle: {
-            color: 'transparent',
-            fontSize: 20,
-            fontWeight: 700,
-            marginBottom: 16,
-            background: 'linear-gradient(135deg, #ffffff 0%, #93c5fd 100%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          },
-          tooltipContent: {
-            color: '#cbd5e1',
-            fontSize: 15,
-            lineHeight: 1.6,
-            marginBottom: 20,
-          },
-          buttonNext: {
-            backgroundColor: 'transparent',
-            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-            color: '#ffffff',
-            fontSize: 14,
-            padding: '14px 20px',
-            borderRadius: 12,
-            border: 'none',
-            fontWeight: 600,
-            boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)',
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          },
-          buttonBack: {
-            color: '#94a3b8',
-            backgroundColor: 'rgba(148, 163, 184, 0.1)',
-            fontSize: 14,
-            padding: '14px 20px',
-            border: '1px solid rgba(148, 163, 184, 0.2)',
-            borderRadius: 12,
-            fontWeight: 600,
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          },
-          buttonSkip: {
-            color: '#94a3b8',
-            backgroundColor: 'transparent',
-            fontSize: 14,
-            fontWeight: 500,
-            padding: '8px 16px',
-            borderRadius: 8,
-            transition: 'all 0.2s ease',
-          },
-          buttonClose: {
-            color: '#94a3b8',
-            backgroundColor: 'rgba(148, 163, 184, 0.1)',
-            fontSize: 16,
-            padding: '8px',
-            borderRadius: 8,
-            transition: 'all 0.2s ease',
-            border: '1px solid rgba(148, 163, 184, 0.2)',
-          },
-          overlay: {
-            backgroundColor: 'rgba(0, 0, 0, 0.85)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-          },
-        }}
-      />
-      <TourConfirmationDialog
-        open={showWelcome}
-        onAccept={handleWelcomeAccept}
-        onDecline={handleWelcomeDecline}
-      />
-      <AgentConfigurationContent />
-    </>
-  );
+  return <AgentConfigurationContent />;
 } 

@@ -41,7 +41,14 @@ export function NavMenu() {
   }, [pathname]);
 
   React.useEffect(() => {
+    let lastScrollUpdate = 0;
+    const SCROLL_THROTTLE = 16; // ~60fps
+    
     const handleScroll = () => {
+      const now = performance.now();
+      if (now - lastScrollUpdate < SCROLL_THROTTLE) return;
+      lastScrollUpdate = now;
+      
       // Skip scroll handling during manual click scrolling or if not on homepage
       if (isManualScroll || pathname !== '/') return;
 
@@ -91,7 +98,7 @@ export function NavMenu() {
       return;
     }
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); // Initial check
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isManualScroll, pathname]);

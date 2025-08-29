@@ -58,7 +58,7 @@ export function SiteHeader({
   const updateProjectMutation = useUpdateProject()
   
   // Get sidebar state to show/hide expand button
-  const { state, setOpen } = useSidebar();
+  const { state, setOpen, setOpenMobile, isMobile: sidebarIsMobile } = useSidebar();
 
   const openShareModal = () => {
     setShowShareModal(true)
@@ -137,15 +137,20 @@ export function SiteHeader({
 
 
         <div className="flex flex-1 items-center gap-2 px-3">
-          {/* Expand sidebar button - only show when sidebar is collapsed and not on mobile */}
-          {!isMobile && state === 'collapsed' && (
+          {/* Expand sidebar button - show when sidebar is collapsed */}
+          {state === 'collapsed' && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  onClick={() => setOpen(true)}
+                  onClick={() => isMobile ? setOpenMobile(true) : setOpen(true)}
                   size="icon"
                   variant="ghost"
-                  className="h-8 w-8 mr-2 hover:bg-accent"
+                  className={cn(
+                    "mr-2 hover:bg-accent transition-all duration-200",
+                    isMobile 
+                      ? "h-9 w-9 touch-manipulation" 
+                      : "h-8 w-8"
+                  )}
                   aria-label="Expand sidebar"
                 >
                   <ChevronRight className="h-4 w-4" />

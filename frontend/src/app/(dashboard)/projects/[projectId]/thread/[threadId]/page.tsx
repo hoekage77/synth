@@ -889,7 +889,7 @@ export default function ThreadPage({
 
         <div
           className={cn(
-            'fixed bottom-0 z-10 bg-gradient-to-t from-background via-background/90 to-transparent px-4 pt-8',
+            'fixed bottom-0 z-10 bg-gradient-to-t from-background via-background/90 to-transparent px-4',
             isSidePanelAnimating
               ? ''
               : 'transition-all duration-200 ease-in-out',

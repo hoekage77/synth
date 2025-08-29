@@ -3,7 +3,6 @@
 import React, { useState, Suspense, useCallback, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
 import {
   ChatInput,
   ChatInputHandles,
@@ -29,50 +28,23 @@ import { AgentRunLimitDialog } from '@/components/thread/agent-run-limit-dialog'
 import { useFeatureFlag } from '@/lib/feature-flags';
 import { toast } from 'sonner';
 import { ReleaseBadge } from '../auth/release-badge';
-import { useDashboardTour } from '@/hooks/use-dashboard-tour';
-import { TourConfirmationDialog } from '@/components/tour/TourConfirmationDialog';
-import { Calendar, MessageSquare, Plus, Sparkles, Zap } from 'lucide-react';
+import { Calendar, MessageSquare, Plus, Sparkles, Zap, ChevronRight } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { useSidebar } from '@/components/ui/sidebar';
 import { IntegrationsRegistry } from '@/components/agents/integrations-registry';
 
 const PENDING_PROMPT_KEY = 'pendingAgentPrompt';
-
-const dashboardTourSteps: Step[] = [
-  {
-    target: '[data-tour="dashboard-main"]',
-    content: 'Welcome to your Xera dashboard! This is your central hub for AI-powered tasks and conversations.',
-    title: 'Welcome to Xera',
-    placement: 'bottom',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="chat-input"]',
-    content: 'Type your questions or tasks here. Xera can help with research, analysis, automation, and much more.',
-    title: 'Start a Conversation',
-    placement: 'top',
-    disableBeacon: true,
-  },
-
-  {
-    target: '[data-tour="new-task"]',
-    content: 'Start a new task or conversation with Xera. This button takes you to the main dashboard where you can begin your AI-powered workflow.',
-    title: 'New Task',
-    placement: 'right',
-    disableBeacon: true,
-  },
-  {
-    target: '[data-tour="command-center"]',
-    content: 'Access your command center in the sidebar. Here you can manage agents, view threads, and access all your AI tools in one place.',
-    title: 'Command Center',
-    placement: 'right',
-    disableBeacon: true,
-  },
-];
 
 export function DashboardContent() {
   const [inputValue, setInputValue] = useState('');
@@ -102,16 +74,8 @@ export function DashboardContent() {
   const initiateAgentMutation = useInitiateAgentWithInvalidation();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  // Tour integration
-  const {
-    run,
-    stepIndex,
-    setStepIndex,
-    stopTour,
-    showWelcome,
-    handleWelcomeAccept,
-    handleWelcomeDecline,
-  } = useDashboardTour();
+  // Get sidebar state for toggle button
+  const { state, setOpen } = useSidebar();
 
   // Feature flag for custom agents section
   const { enabled: customAgentsEnabled } = useFeatureFlag('custom_agents');
@@ -162,16 +126,6 @@ export function DashboardContent() {
       setInitiatedThreadId(null);
     }
   }, [threadQuery.data, initiatedThreadId, router]);
-
-  const handleTourCallback = useCallback((data: CallBackProps) => {
-    const { status, type, index } = data;
-    
-    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-      stopTour();
-    } else if (type === 'step:after') {
-      setStepIndex(index + 1);
-    }
-  }, [stopTour, setStepIndex]);
 
   const handleSubmit = async (
     message: string,
@@ -268,112 +222,34 @@ export function DashboardContent() {
 
   return (
     <>
-      <Joyride
-        steps={dashboardTourSteps}
-        run={run}
-        stepIndex={stepIndex}
-        callback={handleTourCallback}
-        continuous
-        showProgress
-        showSkipButton
-        disableOverlayClose
-        disableScrollParentFix
-        scrollToFirstStep
-        scrollOffset={100}
-        spotlightClicks
-        styles={{
-          options: {
-            primaryColor: '#3b82f6',
-            backgroundColor: '#0f172a',
-            textColor: '#ffffff',
-            overlayColor: 'rgba(0, 0, 0, 0.85)',
-            arrowColor: '#0f172a',
-            zIndex: 10000,
-          },
-          tooltip: {
-            backgroundColor: 'transparent',
-            borderRadius: 20,
-            fontSize: 15,
-            padding: 0,
-            boxShadow: 'none',
-            border: 'none',
-          },
-          tooltipTitle: {
-            color: 'transparent',
-            fontSize: 20,
-            fontWeight: 700,
-            marginBottom: 16,
-            background: 'linear-gradient(135deg, #ffffff 0%, #93c5fd 100%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          },
-          tooltipContent: {
-            color: '#cbd5e1',
-            fontSize: 15,
-            lineHeight: 1.6,
-            marginBottom: 20,
-          },
-          buttonNext: {
-            backgroundColor: 'transparent',
-            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-            color: '#ffffff',
-            fontSize: 14,
-            padding: '14px 20px',
-            borderRadius: 12,
-            border: 'none',
-            fontWeight: 600,
-            boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)',
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          },
-          buttonBack: {
-            color: '#94a3b8',
-            backgroundColor: 'rgba(148, 163, 184, 0.1)',
-            fontSize: 14,
-            padding: '14px 20px',
-            border: '1px solid rgba(148, 163, 184, 0.2)',
-            borderRadius: 12,
-            fontWeight: 600,
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          },
-          buttonSkip: {
-            color: '#94a3b8',
-            backgroundColor: 'transparent',
-            fontSize: 14,
-            fontWeight: 500,
-            padding: '8px 16px',
-            borderRadius: 8,
-            transition: 'all 0.2s ease',
-          },
-          buttonClose: {
-            color: '#94a3b8',
-            backgroundColor: 'rgba(148, 163, 184, 0.1)',
-            fontSize: 16,
-            padding: '8px',
-            borderRadius: 8,
-            transition: 'all 0.2s ease',
-            border: '1px solid rgba(148, 163, 184, 0.2)',
-          },
-          overlay: {
-            backgroundColor: 'rgba(0, 0, 0, 0.85)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-          },
-        }}
-      />
-      
-      <TourConfirmationDialog
-        open={showWelcome}
-        onAccept={handleWelcomeAccept}
-        onDecline={handleWelcomeDecline}
-      />
-
       <BillingModal 
         open={showPaymentModal} 
         onOpenChange={setShowPaymentModal}
         showUsageLimitAlert={true}
       />
-      <div className="dashboard-scroll-container flex flex-col h-full w-full bg-background" data-tour="dashboard-main">
+      <div className="dashboard-scroll-container flex flex-col h-full w-full bg-background">
+        {/* Sidebar Toggle Button for Desktop */}
+        {!isMobile && state === 'collapsed' && (
+          <div className="fixed top-6 left-4 z-50">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => setOpen(true)}
+                  variant="ghost"
+                  size="icon"
+                  className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:text-accent-foreground dark:hover:bg-accent/50 size-9 mr-2 hover:bg-accent transition-all duration-200 h-9 w-9 touch-manipulation"
+                  aria-label="Expand sidebar"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                Expand sidebar
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        )}
+        
         {/* Scrollable Content Area */}
         <div className="dashboard-scroll-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
           <div className="min-h-full flex flex-col">
@@ -407,7 +283,7 @@ export function DashboardContent() {
         </div>
         
         {/* Fixed Chat Input at Bottom */}
-        <div className="flex-shrink-0 px-4 pb-8 pt-4 bg-background/95 backdrop-blur-sm border-t border-border/20 sticky bottom-0" data-tour="chat-input">
+        <div className="flex-shrink-0 px-4 pt-4 bg-background/95 backdrop-blur-sm border-t border-border/20 sticky bottom-0">
           <div className="w-full max-w-2xl mx-auto">
             <ChatInput
               ref={chatInputRef}

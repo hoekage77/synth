@@ -65,8 +65,8 @@ export const useModelSelection = () => {
     if (!modelsData?.models || isLoadingModels) {
       models = [
         { 
-          id: 'moonshotai/kimi-k2', 
-          label: 'Kimi K2', 
+          id: 'gpt-5-mini', 
+          label: 'GPT-4o mini', 
           requiresSubscription: false,
           priority: 100,
           recommended: true
@@ -75,7 +75,7 @@ export const useModelSelection = () => {
           id: 'claude-sonnet-4', 
           label: 'Claude Sonnet 4', 
           requiresSubscription: false, // Make all models free
-          priority: 100,
+          priority: 95,
           recommended: true
         },
       ];

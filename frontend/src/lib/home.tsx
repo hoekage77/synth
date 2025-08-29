@@ -72,8 +72,9 @@ export const siteConfig = {
   },
   nav: {
     links: [
-      { id: 1, name: 'Home', href: '#hero' },
-      { id: 6, name: 'Enterprise', href: '/enterprise' },
+      // Commented out - only home page exists now
+      // { id: 1, name: 'Home', href: '#hero' },
+      // { id: 6, name: 'Enterprise', href: '/enterprise' },
     ],
   },
   hero: {

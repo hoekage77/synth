@@ -331,8 +331,8 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
 
 
     return (
-      <div className="mx-auto w-full max-w-4xl relative">
-        <div className="relative">
+      <div className="mx-auto w-full max-w-4xl relative min-w-0">
+        <div className="relative overflow-hidden">
           <ChatSnack
             toolCalls={toolCalls}
             toolCallIndex={toolCallIndex}
@@ -358,7 +358,7 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
             </button>
           )}
                      <Card
-             className={`-mb-2 shadow-none w-full max-w-4xl mx-auto bg-transparent border-none overflow-visible ${enableAdvancedConfig && selectedAgentId ? '' : 'rounded-3xl'} relative`}
+             className={`shadow-none w-full max-w-4xl mx-auto bg-transparent border-none overflow-visible ${enableAdvancedConfig && selectedAgentId ? '' : 'rounded-3xl'} relative`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={(e) => {
@@ -379,8 +379,8 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
               }
             }}
           >
-            <div className="w-full text-sm flex flex-col justify-between items-start rounded-lg">
-              <CardContent className={`w-full p-1.5 pb-2 ${bgColor} border rounded-3xl`}>
+            <div className="w-full text-sm flex flex-col justify-between items-start rounded-lg min-w-0">
+              <CardContent className={`w-full p-1.5 pb-2 ${bgColor} border rounded-3xl min-w-0 overflow-hidden`}>
                 <AttachmentGroup
                   files={uploadedFiles || []}
                   sandboxId={sandboxId}

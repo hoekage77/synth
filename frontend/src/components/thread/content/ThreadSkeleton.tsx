@@ -51,7 +51,7 @@ export function ThreadSkeleton({
                 {/* ChatInput - Inside the left div, positioned at bottom with exact same styling */}
                 <div
                     className={cn(
-                        "bg-gradient-to-t from-background via-background/90 to-transparent px-0 pt-8 transition-all duration-200 ease-in-out"
+                        "bg-gradient-to-t from-background via-background/90 to-transparent px-0 transition-all duration-200 ease-in-out"
                     )}
                 >
                     <div className={cn(

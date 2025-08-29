@@ -24,7 +24,7 @@ interface FlickeringGridProps extends React.HTMLAttributes<HTMLDivElement> {
   fontWeight?: number | string;
 }
 
-export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
+export const FlickeringGrid: React.FC<FlickeringGridProps> = React.memo(({
   squareSize = 3,
   gridGap = 3,
   flickerChance = 0.2,
@@ -48,7 +48,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
   // Throttle rendering to improve performance - adjust ms as needed
-  const FRAME_THROTTLE = 50; // Only render every ~50ms (20fps instead of 60fps)
+  const FRAME_THROTTLE = 67; // Only render every ~67ms (15fps instead of 60fps)
   const RESIZE_THROTTLE = 200; // Throttle resize events
 
   // Convert any CSS color to rgba for optimal canvas performance
@@ -244,7 +244,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
 
     let lastTime = 0;
     const animate = (time: number) => {
-      if (!isInView) {
+      if (!isInView || document.hidden) {
         animationRef.current = requestAnimationFrame(animate);
         return;
       }
@@ -340,8 +340,10 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
         style={{
           width: canvasSize.width,
           height: canvasSize.height,
+          willChange: 'transform',
         }}
       />
     </div>
   );
-};
+});
+FlickeringGrid.displayName = 'FlickeringGrid';

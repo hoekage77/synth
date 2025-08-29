@@ -241,9 +241,13 @@ export function NavUserWithTeams({
               
               {/* Enhanced Dropdown Menu */}
               <DropdownMenuContent
-                className="w-72 rounded-xl transition-all duration-300 border border-border/30 bg-background/95 backdrop-blur-xl shadow-2xl shadow-primary/5"
-                side="right"
-                align="start"
+                className={cn(
+                  "rounded-xl transition-all duration-300 border border-border/30 bg-background/95 backdrop-blur-xl shadow-2xl shadow-primary/5",
+                  isMobile ? "w-80" : "w-72"
+                )}
+                side={isMobile ? "top" : "right"}
+                align={isMobile ? "center" : "start"}
+                sideOffset={isMobile ? 8 : 0}
               >
                 {/* Header with Gradient */}
                 <div className="bg-gradient-to-r from-primary/5 to-purple-500/5 border-b border-border/20 rounded-t-xl p-3">
@@ -316,6 +320,30 @@ export function NavUserWithTeams({
                   <div className="flex flex-col">
                     <span className="font-medium text-foreground">Create New Team</span>
                     <span className="text-xs text-muted-foreground/70">Collaborate with others</span>
+                  </div>
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator className="bg-border/20" />
+                
+                {/* Theme Switcher */}
+                <DropdownMenuItem
+                  onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                  className="group flex items-center gap-3 p-3 hover:bg-gradient-to-r hover:from-primary/5 hover:to-purple-500/5 rounded-lg transition-all duration-200 cursor-pointer"
+                >
+                  <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-all duration-200">
+                    {isDarkMode ? (
+                      <Sun className="h-4 w-4 text-primary/60" />
+                    ) : (
+                      <Moon className="h-4 w-4 text-primary/60" />
+                    )}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-medium text-foreground">
+                      {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                    </span>
+                    <span className="text-xs text-muted-foreground/70">
+                      Switch to {isDarkMode ? 'light' : 'dark'} theme
+                    </span>
                   </div>
                 </DropdownMenuItem>
                 

@@ -1,7 +1,7 @@
 import React, { forwardRef, useEffect, useState, useMemo } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Square, Loader2, ArrowUp, Brain, Database, Zap } from 'lucide-react';
+import { Square, Loader2, ArrowUp, Brain, Database, Zap, ExternalLink, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UploadedFile } from './chat-input';
 import { FileUploadHandler } from './file-upload-handler';
@@ -14,6 +14,8 @@ import { TooltipContent } from '@/components/ui/tooltip';
 import { Tooltip } from '@/components/ui/tooltip';
 import { TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip';
 import { BillingModal } from '@/components/billing/billing-modal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { IntegrationsRegistry } from '@/components/agents/integrations-registry';
 import { handleFiles } from './file-upload-handler';
 import { useAgents } from '@/hooks/react-query/agents/use-agents';
 import { useRouter } from 'next/navigation';
@@ -96,6 +98,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
   ) => {
     const [billingModalOpen, setBillingModalOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [integrationsOpen, setIntegrationsOpen] = useState(false);
     const { enabled: customAgentsEnabled, loading: flagsLoading } = useFeatureFlag('custom_agents');
     const router = useRouter();
     
@@ -112,11 +115,22 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
       return found;
     }, [agents, selectedAgentId]);
     
-    const handleQuickAction = (action: 'instructions' | 'knowledge' | 'triggers') => {
+    const handleQuickAction = (action: 'instructions' | 'knowledge' | 'triggers' | 'integrations' | 'playbooks') => {
       if (!selectedAgentId && !displayAgent?.agent_id) {
         return;
       }
       const agentId = selectedAgentId || displayAgent?.agent_id;
+      
+      if (action === 'integrations') {
+        setIntegrationsOpen(true);
+        return;
+      }
+      
+      if (action === 'playbooks') {
+        router.push(`/agents/config/${agentId}?tab=workflows`);
+        return;
+      }
+      
       router.push(`/agents/config/${agentId}?tab=configuration&accordion=${action}`);
     };
 
@@ -189,7 +203,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
       }
       // Unified compact menu for both logged and non-logged (non-logged shows only models subset via menu trigger)
       return (
-        <div className="flex items-center gap-2" data-tour="agent-selector">
+        <div className="flex items-center gap-2">
           <UnifiedConfigMenu
             isLoggedIn={isLoggedIn}
             selectedAgentId={showAdvancedFeatures && !hideAgentSelection ? selectedAgentId : undefined}
@@ -207,35 +221,78 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
 
     return (
       <div className="relative flex flex-col w-full">
-                 {/* Quick Actions - Compact version above chat input */}
+                 {/* AI Agent Capabilities - Enhanced card-based design */}
          {onAgentSelect && (selectedAgentId || displayAgent?.agent_id) && (
-           <div className="flex items-center gap-1.5 px-2 mb-3">
+           <div className="flex items-center justify-center gap-2 px-2 mb-3">
              <Button
                variant="ghost"
                size="sm"
-               className="h-6 px-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/20 rounded-md transition-colors"
+               className="group relative h-8 px-3 text-xs font-medium bg-card/50 border border-border/20 rounded-xl hover:bg-muted/50 hover:border-border/40 transition-all duration-200 hover:scale-105 hover:shadow-sm"
                onClick={() => handleQuickAction('instructions')}
              >
-               <Brain className="h-3 w-3 mr-1.5 text-purple-600 dark:text-purple-400" />
-               Instructions
+               <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+               <div className="relative flex items-center gap-2">
+                 <div className="flex items-center justify-center w-5 h-5 rounded-md bg-purple-100 dark:bg-purple-900/30 group-hover:scale-110 transition-transform duration-200">
+                   <Brain className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                 </div>
+                 <span className="text-muted-foreground group-hover:text-foreground transition-colors duration-200">Instructions</span>
+               </div>
              </Button>
              <Button
                variant="ghost"
                size="sm"
-               className="h-6 px-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/20 rounded-md transition-colors"
+               className="group relative h-8 px-3 text-xs font-medium bg-card/50 border border-border/20 rounded-xl hover:bg-muted/50 hover:border-border/40 transition-all duration-200 hover:scale-105 hover:shadow-sm"
                onClick={() => handleQuickAction('knowledge')}
              >
-               <Database className="h-3 w-3 mr-1.5 text-green-600 dark:text-green-400" />
-               Knowledge
+               <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+               <div className="relative flex items-center gap-2">
+                 <div className="flex items-center justify-center w-5 h-5 rounded-md bg-green-100 dark:bg-green-900/30 group-hover:scale-110 transition-transform duration-200">
+                   <Database className="h-3 w-3 text-green-600 dark:text-green-400" />
+                 </div>
+                 <span className="text-muted-foreground group-hover:text-foreground transition-colors duration-200">Knowledge</span>
+               </div>
              </Button>
              <Button
                variant="ghost"
                size="sm"
-               className="h-6 px-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/20 rounded-md transition-colors"
+               className="group relative h-8 px-3 text-xs font-medium bg-card/50 border border-border/20 rounded-xl hover:bg-muted/50 hover:border-border/40 transition-all duration-200 hover:scale-105 hover:shadow-sm"
                onClick={() => handleQuickAction('triggers')}
              >
-               <Zap className="h-3 w-3 mr-1.5 text-orange-600 dark:text-orange-400" />
-               Triggers
+               <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+               <div className="relative flex items-center gap-2">
+                 <div className="flex items-center justify-center w-5 h-5 rounded-md bg-orange-100 dark:bg-orange-900/30 group-hover:scale-110 transition-transform duration-200">
+                   <Zap className="h-3 w-3 text-orange-600 dark:text-orange-400" />
+                 </div>
+                 <span className="text-muted-foreground group-hover:text-foreground transition-colors duration-200">Triggers</span>
+               </div>
+             </Button>
+             <Button
+               variant="ghost"
+               size="sm"
+               className="group relative h-8 px-3 text-xs font-medium bg-card/50 border border-border/20 rounded-xl hover:bg-muted/50 hover:border-border/40 transition-all duration-200 hover:scale-105 hover:shadow-sm"
+               onClick={() => handleQuickAction('integrations')}
+             >
+               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+               <div className="relative flex items-center gap-2">
+                 <div className="flex items-center justify-center w-5 h-5 rounded-md bg-blue-100 dark:bg-blue-900/30 group-hover:scale-110 transition-transform duration-200">
+                   <ExternalLink className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                 </div>
+                 <span className="text-muted-foreground group-hover:text-foreground transition-colors duration-200">Integrations</span>
+               </div>
+             </Button>
+             <Button
+               variant="ghost"
+               size="sm"
+               className="group relative h-8 px-3 text-xs font-medium bg-card/50 border border-border/20 rounded-xl hover:bg-muted/50 hover:border-border/40 transition-all duration-200 hover:scale-105 hover:shadow-sm"
+               onClick={() => handleQuickAction('playbooks')}
+             >
+               <div className="absolute inset-0 bg-gradient-to-r from-pink-500/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+               <div className="relative flex items-center gap-2">
+                 <div className="flex items-center justify-center w-5 h-5 rounded-md bg-pink-100 dark:bg-pink-900/30 group-hover:scale-110 transition-transform duration-200">
+                   <Play className="h-3 w-3 text-pink-600 dark:text-pink-400" />
+                 </div>
+                 <span className="text-muted-foreground group-hover:text-foreground transition-colors duration-200">Playbooks</span>
+               </div>
              </Button>
            </div>
          )}
@@ -288,8 +345,8 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
         </div>
 
         {/* Bottom controls row */}
-        <div className="flex items-center justify-between mt-2 px-2">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between mt-2 px-2 gap-2 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 flex-shrink">
             {!hideAttachments && (
               <FileUploadHandler
                 ref={fileInputRef}
@@ -314,7 +371,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
             {renderDropdown()}
             <BillingModal
               open={billingModalOpen}
@@ -323,6 +380,21 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
             />
           </div>
         </div>
+        
+        {/* Integrations Dialog */}
+        <Dialog open={integrationsOpen} onOpenChange={setIntegrationsOpen}>
+          <DialogContent className="p-0 max-w-6xl h-[90vh] overflow-hidden">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Integrations</DialogTitle>
+            </DialogHeader>
+            <IntegrationsRegistry
+              showAgentSelector={true}
+              selectedAgentId={selectedAgentId}
+              onAgentChange={onAgentSelect}
+              onClose={() => setIntegrationsOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     );
   },

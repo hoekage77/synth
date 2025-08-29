@@ -142,7 +142,7 @@ export function ConfigurationTab({
           <div className="space-y-3">
             {!isSunaAgent && (
               <>
-                <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10" data-tour="model-section">
+                <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10">
                   <button
                     className="w-full p-4 text-left group-hover:bg-muted/30 transition-all duration-300"
                     onClick={() => setOpenAccordion(openAccordion === 'model' ? '' : 'model')}
@@ -179,7 +179,7 @@ export function ConfigurationTab({
                     </div>
                   )}
                 </div>
-                <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10" data-tour="system-prompt">
+                <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10">
                   <button
                     className="w-full p-4 text-left group-hover:bg-muted/30 transition-all duration-300"
                     onClick={() => setOpenAccordion(openAccordion === 'system' ? '' : 'system')}
@@ -215,7 +215,7 @@ export function ConfigurationTab({
               </>
             )}
 
-            <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10" data-tour="tools-section">
+            <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10">
               <button
                 className="w-full p-4 text-left group-hover:bg-muted/30 transition-all duration-300"
                 onClick={() => setOpenAccordion(openAccordion === 'tools' ? '' : 'tools')}
@@ -249,7 +249,7 @@ export function ConfigurationTab({
               )}
             </div>
 
-            <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10" data-tour="integrations-section">
+            <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10">
               <button
                 className="w-full p-4 text-left group-hover:bg-muted/30 transition-all duration-300"
                 onClick={() => setOpenAccordion(openAccordion === 'integrations' ? '' : 'integrations')}
@@ -291,7 +291,7 @@ export function ConfigurationTab({
               )}
             </div>
             
-            <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10" data-tour="knowledge-section">
+            <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10">
               <button
                 className="w-full p-4 text-left group-hover:bg-muted/30 transition-all duration-300"
                 onClick={() => setOpenAccordion(openAccordion === 'knowledge' ? '' : 'knowledge')}
@@ -327,7 +327,7 @@ export function ConfigurationTab({
               </div>
             </div>
             
-            <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10" data-tour="playbooks-section">
+            <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10">
               <button
                 className="w-full p-4 text-left group-hover:bg-muted/30 transition-all duration-300"
                 onClick={() => setOpenAccordion(openAccordion === 'playbooks' ? '' : 'playbooks')}
@@ -363,7 +363,7 @@ export function ConfigurationTab({
               </div>
             </div>
             
-            <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10" data-tour="triggers-section">
+            <div className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/10">
               <button
                 className="w-full p-4 text-left group-hover:bg-muted/30 transition-all duration-300"
                 onClick={() => setOpenAccordion(openAccordion === 'triggers' ? '' : 'triggers')}

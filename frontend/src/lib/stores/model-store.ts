@@ -39,13 +39,13 @@ interface ModelStore {
   resetToDefault: (subscriptionStatus: SubscriptionStatus) => void;
 }
 
-const DEFAULT_FREE_MODEL_ID = 'moonshotai/kimi-k2';
-const DEFAULT_PREMIUM_MODEL_ID = 'claude-sonnet-4';
+const DEFAULT_FREE_MODEL_ID = 'gpt-5-mini';
+const DEFAULT_PREMIUM_MODEL_ID = 'gpt-5-mini';
 
 export const useModelStore = create<ModelStore>()(
   persist(
     (set, get) => ({
-      selectedModel: DEFAULT_PREMIUM_MODEL_ID, // Use Claude Sonnet 4 as default
+      selectedModel: DEFAULT_PREMIUM_MODEL_ID, // Use GPT-5 Mini as default
       customModels: [],
       hasHydrated: false,
       
@@ -76,7 +76,7 @@ export const useModelStore = create<ModelStore>()(
         
         const updates: Partial<ModelStore> = { customModels: newCustomModels };
         if (selectedModel === id) {
-          updates.selectedModel = DEFAULT_PREMIUM_MODEL_ID; // Use Claude Sonnet 4 as default
+          updates.selectedModel = DEFAULT_PREMIUM_MODEL_ID; // Use GPT-5 Mini as default
         }
         
         set(updates);
@@ -91,12 +91,12 @@ export const useModelStore = create<ModelStore>()(
       },
       
       getDefaultModel: (subscriptionStatus: SubscriptionStatus) => {
-        // All models are free now, so always use Claude Sonnet 4 as default
+        // All models are free now, so always use GPT-5 Mini as default
         return DEFAULT_PREMIUM_MODEL_ID;
       },
       
       resetToDefault: (subscriptionStatus: SubscriptionStatus) => {
-        // All models are free now, so always use Claude Sonnet 4 as default
+        // All models are free now, so always use GPT-5 Mini as default
         set({ selectedModel: DEFAULT_PREMIUM_MODEL_ID });
       },
     }),

@@ -113,8 +113,8 @@ export const MODELS = {
   },
   'gpt-5-mini': { 
     tier: 'free', 
-    priority: 85,
-    recommended: false,
+    priority: 100,
+    recommended: true,
     lowQuality: false,
     provider: 'openai',
     icon: 'gpt'
@@ -399,7 +399,7 @@ export const useModelSelectionOld = () => {
       // Fallback to default model - all models are free now
       const defaultModel = DEFAULT_PREMIUM_MODEL_ID; // Use Claude Sonnet 4 as default
       console.log('🔧 useModelSelection: Using default model:', defaultModel);
-      console.log('🔧 useModelSelection: All models are free - using Claude Sonnet 4 as default');
+      console.log('🔧 useModelSelection: All models are free - using GPT-5 Mini as default');
       setSelectedModel(defaultModel);
       saveModelPreference(defaultModel);
       setHasInitialized(true);
@@ -408,7 +408,7 @@ export const useModelSelectionOld = () => {
       console.warn('❌ useModelSelection: Failed to load preferences from localStorage:', error);
       const defaultModel = DEFAULT_PREMIUM_MODEL_ID; // Use Claude Sonnet 4 as default
       console.log('🔧 useModelSelection: Using fallback default model:', defaultModel);
-      console.log('🔧 useModelSelection: All models are free - using Claude Sonnet 4 as fallback');
+      console.log('🔧 useModelSelection: All models are free - using GPT-5 Mini as fallback');
       setSelectedModel(defaultModel);
       saveModelPreference(defaultModel);
       setHasInitialized(true);
@@ -525,7 +525,7 @@ export const useModelSelectionOld = () => {
       console.log('  isLoadingModels:', isLoadingModels);
       console.log('  localStorage value:', localStorage.getItem(STORAGE_KEY_MODEL));
       console.log('  localStorage test passes:', testLocalStorage());
-      console.log('  defaultModel would be:', `${DEFAULT_PREMIUM_MODEL_ID} (Claude Sonnet 4) - All models are free`);
+      console.log('  defaultModel would be:', `${DEFAULT_PREMIUM_MODEL_ID} (GPT-5 Mini) - All models are free`);
       console.log('  availableModels:', availableModels.map(m => ({ id: m.id, requiresSubscription: m.requiresSubscription })));
     }
   };
