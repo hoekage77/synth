@@ -41,8 +41,13 @@ type UnifiedConfigMenuProps = {
     // Model
     selectedModel: string;
     onModelChange: (modelId: string) => void;
+    modelOptions?: any[];
     refreshCustomModels?: () => void;
     onUpgradeRequest?: () => void;
+    
+    // Additional props for model access control
+    subscriptionStatus?: any;
+    canAccessModel?: (modelId: string) => boolean;
 };
 
 const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = ({
