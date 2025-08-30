@@ -25,7 +25,7 @@ import { useAgentSelection } from '@/lib/stores/agent-selection-store';
 import { useThreadQuery } from '@/hooks/react-query/threads/use-threads';
 import { normalizeFilenameToNFC } from '@/lib/utils/unicode';
 import { AgentRunLimitDialog } from '@/components/thread/agent-run-limit-dialog';
-import { useFeatureFlag } from '@/lib/feature-flags';
+import { CustomAgentsSection } from './custom-agents-section';
 import { toast } from 'sonner';
 import { ReleaseBadge } from '../auth/release-badge';
 import { Calendar, MessageSquare, Plus, Sparkles, Zap, ChevronRight } from 'lucide-react';
@@ -43,12 +43,14 @@ import {
 } from '@/components/ui/tooltip';
 import { useSidebar } from '@/components/ui/sidebar';
 import { IntegrationsRegistry } from '@/components/agents/integrations-registry';
+import { Examples } from './examples';
 
 const PENDING_PROMPT_KEY = 'pendingAgentPrompt';
 
 export function DashboardContent() {
   const [inputValue, setInputValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [autoSubmit, setAutoSubmit] = useState(false);
   const [registryDialogOpen, setRegistryDialogOpen] = useState(false);
   const { 
@@ -78,7 +80,6 @@ export function DashboardContent() {
   const { state, setOpen } = useSidebar();
 
   // Feature flag for custom agents section
-  const { enabled: customAgentsEnabled } = useFeatureFlag('custom_agents');
 
   // Fetch agents to get the selected agent's name
   const { data: agentsResponse } = useAgents({
@@ -118,6 +119,7 @@ export function DashboardContent() {
   React.useEffect(() => {
     if (threadQuery.data && initiatedThreadId) {
       const thread = threadQuery.data;
+      setIsRedirecting(true);
       if (thread.project_id) {
         router.push(`/projects/${thread.project_id}/thread/${initiatedThreadId}`);
       } else {
@@ -139,7 +141,8 @@ export function DashboardContent() {
   ) => {
     if (
       (!message.trim() && !chatInputRef.current?.getPendingFiles().length) ||
-      isSubmitting
+      isSubmitting ||
+      isRedirecting
     )
       return;
 
@@ -172,6 +175,7 @@ export function DashboardContent() {
 
       if (result.thread_id) {
         setInitiatedThreadId(result.thread_id);
+        // Don't reset isSubmitting here - keep loading until redirect happens
       } else {
         throw new Error('Agent initiation did not return a thread_id.');
       }
@@ -191,7 +195,7 @@ export function DashboardContent() {
         const errorMessage = error instanceof Error ? error.message : 'Operation failed';
         toast.error(errorMessage);
       }
-    } finally {
+      // Only reset loading state if there was an error or no thread_id was returned
       setIsSubmitting(false);
     }
   };
@@ -210,7 +214,7 @@ export function DashboardContent() {
   }, []);
 
   React.useEffect(() => {
-    if (autoSubmit && inputValue && !isSubmitting) {
+    if (autoSubmit && inputValue && !isSubmitting && !isRedirecting) {
       const timer = setTimeout(() => {
         handleSubmit(inputValue);
         setAutoSubmit(false);
@@ -218,7 +222,7 @@ export function DashboardContent() {
 
       return () => clearTimeout(timer);
     }
-  }, [autoSubmit, inputValue, isSubmitting]);
+  }, [autoSubmit, inputValue, isSubmitting, isRedirecting]);
 
   return (
     <>
@@ -253,9 +257,8 @@ export function DashboardContent() {
         {/* Scrollable Content Area */}
         <div className="dashboard-scroll-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
           <div className="min-h-full flex flex-col">
-            {/* Header Section */}
-            {customAgentsEnabled && (
-              <div className="flex justify-center px-4 pt-6">
+            {(
+              <div className="flex justify-center px-4 pt-4 md:pt-8">
                 <ReleaseBadge text="Custom Agents, Playbooks, and more!" link="/agents?tab=my-agents" />
               </div>
             )}
@@ -275,30 +278,35 @@ export function DashboardContent() {
                     I'm Xera, your AI assistant. I can help with research, analysis, automation, and much more.
                   </p>
                 </div>
-                
-
+                <div className="w-full" data-tour="chat-input">
+                  <ChatInput
+                    ref={chatInputRef}
+                    onSubmit={handleSubmit}
+                    loading={isSubmitting || isRedirecting}
+                    placeholder="Describe what you need help with..."
+                    value={inputValue}
+                    onChange={setInputValue}
+                    hideAttachments={false}
+                    selectedAgentId={selectedAgentId}
+                    onAgentSelect={setSelectedAgent}
+                    enableAdvancedConfig={true}
+                    onConfigureAgent={(agentId) => router.push(`/agents/config/${agentId}`)}
+                  />
+                </div>
+                <div className="w-full" data-tour="examples">
+                  <Examples onSelectPrompt={setInputValue} count={isMobile ? 3 : 4} />
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        
-        {/* Fixed Chat Input at Bottom */}
-        <div className="flex-shrink-0 px-4 pt-4 bg-background/95 backdrop-blur-sm border-t border-border/20 sticky bottom-0">
-          <div className="w-full max-w-2xl mx-auto">
-            <ChatInput
-              ref={chatInputRef}
-              onSubmit={handleSubmit}
-              loading={isSubmitting}
-              placeholder="Message Xera..."
-              value={inputValue}
-              onChange={setInputValue}
-              hideAttachments={false}
-              selectedAgentId={selectedAgentId}
-              onAgentSelect={setSelectedAgent}
-              hideAgentSelection={false}
-              enableAdvancedConfig={true}
-              onConfigureAgent={(agentId) => router.push(`/agents/config/${agentId}`)}
-            />
+            {enabledEnvironment && (
+              <div className="w-full px-4 pb-8" data-tour="custom-agents">
+                <div className="max-w-7xl mx-auto">
+                  <CustomAgentsSection 
+                    onAgentSelect={setSelectedAgent}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
         

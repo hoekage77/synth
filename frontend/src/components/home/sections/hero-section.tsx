@@ -32,6 +32,9 @@ import { useAccounts } from '@/hooks/use-accounts';
 import { isLocalMode, config } from '@/lib/config';
 import { toast } from 'sonner';
 import GitHubSignIn from '@/components/GithubSignIn';
+import { FlickeringGrid } from '../ui/flickering-grid';
+import { Examples } from '@/components/dashboard/examples';
+import { ChatInput } from '@/components/thread/chat-input/chat-input';
 
 // Dynamic import for BillingModal
 const BillingModal = dynamic(() => import('@/components/billing/billing-modal').then(mod => ({ default: mod.BillingModal })), {
@@ -149,6 +152,14 @@ export function HeroSection() {
       }
     };
   }, [scrollY]);
+
+  function setInputValue(query: string): void {
+    throw new Error('Function not implemented.');
+  }
+
+  function setSelectedAgentId(agentId: string): void {
+    throw new Error('Function not implemented.');
+  }
 
   return (
     <section ref={heroRef} id="hero" className="w-full relative overflow-hidden min-h-screen bg-black text-white">
@@ -270,6 +281,108 @@ export function HeroSection() {
           </motion.div>
 
         </div>
+
+        {/* Right side flickering grid with gradient fades */}
+        <div className="hidden sm:block absolute right-0 top-0 h-[500px] sm:h-[600px] md:h-[800px] w-1/4 sm:w-1/3 -z-10 overflow-hidden">
+          {/* Horizontal fade from right to left */}
+          <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-background z-10" />
+
+          {/* Vertical fade from top */}
+          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background via-background/90 to-transparent z-10" />
+
+          {/* Vertical fade to bottom */}
+          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-background via-background/90 to-transparent z-10" />
+
+          {mounted && (
+            <FlickeringGrid
+              className="h-full w-full"
+              squareSize={tablet ? 2 : 2.5}
+              gridGap={tablet ? 2 : 2.5}
+              color="var(--secondary)"
+              maxOpacity={tablet ? 0.2 : 0.4}
+              flickerChance={isScrolling ? 0.005 : (tablet ? 0.015 : 0.03)} // Lower performance impact on mobile
+            />
+          )}
+        </div>
+
+        {/* Center content background with rounded bottom */}
+        <div className="absolute inset-x-0 sm:inset-x-1/6 md:inset-x-1/4 top-0 h-[500px] sm:h-[600px] md:h-[800px] -z-20 bg-background rounded-b-xl"></div>
+
+        <div className="relative z-10 pt-16 sm:pt-24 md:pt-32 mx-auto h-full w-full max-w-6xl flex flex-col items-center justify-center">
+          {/* <p className="border border-border bg-accent rounded-full text-sm h-8 px-3 flex items-center gap-2">
+            {hero.badgeIcon}
+            {hero.badge}
+          </p> */}
+
+          {/* <Link
+            href={hero.githubUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group border border-border/50 bg-background hover:bg-accent/20 hover:border-secondary/40 rounded-full text-sm h-8 px-3 flex items-center gap-2 transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 hover:-translate-y-0.5"
+          >
+            {hero.badgeIcon}
+            <span className="font-medium text-muted-foreground text-xs tracking-wide group-hover:text-primary transition-colors duration-300">
+              {hero.badge}
+            </span>
+            <span className="inline-flex items-center justify-center size-3.5 rounded-full bg-muted/30 group-hover:bg-secondary/30 transition-colors duration-300">
+              <svg
+                width="8"
+                height="8"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-muted-foreground group-hover:text-primary"
+              >
+                <path
+                  d="M7 17L17 7M17 7H8M17 7V16"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+          </Link> */}
+          <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 pt-8 sm:pt-12 max-w-4xl mx-auto">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-medium tracking-tighter text-balance text-center px-2">
+              <span className="text-primary">Build, manage and train your </span>
+              <span className="text-secondary">AI Workforce.</span>
+            </h1>
+            <p className="text-base md:text-lg text-center text-muted-foreground font-medium text-balance leading-relaxed tracking-tight max-w-2xl px-2">
+            Kortix – the simplest way to migrate from human to AI.
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center w-full max-w-3xl mx-auto gap-2 flex-wrap justify-center px-2 sm:px-0">
+            <div className="w-full relative">
+              <div className="relative z-10">
+                <ChatInput
+                  ref={chatInputRef}
+                  onSubmit={handleChatInputSubmit}
+                  placeholder="Describe the agent you want to build or the task you want completed..."
+                  loading={isSubmitting}
+                  disabled={isSubmitting}
+                  value={inputValue}
+                  onChange={setInputValue}
+                  isLoggedIn={!!user}
+                  selectedAgentId={setSelectedAgentId}
+                  onAgentSelect={setSelectedAgentId}
+                  autoFocus={false}
+                  enableAdvancedConfig={false}
+                />
+              </div>
+              {/* Subtle glow effect */}
+              <div className="absolute -bottom-4 inset-x-0 h-6 bg-secondary/20 blur-xl rounded-full -z-10 opacity-70"></div>
+            </div>
+            
+            {/* Examples section - right after chat input */}
+            <div className="w-full pt-2">
+              <Examples onSelectPrompt={setInputValue} count={tablet ? 2 : 4} />
+            </div>
+          </div>
+
+        </div>
+
       </div>
 
       {/* Auth Dialog */}

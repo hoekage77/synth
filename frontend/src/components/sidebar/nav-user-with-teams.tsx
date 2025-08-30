@@ -56,7 +56,6 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { useTheme } from 'next-themes';
 import { isLocalMode } from '@/lib/config';
-import { useFeatureFlag } from '@/lib/feature-flags';
 import { clearUserLocalStorage } from '@/lib/utils/clear-local-storage';
 import { cn } from '@/lib/utils';
 
