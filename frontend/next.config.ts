@@ -3,6 +3,7 @@ import type { NextConfig } from 'next';
 const nextConfig = (): NextConfig => ({
   output: (process.env.NEXT_OUTPUT as 'standalone') || undefined,
   
+<<<<<<< HEAD
   // Performance optimizations
   compress: true,
   poweredByHeader: false,
@@ -60,6 +61,8 @@ const nextConfig = (): NextConfig => ({
     return config;
   },
   
+=======
+>>>>>>> upstream/main
   async rewrites() {
     return [
       {

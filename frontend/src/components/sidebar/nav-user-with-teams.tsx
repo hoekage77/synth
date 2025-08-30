@@ -58,6 +58,7 @@ import { useTheme } from 'next-themes';
 import { isLocalMode } from '@/lib/config';
 import { clearUserLocalStorage } from '@/lib/utils/clear-local-storage';
 import { cn } from '@/lib/utils';
+import { BillingModal } from '@/components/billing/billing-modal';
 
 export function NavUserWithTeams({
   user,
@@ -84,6 +85,7 @@ export function NavUserWithTeams({
   const isDarkMode = mounted && (
     theme === 'dark' || (theme === 'system' && systemTheme === 'dark')
   );
+  const [showBillingModal, setShowBillingModal] = React.useState(false);
 
   // Prepare personal account and team accounts
   const personalAccount = React.useMemo(
@@ -422,6 +424,13 @@ export function NavUserWithTeams({
         </DialogHeader>
         <NewTeamForm />
       </DialogContent>
+
+      {/* Billing Modal */}
+      <BillingModal
+        open={showBillingModal}
+        onOpenChange={setShowBillingModal}
+        returnUrl={typeof window !== 'undefined' ? window?.location?.href || '/' : '/'}
+      />
     </Dialog>
   );
 }
