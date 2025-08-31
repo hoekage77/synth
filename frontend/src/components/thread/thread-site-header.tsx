@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from "@/components/ui/button"
-import { FolderOpen, ExternalLink, Monitor, ChevronRight } from "lucide-react"
+import { FolderOpen, ExternalLink, Monitor, ChevronRight, Check, Copy, PanelLeft, ChevronLeft } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { toast } from "sonner"
 import {
@@ -16,10 +16,10 @@ import { useUpdateProject } from "@/hooks/react-query"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
-import { ShareModal } from "@/components/sidebar/share-modal"
 import { useQueryClient } from "@tanstack/react-query";
-import { projectKeys } from "@/hooks/react-query/sidebar/keys";
+import { useSidebar } from '@/components/ui/sidebar';
 import { threadKeys } from "@/hooks/react-query/threads/keys";
+import { ShareModal } from "../sidebar/share-modal";
 
 interface ThreadSiteHeaderProps {
   threadId?: string;
@@ -147,6 +147,37 @@ export function SiteHeader({
 
 
         <div className="flex flex-1 items-center gap-2 px-3">
+          {/* Sidebar Toggle Button - Only show for default variant */}
+          {variant === 'default' && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      if (isMobile) {
+                        setOpenMobile(state !== "expanded");
+                      } else {
+                        setOpen(state !== "expanded");
+                      }
+                    }}
+                    className="h-9 w-9 cursor-pointer mr-2"
+                  >
+                    {state === "expanded" ? (
+                      <ChevronLeft className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side={isMobile ? "bottom" : "bottom"}>
+                  <p>{state === "expanded" ? "Collapse Sidebar" : "Expand Sidebar"}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+
           {variant === 'shared' ? (
             <div className="text-base font-medium text-muted-foreground flex items-center gap-2">
               {projectName}

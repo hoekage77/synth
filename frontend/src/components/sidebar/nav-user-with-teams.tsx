@@ -59,6 +59,7 @@ import { isLocalMode } from '@/lib/config';
 import { clearUserLocalStorage } from '@/lib/utils/clear-local-storage';
 import { cn } from '@/lib/utils';
 import { BillingModal } from '@/components/billing/billing-modal';
+import { useFeatureFlagEnabled } from '@posthog/react';
 
 export function NavUserWithTeams({
   user,
@@ -73,9 +74,9 @@ export function NavUserWithTeams({
   const { isMobile } = useSidebar();
   const { data: accounts } = useAccounts();
   const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false);
-  const { theme, systemTheme, setTheme } = useTheme();
-  const { enabled: customAgentsEnabled, loading: flagLoading } = useFeatureFlag("custom_agents");
+  const customAgentsEnabled = useFeatureFlagEnabled("custom_agents");
   const [mounted, setMounted] = React.useState(false);
+  const { theme, systemTheme, setTheme } = useTheme();
 
   // After mount, we can access the theme
   React.useEffect(() => {
@@ -279,7 +280,7 @@ export function NavUserWithTeams({
                     </Link>
                   </DropdownMenuItem>
                   
-                  {!flagLoading && customAgentsEnabled && (
+                  {customAgentsEnabled && (
                     <DropdownMenuItem asChild className="group">
                       <Link href="/settings/credentials" className="flex items-center gap-3 p-3 hover:bg-gradient-to-r hover:from-primary/5 hover:to-purple-500/5 rounded-lg transition-all duration-200">
                         <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-all duration-200">
@@ -293,7 +294,7 @@ export function NavUserWithTeams({
                     </DropdownMenuItem>
                   )}
                   
-                  {!flagLoading && customAgentsEnabled && (
+                  {customAgentsEnabled && (
                     <DropdownMenuItem asChild className="group">
                       <Link href="/settings/api-keys" className="flex items-center gap-3 p-3 hover:bg-gradient-to-r hover:from-primary/5 hover:to-purple-500/5 rounded-lg transition-all duration-200">
                         <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-all duration-200">
@@ -328,7 +329,7 @@ export function NavUserWithTeams({
                 
                 {/* Theme Switcher */}
                 <DropdownMenuItem
-                  onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                  onClick={() => mounted && setTheme && setTheme(theme === 'light' ? 'dark' : 'light')}
                   className="group flex items-center gap-3 p-3 hover:bg-gradient-to-r hover:from-primary/5 hover:to-purple-500/5 rounded-lg transition-all duration-200 cursor-pointer"
                 >
                   <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-all duration-200">

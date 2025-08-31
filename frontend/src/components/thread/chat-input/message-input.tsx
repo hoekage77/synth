@@ -18,6 +18,7 @@ import { IntegrationsRegistry } from '@/components/agents/integrations-registry'
 import { handleFiles } from './file-upload-handler';
 import { useAgents } from '@/hooks/react-query/agents/use-agents';
 import { useRouter } from 'next/navigation';
+import { useFeatureFlagEnabled } from '@posthog/react';
 
 interface MessageInputProps {
   value: string;
@@ -98,7 +99,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
     const [billingModalOpen, setBillingModalOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [integrationsOpen, setIntegrationsOpen] = useState(false);
-    const { enabled: customAgentsEnabled, loading: flagsLoading } = useFeatureFlag('custom_agents');
+    const customAgentsEnabled = useFeatureFlagEnabled('custom_agents');
     const router = useRouter();
     
     // Fetch agents to get the selected agent's data
@@ -144,18 +145,51 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
       const adjustHeight = () => {
         const el = textarea.current;
         if (!el) return;
-        el.style.height = 'auto';
-        el.style.maxHeight = '200px';
-        el.style.overflowY = el.scrollHeight > 200 ? 'auto' : 'hidden';
 
-        const newHeight = Math.min(el.scrollHeight, 200);
-        el.style.height = `${newHeight}px`;
+        // Reset height to auto to get accurate scrollHeight
+        el.style.height = 'auto';
+
+        // Use viewport height units for mobile compatibility
+        const maxHeight = window.innerWidth < 768 ? 120 : 200; // Smaller max height on mobile
+        const scrollHeight = el.scrollHeight;
+
+        // Prevent excessive height on mobile
+        if (scrollHeight > maxHeight) {
+          el.style.height = `${maxHeight}px`;
+          el.style.overflowY = 'auto';
+        } else {
+          el.style.height = `${Math.max(scrollHeight, 40)}px`; // Minimum height of 40px
+          el.style.overflowY = 'hidden';
+        }
+      };
+
+      // Debounce the height adjustment to prevent excessive calculations
+      let timeoutId: NodeJS.Timeout;
+      const debouncedAdjustHeight = () => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(adjustHeight, 100);
       };
 
       adjustHeight();
 
-      window.addEventListener('resize', adjustHeight);
-      return () => window.removeEventListener('resize', adjustHeight);
+      // Listen to multiple events that can affect textarea height
+      const events = ['input', 'resize', 'orientationchange', 'focus', 'blur'];
+      events.forEach(event => {
+        window.addEventListener(event, debouncedAdjustHeight);
+        if (textarea.current) {
+          textarea.current.addEventListener(event, debouncedAdjustHeight);
+        }
+      });
+
+      return () => {
+        clearTimeout(timeoutId);
+        events.forEach(event => {
+          window.removeEventListener(event, debouncedAdjustHeight);
+          if (textarea.current) {
+            textarea.current.removeEventListener(event, debouncedAdjustHeight);
+          }
+        });
+      };
     }, [value, ref]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -306,11 +340,24 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
               onPaste={handlePaste}
               placeholder={placeholder}
               className={cn(
-                'w-full bg-transparent dark:bg-transparent border-none shadow-none focus-visible:ring-0 px-0.5 py-3 !text-[15px] min-h-[40px] max-h-[200px] overflow-y-auto resize-none',
+                'w-full bg-transparent dark:bg-transparent border-none shadow-none focus-visible:ring-0 px-0.5 py-3 !text-[15px] min-h-[40px] overflow-y-auto resize-none',
+                // Mobile-specific styles to prevent stretching
+                'md:max-h-[200px] max-h-[120px]', // Smaller max height on mobile
+                'touch-manipulation', // Better touch handling
+                'webkit-appearance-none', // Remove iOS styling
                 isDraggingOver ? 'opacity-40' : '',
               )}
               disabled={loading || (disabled && !isAgentRunning)}
               rows={1}
+              style={{
+                // Additional mobile-specific styles
+                WebkitAppearance: 'none',
+                outline: 'none',
+                resize: 'none',
+                // Prevent zoom on iOS
+                fontSize: '16px',
+                lineHeight: '1.4',
+              }}
             />
           </div>
           

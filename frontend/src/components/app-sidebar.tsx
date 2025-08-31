@@ -26,22 +26,22 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { ThemeToggle } from "./home/theme-toggle"
-import { KortixLogo } from "./sidebar/kortix-logo"
+import { XeraLogo } from "./sidebar/kortix-logo"
 import Image from "next/image"
 import { useEffect } from "react"
 import { useTheme } from "next-themes"
 
 const data = {
   user: {
-    name: "Kortix User",
-    email: "docs@kortix.ai",
+    name: "Xera User",
+    email: "docs@xera.ai",
     avatar: "/favicon.png",
   },
   teams: [
     {
-      name: "Kortix AI",
+      name: "Xera AI",
       logo: GalleryVerticalEnd,
-      plan: "Open Source",
+      plan: "Generalist",
     },
   ],
   navMain: [
@@ -49,7 +49,7 @@ const data = {
       title: "Getting Started",
       items: [
         {
-          title: "What is Kortix?",
+          title: "What is Xera?",
           url: "/docs/introduction",
         },
         {
@@ -68,11 +68,11 @@ const data = {
       items: [
         {
           title: "Contributing Guide",
-          url: "/docs/contributing",
+          url: "/docs",
         },
         {
           title: "License",
-          url: "/docs/license",
+          url: "/docs",
         },
       ],
     },
@@ -81,12 +81,12 @@ const data = {
       items: [
         {
           title: "GitHub Repository",
-          url: "https://github.com/kortix-ai/suna",
+          url: "https://github.com/",
           external: true,
         },
         {
           title: "Discord Community",
-          url: "https://discord.gg/Py6pCBUUPw",
+          url: "https://discord.gg/Xera",
           external: true,
         },
       ],
@@ -119,7 +119,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader className="bg-transparent p-6 px-2">
         <Image
           src={logoSrc}
-          alt="Kortix Logo"
+          alt="Xera Logo"
           width={80}
           height={14}
           className="md:w-[100px] md:h-[18px]"

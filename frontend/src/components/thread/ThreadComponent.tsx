@@ -679,7 +679,7 @@ export function ThreadComponent({ projectId, threadId, compact = false, configur
   // SEO title update
   useEffect(() => {
     if (projectName) {
-      document.title = `${projectName} | Kortix Suna`;
+      document.title = `${projectName} | Xera`;
 
       const metaDescription = document.querySelector(
         'meta[name="description"]',
@@ -687,13 +687,13 @@ export function ThreadComponent({ projectId, threadId, compact = false, configur
       if (metaDescription) {
         metaDescription.setAttribute(
           'content',
-          `${projectName} - Interactive agent conversation powered by Kortix Suna`,
+          `${projectName} - Interactive agent conversation powered by Xera`,
         );
       }
 
       const ogTitle = document.querySelector('meta[property="og:title"]');
       if (ogTitle) {
-        ogTitle.setAttribute('content', `${projectName} | Kortix Suna`);
+        ogTitle.setAttribute('content', `${projectName} | Xera`);
       }
 
       const ogDescription = document.querySelector(
@@ -865,11 +865,50 @@ export function ThreadComponent({ projectId, threadId, compact = false, configur
           agentName={agent && agent.name}
           disableInitialAnimation={!initialLoadCompleted && toolCalls.length > 0}
           compact={true}
+          chatInput={
+            <div className="p-4">
+              <ChatInput
+                value={newMessage}
+                onChange={setNewMessage}
+                onSubmit={handleSubmitMessage}
+                placeholder={`Describe what you need help with...`}
+                loading={isSending}
+                disabled={
+                  isSending ||
+                  agentStatus === 'running' ||
+                  agentStatus === 'connecting'
+                }
+                isAgentRunning={
+                  agentStatus === 'running' || agentStatus === 'connecting'
+                }
+                onStopAgent={handleStopAgent}
+                autoFocus={!isLoading}
+                enableAdvancedConfig={false}
+                onFileBrowse={handleOpenFileViewer}
+                sandboxId={sandboxId || undefined}
+                messages={messages}
+                agentName={agent && agent.name}
+                selectedAgentId={selectedAgentId}
+                onAgentSelect={handleAgentSelect}
+                hideAgentSelection={!!configuredAgentId}
+                toolCalls={toolCalls}
+                toolCallIndex={currentToolIndex}
+                showToolPreview={!isSidePanelOpen && toolCalls.length > 0}
+                onExpandToolPreview={() => {
+                  setIsSidePanelOpen(true);
+                  userClosedPanelRef.current = false;
+                }}
+                defaultShowSnackbar="tokens"
+                showScrollToBottomIndicator={showScrollToBottom}
+                onScrollToBottom={scrollToBottom}
+              />
+            </div>
+          }
         >
           {/* Thread Content - Scrollable */}
           <div 
             ref={scrollContainerRef}
-            className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col-reverse"
+            className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col-reverse pb-4"
           >
             <div className="flex-shrink-0">
               <ThreadContent
@@ -892,45 +931,6 @@ export function ThreadComponent({ projectId, threadId, compact = false, configur
                 isPreviewMode={true}
               />
             </div>
-          </div>
-
-          {/* Compact Chat Input */}
-          <div className="flex-shrink-0 border-t border-border/20 bg-background p-4">
-            <ChatInput
-              value={newMessage}
-              onChange={setNewMessage}
-              onSubmit={handleSubmitMessage}
-              placeholder={`Describe what you need help with...`}
-              loading={isSending}
-              disabled={
-                isSending ||
-                agentStatus === 'running' ||
-                agentStatus === 'connecting'
-              }
-              isAgentRunning={
-                agentStatus === 'running' || agentStatus === 'connecting'
-              }
-              onStopAgent={handleStopAgent}
-              autoFocus={!isLoading}
-              enableAdvancedConfig={false}
-              onFileBrowse={handleOpenFileViewer}
-              sandboxId={sandboxId || undefined}
-              messages={messages}
-              agentName={agent && agent.name}
-              selectedAgentId={selectedAgentId}
-              onAgentSelect={handleAgentSelect}
-              hideAgentSelection={!!configuredAgentId}
-              toolCalls={toolCalls}
-              toolCallIndex={currentToolIndex}
-              showToolPreview={!isSidePanelOpen && toolCalls.length > 0}
-              onExpandToolPreview={() => {
-                setIsSidePanelOpen(true);
-                userClosedPanelRef.current = false;
-              }}
-              defaultShowSnackbar="tokens"
-              showScrollToBottomIndicator={showScrollToBottom}
-              onScrollToBottom={scrollToBottom}
-            />
           </div>
         </ThreadLayout>
 
@@ -992,6 +992,47 @@ export function ThreadComponent({ projectId, threadId, compact = false, configur
         initialLoadCompleted={initialLoadCompleted}
         agentName={agent && agent.name}
         disableInitialAnimation={!initialLoadCompleted && toolCalls.length > 0}
+        chatInput={
+          <div className="p-4">
+            <div className={cn('mx-auto', isMobile ? 'w-full' : 'max-w-3xl')}>
+              <ChatInput
+                value={newMessage}
+                onChange={setNewMessage}
+                onSubmit={handleSubmitMessage}
+                placeholder={`Describe what you need help with...`}
+                loading={isSending}
+                disabled={
+                  isSending ||
+                  agentStatus === 'running' ||
+                  agentStatus === 'connecting'
+                }
+                isAgentRunning={
+                  agentStatus === 'running' || agentStatus === 'connecting'
+                }
+                onStopAgent={handleStopAgent}
+                autoFocus={!isLoading}
+                enableAdvancedConfig={false}
+                onFileBrowse={handleOpenFileViewer}
+                sandboxId={sandboxId || undefined}
+                messages={messages}
+                agentName={agent && agent.name}
+                selectedAgentId={selectedAgentId}
+                onAgentSelect={handleAgentSelect}
+                hideAgentSelection={!!configuredAgentId}
+                toolCalls={toolCalls}
+                toolCallIndex={currentToolIndex}
+                showToolPreview={!isSidePanelOpen && toolCalls.length > 0}
+                onExpandToolPreview={() => {
+                  setIsSidePanelOpen(true);
+                  userClosedPanelRef.current = false;
+                }}
+                defaultShowSnackbar="tokens"
+                showScrollToBottomIndicator={showScrollToBottom}
+                onScrollToBottom={scrollToBottom}
+              />
+            </div>
+          </div>
+        }
       >
         <ThreadContent
           messages={messages}
@@ -1011,60 +1052,6 @@ export function ThreadComponent({ projectId, threadId, compact = false, configur
           agentData={agent}
           scrollContainerRef={scrollContainerRef}
         />
-
-        <div
-          className={cn(
-            'fixed bottom-0 z-10 bg-gradient-to-t from-background via-background/90 to-transparent px-4 pt-8',
-            isSidePanelAnimating
-              ? ''
-              : 'transition-all duration-200 ease-in-out',
-            leftSidebarState === 'expanded'
-              ? 'left-[72px] md:left-[256px]'
-              : 'left-[40px]',
-            isSidePanelOpen && !isMobile
-              ? 'right-[90%] sm:right-[450px] md:right-[500px] lg:right-[550px] xl:right-[650px]'
-              : 'right-0',
-            isMobile ? 'left-0 right-0' : '',
-          )}
-        >
-          <div className={cn('mx-auto', isMobile ? 'w-full' : 'max-w-3xl')}>
-            <ChatInput
-              value={newMessage}
-              onChange={setNewMessage}
-              onSubmit={handleSubmitMessage}
-              placeholder={`Describe what you need help with...`}
-              loading={isSending}
-              disabled={
-                isSending ||
-                agentStatus === 'running' ||
-                agentStatus === 'connecting'
-              }
-              isAgentRunning={
-                agentStatus === 'running' || agentStatus === 'connecting'
-              }
-              onStopAgent={handleStopAgent}
-              autoFocus={!isLoading}
-              enableAdvancedConfig={false}
-              onFileBrowse={handleOpenFileViewer}
-              sandboxId={sandboxId || undefined}
-              messages={messages}
-              agentName={agent && agent.name}
-              selectedAgentId={selectedAgentId}
-              onAgentSelect={handleAgentSelect}
-              hideAgentSelection={!!configuredAgentId}
-              toolCalls={toolCalls}
-              toolCallIndex={currentToolIndex}
-              showToolPreview={!isSidePanelOpen && toolCalls.length > 0}
-              onExpandToolPreview={() => {
-                setIsSidePanelOpen(true);
-                userClosedPanelRef.current = false;
-              }}
-              defaultShowSnackbar="tokens"
-              showScrollToBottomIndicator={showScrollToBottom}
-              onScrollToBottom={scrollToBottom}
-            />
-          </div>
-        </div>
       </ThreadLayout>
 
       <UpgradeDialog

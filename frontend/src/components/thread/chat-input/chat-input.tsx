@@ -359,6 +359,12 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
           )}
                      <Card
              className={`shadow-none w-full max-w-4xl mx-auto bg-transparent border-none overflow-visible ${enableAdvancedConfig && selectedAgentId ? '' : 'rounded-3xl'} relative`}
+             style={{
+               // Mobile-specific container styles
+               maxWidth: '100vw',
+               marginLeft: 'auto',
+               marginRight: 'auto',
+             }}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={(e) => {
@@ -380,7 +386,13 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
             }}
           >
             <div className="w-full text-sm flex flex-col justify-between items-start rounded-lg min-w-0">
-              <CardContent className={`w-full p-1.5 pb-2 ${bgColor} border rounded-3xl min-w-0 overflow-hidden`}>
+              <CardContent className={`w-full p-1.5 pb-2 ${bgColor} border rounded-3xl min-w-0 overflow-hidden`}
+                style={{
+                  // Mobile-specific content styles
+                  paddingLeft: 'max(0.375rem, env(safe-area-inset-left))',
+                  paddingRight: 'max(0.375rem, env(safe-area-inset-right))',
+                }}
+              >
                 <AttachmentGroup
                   files={uploadedFiles || []}
                   sandboxId={sandboxId}

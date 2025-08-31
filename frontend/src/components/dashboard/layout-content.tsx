@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { SidebarLeft, FloatingMobileMenuButton } from '@/components/sidebar/sidebar-left';
+import { SidebarLeft } from '@/components/sidebar/sidebar-left';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 // import { PricingAlert } from "@/components/billing/pricing-alert"
 import { MaintenanceAlert } from '@/components/maintenance-alert';
@@ -131,8 +131,7 @@ export default function DashboardLayoutContent({
           {/* Status overlay for deletion operations */}
           <StatusOverlay />
           
-          {/* Floating mobile menu button */}
-          <FloatingMobileMenuButton />
+          {/* Floating mobile menu button - REMOVED: Now handled by header button */}
         </SidebarProvider>
       </SubscriptionProvider>
     </DeleteOperationProvider>

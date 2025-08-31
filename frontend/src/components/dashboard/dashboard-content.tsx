@@ -15,7 +15,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useBillingError } from '@/hooks/useBillingError';
 import { BillingErrorAlert } from '@/components/billing/usage-limit-alert';
 import { useAccounts } from '@/hooks/use-accounts';
-import { config, isLocalMode, isStagingMode } from '@/lib/config';
+import { config } from '@/lib/config';
 import { useInitiateAgentWithInvalidation } from '@/hooks/react-query/dashboard/use-initiate-agent';
 import { useAgents } from '@/hooks/react-query/agents/use-agents';
 import { cn } from '@/lib/utils';
@@ -25,7 +25,6 @@ import { useAgentSelection } from '@/lib/stores/agent-selection-store';
 import { useThreadQuery } from '@/hooks/react-query/threads/use-threads';
 import { normalizeFilenameToNFC } from '@/lib/utils/unicode';
 import { AgentRunLimitDialog } from '@/components/thread/agent-run-limit-dialog';
-import { CustomAgentsSection } from './custom-agents-section';
 import { toast } from 'sonner';
 import { ReleaseBadge } from '../auth/release-badge';
 import { Calendar, MessageSquare, Plus, Sparkles, Zap, ChevronRight } from 'lucide-react';
@@ -43,7 +42,6 @@ import {
 } from '@/components/ui/tooltip';
 import { useSidebar } from '@/components/ui/sidebar';
 import { IntegrationsRegistry } from '@/components/agents/integrations-registry';
-import { Examples } from './examples';
 
 const PENDING_PROMPT_KEY = 'pendingAgentPrompt';
 
@@ -77,7 +75,7 @@ export function DashboardContent() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Get sidebar state for toggle button
-  const { state, setOpen } = useSidebar();
+  const { state, setOpen, setOpenMobile } = useSidebar();
 
   // Feature flag for custom agents section
 
@@ -97,8 +95,6 @@ export function DashboardContent() {
   const isSunaAgent = selectedAgent?.metadata?.is_suna_default || false;
 
   const threadQuery = useThreadQuery(initiatedThreadId || '');
-
-  const enabledEnvironment = isStagingMode() || isLocalMode();
 
   React.useEffect(() => {
     if (agents.length > 0) {
@@ -232,13 +228,13 @@ export function DashboardContent() {
         showUsageLimitAlert={true}
       />
       <div className="dashboard-scroll-container flex flex-col h-full w-full bg-background">
-        {/* Sidebar Toggle Button for Desktop */}
-        {!isMobile && state === 'collapsed' && (
+        {/* Sidebar Toggle Button for Desktop and Mobile */}
+        {state === 'collapsed' && (
           <div className="fixed top-6 left-4 z-50">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  onClick={() => setOpen(true)}
+                  onClick={() => isMobile ? setOpenMobile(true) : setOpen(true)}
                   variant="ghost"
                   size="icon"
                   className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:text-accent-foreground dark:hover:bg-accent/50 size-9 mr-2 hover:bg-accent transition-all duration-200 h-9 w-9 touch-manipulation"
@@ -293,20 +289,8 @@ export function DashboardContent() {
                     onConfigureAgent={(agentId) => router.push(`/agents/config/${agentId}`)}
                   />
                 </div>
-                <div className="w-full" data-tour="examples">
-                  <Examples onSelectPrompt={setInputValue} count={isMobile ? 3 : 4} />
-                </div>
               </div>
             </div>
-            {enabledEnvironment && (
-              <div className="w-full px-4 pb-8" data-tour="custom-agents">
-                <div className="max-w-7xl mx-auto">
-                  <CustomAgentsSection 
-                    onAgentSelect={setSelectedAgent}
-                  />
-                </div>
-              </div>
-            )}
           </div>
         </div>
         

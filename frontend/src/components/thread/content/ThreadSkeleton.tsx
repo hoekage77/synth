@@ -2,6 +2,7 @@ import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { ChatInput } from '@/components/thread/chat-input/chat-input';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton-loaders';
 
 interface ThreadSkeletonProps {
     isSidePanelOpen?: boolean;

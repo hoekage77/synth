@@ -39,6 +39,7 @@ import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { XeraLogo } from '@/components/sidebar/kortix-logo';
 import { DynamicIcon } from 'lucide-react/dynamic';
+import ColorThief from 'colorthief';
 
 interface MarketplaceTemplate {
   template_id: string;
