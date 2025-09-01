@@ -9,7 +9,6 @@ import { VoiceRecorder } from './voice-recorder';
 import { UnifiedConfigMenu } from './unified-config-menu';
 import { canAccessModel, SubscriptionStatus } from './_use-model-selection';
 import { isLocalMode } from '@/lib/config';
-import { useFeatureFlag } from '@/lib/feature-flags';
 import { TooltipContent } from '@/components/ui/tooltip';
 import { Tooltip } from '@/components/ui/tooltip';
 import { TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip';
@@ -19,6 +18,7 @@ import { IntegrationsRegistry } from '@/components/agents/integrations-registry'
 import { handleFiles } from './file-upload-handler';
 import { useAgents } from '@/hooks/react-query/agents/use-agents';
 import { useRouter } from 'next/navigation';
+import { useFeatureFlagEnabled } from '@posthog/react';
 
 interface MessageInputProps {
   value: string;
@@ -99,7 +99,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
     const [billingModalOpen, setBillingModalOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [integrationsOpen, setIntegrationsOpen] = useState(false);
-    const { enabled: customAgentsEnabled, loading: flagsLoading } = useFeatureFlag('custom_agents');
+    const customAgentsEnabled = useFeatureFlagEnabled('custom_agents');
     const router = useRouter();
     
     // Fetch agents to get the selected agent's data
@@ -145,18 +145,51 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
       const adjustHeight = () => {
         const el = textarea.current;
         if (!el) return;
-        el.style.height = 'auto';
-        el.style.maxHeight = '200px';
-        el.style.overflowY = el.scrollHeight > 200 ? 'auto' : 'hidden';
 
-        const newHeight = Math.min(el.scrollHeight, 200);
-        el.style.height = `${newHeight}px`;
+        // Reset height to auto to get accurate scrollHeight
+        el.style.height = 'auto';
+
+        // Use viewport height units for mobile compatibility
+        const maxHeight = window.innerWidth < 768 ? 120 : 200; // Smaller max height on mobile
+        const scrollHeight = el.scrollHeight;
+
+        // Prevent excessive height on mobile
+        if (scrollHeight > maxHeight) {
+          el.style.height = `${maxHeight}px`;
+          el.style.overflowY = 'auto';
+        } else {
+          el.style.height = `${Math.max(scrollHeight, 40)}px`; // Minimum height of 40px
+          el.style.overflowY = 'hidden';
+        }
+      };
+
+      // Debounce the height adjustment to prevent excessive calculations
+      let timeoutId: NodeJS.Timeout;
+      const debouncedAdjustHeight = () => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(adjustHeight, 100);
       };
 
       adjustHeight();
 
-      window.addEventListener('resize', adjustHeight);
-      return () => window.removeEventListener('resize', adjustHeight);
+      // Listen to multiple events that can affect textarea height
+      const events = ['input', 'resize', 'orientationchange', 'focus', 'blur'];
+      events.forEach(event => {
+        window.addEventListener(event, debouncedAdjustHeight);
+        if (textarea.current) {
+          textarea.current.addEventListener(event, debouncedAdjustHeight);
+        }
+      });
+
+      return () => {
+        clearTimeout(timeoutId);
+        events.forEach(event => {
+          window.removeEventListener(event, debouncedAdjustHeight);
+          if (textarea.current) {
+            textarea.current.removeEventListener(event, debouncedAdjustHeight);
+          }
+        });
+      };
     }, [value, ref]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -196,7 +229,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
     };
 
     const renderDropdown = () => {
-      const showAdvancedFeatures = isLoggedIn && (enableAdvancedConfig || (customAgentsEnabled && !flagsLoading));
+      const showAdvancedFeatures = isLoggedIn && enableAdvancedConfig;
       // Don't render dropdown components until after hydration to prevent ID mismatches
       if (!mounted) {
         return <div className="flex items-center gap-2 h-8" />; // Placeholder with same height
@@ -206,8 +239,8 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
         <div className="flex items-center gap-2">
           <UnifiedConfigMenu
             isLoggedIn={isLoggedIn}
-            selectedAgentId={showAdvancedFeatures && !hideAgentSelection ? selectedAgentId : undefined}
-            onAgentSelect={showAdvancedFeatures && !hideAgentSelection ? onAgentSelect : undefined}
+            selectedAgentId={!hideAgentSelection ? selectedAgentId : undefined}
+            onAgentSelect={!hideAgentSelection ? onAgentSelect : undefined}
             selectedModel={selectedModel}
             onModelChange={onModelChange}
             modelOptions={modelOptions}
@@ -223,7 +256,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
       <div className="relative flex flex-col w-full">
                  {/* AI Agent Capabilities - Enhanced card-based design */}
          {onAgentSelect && (selectedAgentId || displayAgent?.agent_id) && (
-           <div className="flex items-center justify-center gap-2 px-2 mb-3">
+           <div className="flex items-center justify-center gap-1.5 px-1.5 mb-2">
              <Button
                variant="ghost"
                size="sm"
@@ -297,8 +330,8 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
            </div>
          )}
         
-        <div className="flex items-end gap-2 px-2">
-          <div className="flex-1 flex flex-col gap-1">
+        <div className="flex items-end gap-1.5 px-1.5">
+          <div className="flex-1 flex flex-col">
             <Textarea
               ref={ref}
               value={value}
@@ -307,11 +340,24 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
               onPaste={handlePaste}
               placeholder={placeholder}
               className={cn(
-                'w-full bg-transparent dark:bg-transparent border-none shadow-none focus-visible:ring-0 px-0.5 py-3 !text-[15px] min-h-[40px] max-h-[200px] overflow-y-auto resize-none',
+                'w-full bg-transparent dark:bg-transparent border-none shadow-none focus-visible:ring-0 px-0.5 py-2 !text-[15px] min-h-[36px] overflow-y-auto resize-none',
+                // Mobile-specific styles to prevent stretching
+                'md:max-h-[180px] max-h-[100px]', // Smaller max height on mobile
+                'touch-manipulation', // Better touch handling
+                'webkit-appearance-none', // Remove iOS styling
                 isDraggingOver ? 'opacity-40' : '',
               )}
               disabled={loading || (disabled && !isAgentRunning)}
               rows={1}
+              style={{
+                // Additional mobile-specific styles
+                WebkitAppearance: 'none',
+                outline: 'none',
+                resize: 'none',
+                // Prevent zoom on iOS
+                fontSize: '16px',
+                lineHeight: '1.4',
+              }}
             />
           </div>
           
@@ -321,7 +367,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
             onClick={isAgentRunning && onStopAgent ? onStopAgent : onSubmit}
             size="sm"
             className={cn(
-              'w-8 h-8 flex-shrink-0 rounded-xl mb-1',
+              'w-7 h-7 flex-shrink-0 rounded-xl',
               (!value.trim() && uploadedFiles.length === 0 && !isAgentRunning) ||
                 loading ||
                 (disabled && !isAgentRunning)
@@ -345,8 +391,8 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
         </div>
 
         {/* Bottom controls row */}
-        <div className="flex items-center justify-between mt-2 px-2 gap-2 min-w-0">
-          <div className="flex items-center gap-3 min-w-0 flex-shrink">
+        <div className="flex items-center justify-between mt-1.5 px-1.5 gap-1.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-shrink">
             {!hideAttachments && (
               <FileUploadHandler
                 ref={fileInputRef}

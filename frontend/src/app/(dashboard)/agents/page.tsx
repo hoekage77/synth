@@ -6,7 +6,6 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useAgents, useUpdateAgent, useDeleteAgent, useOptimisticAgentUpdate, useAgentDeletionState } from '@/hooks/react-query/agents/use-agents';
 import { useMarketplaceTemplates, useInstallTemplate, useMyTemplates, useUnpublishTemplate, usePublishTemplate, useCreateTemplate, useDeleteTemplate } from '@/hooks/react-query/secure-mcp/use-secure-mcp';
-import { useFeatureFlag } from '@/lib/feature-flags';
 import { useAuth } from '@/components/AuthProvider';
 
 import { StreamlinedInstallDialog } from '@/components/agents/installation/streamlined-install-dialog';
@@ -44,16 +43,7 @@ interface PublishDialogData {
 
 export default function AgentsPage() {
   const { user } = useAuth();
-  const { enabled: customAgentsEnabled, loading: agentsFlagLoading } = useFeatureFlag("custom_agents");
-  const { enabled: agentMarketplaceEnabled, loading: marketplaceFlagLoading } = useFeatureFlag("agent_marketplace");
   const router = useRouter();
-  const flagLoading = agentsFlagLoading || marketplaceFlagLoading;
-
-  useEffect(() => {
-    if (!flagLoading && !customAgentsEnabled) {
-      router.replace("/dashboard");
-    }
-  }, [flagLoading, customAgentsEnabled, router]);
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
@@ -99,7 +89,7 @@ export default function AgentsPage() {
   const [agentLimitError, setAgentLimitError] = useState<AgentCountLimitError | null>(null);
 
   const activeTab = useMemo(() => {
-    return searchParams.get('tab') || 'my-agents';
+    return searchParams ? searchParams.get('tab') || 'my-agents' : 'my-agents';
   }, [searchParams]);
 
   const agentsQueryParams: AgentsParams = useMemo(() => {
@@ -109,7 +99,7 @@ export default function AgentsPage() {
       search: agentsSearchQuery || undefined,
       sort_by: agentsSortBy,
       sort_order: agentsSortOrder,
-      content_type: "agents", // Explicitly request only agents, not templates
+      content_type: "agents",
     };
 
     if (agentsFilters.hasDefaultAgent) {
@@ -194,7 +184,7 @@ export default function AgentsPage() {
           id: template.template_id,
           creator_id: template.creator_id,
           name: template.name,
-          description: template.description,
+          description: template.description ?? '',
           tags: template.tags || [],
           download_count: template.download_count || 0,
           creator_name: template.creator_name || 'Anonymous',
@@ -220,7 +210,7 @@ export default function AgentsPage() {
   }, [marketplaceTemplates]);
 
   const handleTabChange = (newTab: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() ?? '');
     params.set('tab', newTab);
     router.replace(`${pathname}?${params.toString()}`);
   };
@@ -250,7 +240,7 @@ export default function AgentsPage() {
   }, [templatesSearchQuery, templatesSortBy, templatesSortOrder]);
 
   useEffect(() => {
-    const agentId = searchParams.get('agent');
+    const agentId = searchParams?.get('agent');
     if (agentId && allMarketplaceItems.length > 0) {
       const sharedAgent = allMarketplaceItems.find(agent => agent.id === agentId);
       if (sharedAgent) {
@@ -549,30 +539,6 @@ export default function AgentsPage() {
     };
   };
 
-  if (flagLoading) {
-    return (
-      <div className="min-h-screen">
-        <div className="container max-w-7xl mx-auto px-4 py-8">
-          <AgentsPageHeader />
-        </div>
-        
-        <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/40 shadow-sm">
-          <div className="container max-w-7xl mx-auto px-4 py-4">
-            <TabsNavigation activeTab={activeTab} onTabChange={handleTabChange} onCreateAgent={handleCreateNewAgent} />
-          </div>
-        </div>
-
-        <div className="container max-w-7xl mx-auto px-4 py-8">
-          <LoadingSkeleton />
-        </div>
-      </div>
-    );
-  }
-
-  if (!customAgentsEnabled) {
-    return null;
-  }
-
   return (
     <div className="min-h-screen">
       <div className="container mx-auto max-w-7xl px-4 py-8">
@@ -608,7 +574,7 @@ export default function AgentsPage() {
               setAgentsPage={setAgentsPage}
               agentsPageSize={agentsPageSize}
               onAgentsPageSizeChange={handleAgentsPageSizeChange}
-              myTemplates={myTemplates}
+              myTemplates={myTemplates || []}
               templatesLoading={templatesLoading}
               templatesError={templatesError}
               templatesActioningId={templatesActioningId}

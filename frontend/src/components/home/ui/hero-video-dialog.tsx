@@ -69,7 +69,7 @@ const animationVariants = {
 };
 
 export function HeroVideoDialog({
-  animationStyle = 'from-center',
+  animationStyle = 'fade',
   videoSrc,
   thumbnailSrc,
   thumbnailAlt = 'Video thumbnail',
@@ -81,76 +81,67 @@ export function HeroVideoDialog({
   // Add autoplay parameter to YouTube URL when opened
   const getVideoSrcWithAutoplay = () => {
     const url = new URL(videoSrc);
-    // Preserve existing query parameters and add autoplay=1
     url.searchParams.set('autoplay', '1');
+    url.searchParams.set('rel', '0');
+    url.searchParams.set('modestbranding', '1');
     return url.toString();
   };
 
   return (
-    <div className={cn('relative', className)}>
-      <div
-        className="group relative cursor-pointer"
-        onClick={() => setIsVideoOpen(true)}
-      >
+    <>
+      <div className={cn('relative group cursor-pointer', className)} onClick={() => setIsVideoOpen(true)}>
         {thumbnailSrc ? (
           <img
             src={thumbnailSrc}
             alt={thumbnailAlt}
             width={1920}
             height={1080}
-            className="w-full transition-all duration-200 ease-out group-hover:brightness-[0.8] isolate"
+            className="w-full h-full object-cover rounded-2xl"
           />
         ) : (
-          <div className="w-full aspect-video bg-background rounded-2xl" />
-        )}
-        <div className="absolute isolate inset-0 flex scale-[0.9] items-center justify-center rounded-2xl transition-all duration-200 ease-out group-hover:scale-100">
-          <div className="flex size-28 items-center justify-center rounded-full bg-gradient-to-t from-secondary/20 to-[#ACC3F7/15] backdrop-blur-md">
-            <div
-              className={`relative flex size-20 scale-100 items-center justify-center rounded-full bg-gradient-to-t from-secondary to-white/10 shadow-md transition-all duration-200 ease-out group-hover:scale-[1.2]`}
-            >
-              <Play
-                className="size-8 scale-100 fill-white text-white transition-transform duration-200 ease-out group-hover:scale-105"
-                style={{
-                  filter:
-                    'drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06))',
-                }}
-              />
-            </div>
+          <div className="w-full h-full bg-gray-200 dark:bg-gray-700 rounded-2xl flex items-center justify-center">
+            <Play className="w-12 h-12 text-gray-400" />
           </div>
-        </div>
+        )}
+
+        {/* Minimal overlay */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 rounded-2xl" />
       </div>
+
+      {/* Clean modal */}
       <AnimatePresence>
         {isVideoOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            onClick={() => setIsVideoOpen(false)}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md"
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setIsVideoOpen(false)}
           >
             <motion.div
               {...selectedAnimation}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="relative mx-4 aspect-video w-full max-w-4xl md:mx-0"
+              transition={{ duration: 0.3 }}
+              className="relative w-full max-w-4xl aspect-video bg-black rounded-2xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
             >
-              <motion.button
-                className="absolute cursor-pointer hover:scale-[98%] transition-all duration-200 ease-out -top-16 right-0 rounded-full bg-neutral-900/50 p-2 text-xl text-white ring-1 backdrop-blur-md dark:bg-neutral-100/50 dark:text-black"
+              <iframe
+                src={getVideoSrcWithAutoplay()}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+
+              {/* Minimal close button */}
+              <button
                 onClick={() => setIsVideoOpen(false)}
+                className="absolute top-4 right-4 w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
               >
-                <XIcon className="size-5" />
-              </motion.button>
-              <div className="relative isolate z-[1] size-full overflow-hidden rounded-2xl border-2 border-white">
-                <iframe
-                  src={getVideoSrcWithAutoplay()}
-                  className="size-full"
-                  allowFullScreen
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                ></iframe>
-              </div>
+                <XIcon className="w-4 h-4" />
+              </button>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 }

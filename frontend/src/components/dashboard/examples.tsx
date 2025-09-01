@@ -134,7 +134,7 @@ const allPrompts: PromptExample[] = [
 const getDeterministicPrompts = (count: number = 3): PromptExample[] => {
   // Use a deterministic selection based on count to avoid hydration mismatches
   const startIndex = (count * 7) % allPrompts.length;
-  const selected = [];
+  const selected: PromptExample[] = [];
   
   for (let i = 0; i < count; i++) {
     const index = (startIndex + i) % allPrompts.length;

@@ -23,13 +23,26 @@ export type FileType =
   | 'csv'
   | 'xlsx';
 
+export interface FileRendererProject {
+  id?: string;
+  name?: string;
+  description?: string;
+  created_at?: string;
+  sandbox?: {
+    id?: string;
+    sandbox_url?: string;
+    vnc_preview?: string;
+    pass?: string;
+  };
+}
+
 interface FileRendererProps {
   content: string | null;
   binaryUrl: string | null;
   fileName: string;
   filePath?: string;
   className?: string;
-  project?: Project;
+  project?: FileRendererProject;
   markdownRef?: React.RefObject<HTMLDivElement>;
   onDownload?: () => void;
   isDownloading?: boolean;

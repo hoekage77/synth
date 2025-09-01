@@ -116,7 +116,7 @@ function normalizeVersionData(version: any): NormalizedVersionData | null {
 
 export function useAgentVersionData({ agentId }: UseAgentVersionDataProps): UseAgentVersionDataReturn {
   const searchParams = useSearchParams();
-  const versionParam = searchParams.get('version');
+  const versionParam = searchParams?.get('version');
   
   const { data: agent, isLoading: agentLoading, error: agentError } = useAgent(agentId);
   const shouldLoadVersion = versionParam || agent?.current_version_id;

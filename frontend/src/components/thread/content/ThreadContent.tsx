@@ -16,6 +16,7 @@ import { AgentAvatar, AgentName } from './agent-avatar';
 import { parseXmlToolCalls, isNewXmlFormat } from '@/components/thread/tool-views/xml-parser';
 import { ShowToolStream } from './ShowToolStream';
 import { ComposioUrlDetector } from './composio-url-detector';
+import { StreamingText } from './StreamingText';
 import { HIDE_STREAMING_XML_TAGS } from '@/components/thread/utils';
 import { ClickableUserMessage } from './clickable-user-message';
 
@@ -104,7 +105,7 @@ export function renderMarkdownContent(
 
                     // Render ask tool content with attachment UI
                     contentParts.push(
-                        <div key={`ask-${match.index}-${index}`} className="space-y-3">
+                        <div key={`ask-${match?.index || 0}-${index}`} className="space-y-3">
                             <ComposioUrlDetector content={askText} className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none break-words [&>:first-child]:mt-0 prose-headings:mt-3" />
                             {renderAttachments(attachmentArray, fileViewerHandler, sandboxId, project)}
                         </div>
@@ -114,7 +115,7 @@ export function renderMarkdownContent(
                     const standaloneAttachments = renderStandaloneAttachments(attachmentArray, fileViewerHandler, sandboxId, project);
                     if (standaloneAttachments) {
                         contentParts.push(
-                            <div key={`ask-func-attachments-${match.index}-${index}`}>
+                            <div key={`ask-func-attachments-${match?.index || 0}-${index}`}>
                                 {standaloneAttachments}
                             </div>
                         );
@@ -130,7 +131,7 @@ export function renderMarkdownContent(
 
                     // Render complete tool content with attachment UI
                     contentParts.push(
-                        <div key={`complete-${match.index}-${index}`} className="space-y-3">
+                        <div key={`complete-${match?.index || 0}-${index}`} className="space-y-3">
                             <ComposioUrlDetector content={completeText} className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none break-words [&>:first-child]:mt-0 prose-headings:mt-3" />
                             {renderAttachments(attachmentArray, fileViewerHandler, sandboxId, project)}
                         </div>
@@ -140,7 +141,7 @@ export function renderMarkdownContent(
                     const standaloneAttachments = renderStandaloneAttachments(attachmentArray, fileViewerHandler, sandboxId, project);
                     if (standaloneAttachments) {
                         contentParts.push(
-                            <div key={`complete-func-attachments-${match.index}-${index}`}>
+                            <div key={`complete-func-attachments-${match?.index || 0}-${index}`}>
                                 {standaloneAttachments}
                             </div>
                         );
@@ -162,7 +163,7 @@ export function renderMarkdownContent(
 
                     contentParts.push(
                         <div
-                            key={`tool-${match.index}-${index}`}
+                            key={`tool-${match?.index || 0}-${index}`}
                             className="my-1"
                         >
                             <button
@@ -375,8 +376,8 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
     const { preloadFiles } = useFilePreloader();
 
     const containerClassName = isPreviewMode
-        ? "flex-1 overflow-y-auto scrollbar-thin scrollbar-track-secondary/0 scrollbar-thumb-primary/10 scrollbar-thumb-rounded-full hover:scrollbar-thumb-primary/10 py-4 pb-0"
-        : "flex-1 overflow-y-auto scrollbar-thin scrollbar-track-secondary/0 scrollbar-thumb-primary/10 scrollbar-thumb-rounded-full hover:scrollbar-thumb-primary/10 py-4 pb-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60";
+        ? "flex-1 overflow-y-auto scrollbar-thin scrollbar-track-secondary/0 scrollbar-thumb-primary/10 scrollbar-thumb-rounded-full hover:scrollbar-thumb-primary/10 py-4 pb-32"
+        : "flex-1 overflow-y-auto scrollbar-thin scrollbar-track-secondary/0 scrollbar-thumb-primary/10 scrollbar-thumb-rounded-full hover:scrollbar-thumb-primary/10 py-4 pb-32 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60";
 
     // In playback mode, we use visibleMessages instead of messages
     const displayMessages = readOnly && visibleMessages ? visibleMessages : messages;
@@ -408,7 +409,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
         }
 
         if (recentAssistantWithAgent?.agents?.name) {
-            const isSunaAgent = recentAssistantWithAgent.agents.name === 'Suna' || isSunaDefaultAgent;
+            const isSunaAgent = recentAssistantWithAgent.agents.name === 'Xera' || isSunaDefaultAgent;
             // Prefer profile image if available on the agent payload
             const profileUrl = (recentAssistantWithAgent as any)?.agents?.profile_image_url;
             const avatar = profileUrl && !isSunaDefaultAgent ? (
@@ -520,11 +521,11 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                     )}
                 </div>
             ) : (
-                // Render scrollable content container with column-reverse
+                // Render scrollable content container with column-reverse (or just content when external scrolling)
                 <div
                     ref={scrollContainerRef || messagesContainerRef}
-                    className={`${containerClassName} thread-scroll-container flex flex-col-reverse ${shouldJustifyToTop ? 'justify-end min-h-full' : ''} h-full`}
-                    onScroll={handleScroll}
+                    className={scrollContainerRef ? `${containerClassName} flex flex-col-reverse ${shouldJustifyToTop ? 'justify-end min-h-full' : ''}` : 'py-4 pb-32'}
+                    onScroll={scrollContainerRef ? handleScroll : undefined}
                 >
                     <div ref={contentRef} className="mx-auto max-w-4xl md:px-8 min-w-0 w-full">
                         <div className="space-y-8 min-w-0">
@@ -850,7 +851,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                                             })()}
 
                                                             {groupIndex === finalGroupedMessages.length - 1 && !readOnly && (streamHookStatus === 'streaming' || streamHookStatus === 'connecting') && (
-                                                                <div className="mt-2">
+                                                                <div className="mt-4">
                                                                     {(() => {
                                                                         // In debug mode, show raw streaming content
                                                                         if (debugMode && streamingTextContent) {
@@ -883,7 +884,6 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                                                             }
                                                                         }
 
-
                                                                         const textToRender = streamingTextContent || '';
                                                                         const textBeforeTag = detectedTag ? textToRender.substring(0, tagStartIndex) : textToRender;
                                                                         const showCursor =
@@ -893,14 +893,23 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                                                               'connecting') &&
                                                                           !detectedTag;
 
+                                                                        // Show minimal processing indicator when agent is active but no streaming text
+                                                                        if (!streamingTextContent && (streamHookStatus === 'streaming' || streamHookStatus === 'connecting')) {
+                                                                            return (
+                                                                                <div className="flex items-center gap-1 py-1 ">
+                                                                                    <div className="h-1 w-1 rounded-full bg-primary/40 animate-pulse duration-1000" />
+                                                                                    <div className="h-1 w-1 rounded-full bg-primary/40 animate-pulse duration-1000 delay-150" />
+                                                                                    <div className="h-1 w-1 rounded-full bg-primary/40 animate-pulse duration-1000 delay-300" />
+                                                                                </div>
+                                                                            );
+                                                                        }
+
                                                                         return (
                                                                             <>
-                                                                                {textBeforeTag && (
-                                                                                    <ComposioUrlDetector content={textBeforeTag} className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3" />
-                                                                                )}
-                                                                                {showCursor && (
-                                                                                    <span className="inline-block h-4 w-0.5 bg-primary ml-0.5 -mb-1 animate-pulse" />
-                                                                                )}
+                                                                                <StreamingText 
+                                                                                    content={textBeforeTag} 
+                                                                                    className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere"
+                                                                                />
 
                                                                                 {detectedTag && (
                                                                                     <ShowToolStream
@@ -911,8 +920,6 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                                                                         startTime={Date.now()}
                                                                                     />
                                                                                 )}
-
-
                                                                             </>
                                                                         );
                                                                     })()}
@@ -921,7 +928,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
 
                                                             {/* For playback mode, show streaming text and tool calls */}
                                                             {readOnly && groupIndex === finalGroupedMessages.length - 1 && isStreamingText && (
-                                                                <div className="mt-2">
+                                                                <div className="mt-4">
                                                                     {(() => {
                                                                         let detectedTag: string | null = null;
                                                                         let tagStartIndex = -1;
@@ -955,15 +962,16 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                                                                 {debugMode && streamingText ? (
                                                                                     <pre className="text-xs font-mono whitespace-pre-wrap overflow-x-auto p-2 border border-border rounded-md bg-muted/30">
                                                                                         {streamingText}
+                                                                                        {showCursor && (
+                                                                                            <span className="inline-block h-4 w-0.5 bg-primary ml-0.5 -mb-1 animate-pulse duration-1000" />
+                                                                                        )}
                                                                                     </pre>
                                                                                 ) : (
                                                                                     <>
-                                                                                        {textBeforeTag && (
-                                                                                            <ComposioUrlDetector content={textBeforeTag} className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3" />
-                                                                                        )}
-                                                                                        {showCursor && (
-                                                                                            <span className="inline-block h-4 w-0.5 bg-primary ml-0.5 -mb-1 animate-pulse" />
-                                                                                        )}
+                                                                                        <StreamingText 
+                                                                                            content={textBeforeTag} 
+                                                                                            className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3 break-words overflow-wrap-anywhere"
+                                                                                        />
 
                                                                                         {detectedTag && (
                                                                                             <ShowToolStream
@@ -1055,9 +1063,9 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                         {/* Streaming indicator content */}
                                         <div className="max-w-[90%] px-4 py-3 text-sm">
                                             <div className="flex items-center gap-1.5 py-1">
-                                                <div className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-pulse" />
-                                                <div className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-pulse delay-150" />
-                                                <div className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-pulse delay-300" />
+                                                <div className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-pulse duration-1000" />
+                                                <div className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-pulse duration-1000 delay-150" />
+                                                <div className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-pulse duration-1000 delay-300" />
                                             </div>
                                         </div>
                                     </div>

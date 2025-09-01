@@ -1,6 +1,17 @@
 import { createClient } from '@/lib/supabase/client';
 import { handleApiError } from './error-handler';
-import posthog from 'posthog-js';
+
+// SSR-safe analytics helper: dynamically load posthog only in the browser
+async function captureEvent(event: string, properties?: Record<string, any>) {
+  if (typeof window === 'undefined') return; // no-op on server/SSR
+  try {
+    const mod = await import('posthog-js');
+    const posthog = mod.default;
+    posthog.capture(event, properties);
+  } catch {
+    // swallow analytics errors
+  }
+}
 
 // Get backend URL from environment variables
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
@@ -451,18 +462,23 @@ export const updateProject = async (
 
   // Dispatch a custom event to notify components about the project change
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(
-      new CustomEvent('project-updated', {
-        detail: {
-          projectId,
-          updatedData: {
-            id: updatedData.project_id,
-            name: updatedData.name,
-            description: updatedData.description,
+    // Try-catch to avoid failing if CustomEvent is not available (e.g., in SSR/tests)
+    try {
+      window.dispatchEvent(
+        new CustomEvent('project-updated', {
+          detail: {
+            projectId,
+            updatedData: {
+              id: updatedData.project_id,
+              name: updatedData.name,
+              description: updatedData.description,
+            },
           },
-        },
-      }),
-    );
+        }),
+      );
+    } catch {
+      // Swallow errors - event dispatch is not critical
+    }
   }
 
   // Return formatted project data - use same mapping as getProject
@@ -814,7 +830,8 @@ export const stopAgent = async (agentRunId: string): Promise<void> => {
     cache: 'no-store',
   });
 
-  posthog.capture('task_abandoned', { agentRunId });
+  // Fire-and-forget client-only analytics
+  void captureEvent('task_abandoned', { agentRunId });
 
   if (!response.ok) {
     const stopError = new Error(`Error stopping agent: ${response.statusText}`);
@@ -1780,8 +1797,13 @@ export const createCheckoutSession = async (
       throw new NoAccessTokenAvailableError();
     }
     
+    // Handle tolt_referral in a way that's safe for SSR
+    let tolt_referral = undefined;
+    if (typeof window !== 'undefined') {
+      tolt_referral = (window as any).tolt_referral;
+    }
     
-    const requestBody = { ...request, tolt_referral: window.tolt_referral };
+    const requestBody = { ...request, tolt_referral };
     
     const response = await fetch(`${API_URL}/billing/create-checkout-session`, {
       method: 'POST',

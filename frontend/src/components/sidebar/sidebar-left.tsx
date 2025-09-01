@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Bot, Menu, Store, Plus, Zap, ChevronRight, Loader2 } from 'lucide-react';
+import { PanelLeftIcon, Plus, Bot } from 'lucide-react';
 
 import { NavAgents } from '@/components/sidebar/nav-agents';
 import { NavUserWithTeams } from '@/components/sidebar/nav-user-with-teams';
@@ -17,7 +17,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
 import { NewAgentDialog } from '@/components/agents/new-agent-dialog';
@@ -32,40 +31,39 @@ import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useFeatureFlags } from '@/lib/feature-flags';
-import posthog from 'posthog-js';
-// Floating mobile menu button component
-function FloatingMobileMenuButton() {
-  const { setOpenMobile, openMobile } = useSidebar();
-  const isMobile = useIsMobile();
-  const pathname = usePathname();
+import { captureEvent } from '@/lib/analytics';
+// Floating mobile menu button component - REMOVED: Now handled by header button
+// function FloatingMobileMenuButton() {
+//   const { setOpenMobile, openMobile } = useSidebar();
+//   const isMobile = useIsMobile();
+//   const pathname = usePathname();
 
-  // Hide on thread/chat screens for cleaner mobile experience
-  const isThreadPage = pathname?.includes('/thread/') || pathname?.includes('/agents/');
+//   // Hide on thread/chat screens for cleaner mobile experience
+//   const isThreadPage = pathname?.includes('/thread/') || pathname?.includes('/agents/');
   
-  if (!isMobile || openMobile || isThreadPage) return null;
+//   if (!isMobile || openMobile || isThreadPage) return null;
 
-  return (
-    <div className="fixed top-6 left-4 z-50 md:hidden">
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            onClick={() => setOpenMobile(true)}
-            variant="ghost"
-            size="icon"
-            className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:text-accent-foreground dark:hover:bg-accent/50 size-9 mr-2 hover:bg-accent transition-all duration-200 h-9 w-9 touch-manipulation"
-            aria-label="Expand sidebar"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">
-          Expand sidebar
-        </TooltipContent>
-      </Tooltip>
-    </div>
-  );
-}
+//   return (
+//     <div className="fixed top-6 left-4 z-50 md:hidden">
+//       <Tooltip>
+//         <TooltipTrigger asChild>
+//           <Button
+//             onClick={() => setOpenMobile(true)}
+//             variant="ghost"
+//             size="icon"
+//             className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:text-accent-foreground dark:hover:bg-accent/50 size-9 mr-2 hover:bg-accent transition-all duration-200 h-9 w-9 touch-manipulation"
+//             aria-label="Expand sidebar"
+//           >
+//             <ChevronRight className="h-4 w-4" />
+//           </Button>
+//         </TooltipTrigger>
+//         <TooltipContent side="bottom">
+//           Expand sidebar
+//         </TooltipContent>
+//       </Tooltip>
+//     </div>
+//   );
+// }
 
 
 
@@ -88,9 +86,6 @@ export function SidebarLeft({
 
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { flags, loading: flagsLoading } = useFeatureFlags(['custom_agents', 'agent_marketplace']);
-  const customAgentsEnabled = flags.custom_agents;
-  const marketplaceEnabled = flags.agent_marketplace;
   const [showNewAgentDialog, setShowNewAgentDialog] = useState(false);
 
   // Close mobile menu on page navigation
@@ -157,24 +152,22 @@ export function SidebarLeft({
             </div>
           )}
           <div className="ml-auto flex items-center gap-2">
-            {/* Always show the trigger button, but with different styling based on state */}
-            {!isMobile && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <SidebarTrigger 
-                    className={cn(
-                      "h-8 w-8 transition-all duration-200",
-                      state === 'collapsed' 
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg" 
-                        : "hover:bg-accent"
-                    )} 
-                  />
-                </TooltipTrigger>
-                <TooltipContent>
-                  {state === 'collapsed' ? 'Expand sidebar (CMD+B)' : 'Collapse sidebar (CMD+B)'}
-                </TooltipContent>
-              </Tooltip>
-            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => isMobile ? setOpenMobile(false) : setOpen(false)}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 cursor-pointer hover:bg-accent/50 transition-colors"
+                  aria-label="Collapse sidebar"
+                >
+                  <PanelLeftIcon className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Collapse sidebar
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </SidebarHeader>
@@ -186,7 +179,7 @@ export function SidebarLeft({
                 'bg-accent text-accent-foreground font-medium': pathname === '/dashboard',
               })} 
               onClick={() => {
-                posthog.capture('new_task_clicked');
+                void captureEvent('new_task_clicked');
                 if (isMobile) setOpenMobile(false);
               }}
             >
@@ -196,22 +189,20 @@ export function SidebarLeft({
               </span>
             </SidebarMenuButton>
           </Link>
-          {!flagsLoading && customAgentsEnabled && (
-            <Link href="/agents">
-              <SidebarMenuButton 
-                className={cn('touch-manipulation', {
-                  'bg-accent text-accent-foreground font-medium': pathname === '/agents',
-                })} 
-                onClick={() => {
-                  if (isMobile) setOpenMobile(false);
-                }}
-                tooltip="Command Center"
-              >
-                <Bot className="h-4 w-4 mr-1" />
-                <span>Command Center</span>
-              </SidebarMenuButton>
-            </Link>
-          )}
+          <Link href="/agents">
+            <SidebarMenuButton 
+              className={cn('touch-manipulation', {
+                'bg-accent text-accent-foreground font-medium': pathname === '/agents',
+              })} 
+              onClick={() => {
+                if (isMobile) setOpenMobile(false);
+              }}
+              tooltip="Command Center"
+            >
+              <Bot className="h-4 w-4 mr-1" />
+              <span>Command Center</span>
+            </SidebarMenuButton>
+          </Link>
 
         </SidebarGroup>
         <NavAgents />
@@ -228,5 +219,5 @@ export function SidebarLeft({
   );
 }
 
-// Export the floating button so it can be used in the layout
-export { FloatingMobileMenuButton };
+// Export the floating button so it can be used in the layout - REMOVED: No longer needed
+// export { FloatingMobileMenuButton };

@@ -332,11 +332,18 @@ export default function PricingPage() {
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {(showAllTasks ? exampleTasks : exampleTasks.slice(0, 3)).map(
                   (task, index) => {
-                    const calculatedCost = selectedModel
+                    const validSelectedModel = selectedModel && {
+                      ...selectedModel,
+                      display_name: selectedModel.display_name || selectedModel.short_name || 'Unknown Model',
+                      priority: selectedModel.priority || 0,
+                      requiresSubscription: selectedModel.requires_subscription || false,
+                    };
+
+                    const calculatedCost = task && task.inputTokens && task.outputTokens && validSelectedModel
                       ? calculateCost(
                           task.inputTokens,
                           task.outputTokens,
-                          selectedModel,
+                          validSelectedModel,
                         )
                       : null;
 

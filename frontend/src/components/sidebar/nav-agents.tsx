@@ -376,7 +376,7 @@ export function NavAgents() {
       // Use the centralized deletion system with completion callback
       await performDelete(
         threadId,
-        isActive,
+        Boolean(isActive),
         async () => {
           // Delete the thread using the mutation with sandbox ID
           deleteThreadMutation(

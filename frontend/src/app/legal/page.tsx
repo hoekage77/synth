@@ -13,7 +13,7 @@ function LegalContent() {
   const pathname = usePathname();
 
   // Get tab from URL or default to "terms"
-  const tabParam = searchParams.get('tab');
+  const tabParam = searchParams?.get('tab');
   const [activeTab, setActiveTab] = useState<'terms' | 'privacy'>(
     tabParam === 'terms' || tabParam === 'privacy' ? tabParam : 'terms',
   );
@@ -24,7 +24,7 @@ function LegalContent() {
 
   // Function to update URL without refreshing the page
   const updateUrl = (tab: string) => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(searchParams?.toString() ?? '');
     params.set('tab', tab);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
@@ -169,8 +169,7 @@ function LegalContent() {
                     </h3>
                     <ul className="text-muted-foreground space-y-1 mb-6">
                       <li>
-                        "Company" refers to Xera Corp (701 Tillery Street
-                        Unit 12-2521 Austin, Texas 78702, United States).
+                        "Company" refers to Xera Corp (Austin, Texas, United States).
                       </li>
                       <li>
                         "Site" refers to the Xera website, including any related

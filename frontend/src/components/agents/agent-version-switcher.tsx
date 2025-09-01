@@ -39,7 +39,7 @@ export function AgentVersionSwitcher({
 }: AgentVersionSwitcherProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const versionParam = searchParams.get('version');
+  const versionParam = searchParams?.get('version');
   
   const { data: versions, isLoading } = useAgentVersions(agentId);
   const activateVersionMutation = useActivateAgentVersion();
@@ -56,7 +56,7 @@ export function AgentVersionSwitcher({
 
   const handleVersionSelect = async (version: AgentVersion) => {
     if (version.versionId.value === viewingVersionId) return;
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() ?? '');
     if (version.versionId.value === currentVersionId) {
       params.delete('version');
     } else {
@@ -89,7 +89,7 @@ export function AgentVersionSwitcher({
         versionId: newVersion.versionId.value 
       });
       
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams?.toString() ?? '');
       params.delete('version');
       const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname;
       router.push(newUrl);

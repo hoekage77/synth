@@ -729,7 +729,7 @@
 
 @theme inline {
   --animate-shiny-text: shiny-text 5s infinite;
- 
+
   @keyframes shiny-text {
     0%,
     90%,
@@ -762,7 +762,6 @@
   height: 20px !important;
   border-radius: 0 0 8px 8px !important;
 }
-
 
 .react-colorful__saturation-pointer,
 .react-colorful__hue-pointer {

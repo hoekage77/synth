@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { SidebarLeft, FloatingMobileMenuButton } from '@/components/sidebar/sidebar-left';
+import { SidebarLeft } from '@/components/sidebar/sidebar-left';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 // import { PricingAlert } from "@/components/billing/pricing-alert"
 import { MaintenanceAlert } from '@/components/maintenance-alert';
 import { useAccounts } from '@/hooks/use-accounts';
 import { useAuth } from '@/components/AuthProvider';
+import { useMaintenanceNoticeQuery } from '@/hooks/react-query/edge-flags';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useApiHealth } from '@/hooks/react-query';
@@ -15,17 +16,11 @@ import { DeleteOperationProvider } from '@/contexts/DeleteOperationContext';
 import { StatusOverlay } from '@/components/ui/status-overlay';
 import { MaintenanceNotice } from './maintenance-notice';
 import { MaintenanceBanner } from './maintenance-banner';
-import { useMaintenanceNoticeQuery } from '@/hooks/react-query/edge-flags';
-import { useIsMobile } from '@/hooks/use-mobile';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 import { useProjects, useThreads } from '@/hooks/react-query/sidebar/use-sidebar';
 import { useAgents } from '@/hooks/react-query/agents/use-agents';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DashboardLayoutContentProps {
   children: React.ReactNode;
@@ -34,7 +29,6 @@ interface DashboardLayoutContentProps {
 export default function DashboardLayoutContent({
   children,
 }: DashboardLayoutContentProps) {
-  const maintenanceNoticeQuery = useMaintenanceNoticeQuery();
   // const [showPricingAlert, setShowPricingAlert] = useState(false)
   const [showMaintenanceAlert, setShowMaintenanceAlert] = useState(false);
   const { data: accounts } = useAccounts();
@@ -42,6 +36,7 @@ export default function DashboardLayoutContent({
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const isMobile = useIsMobile();
+  const { data: maintenanceNotice } = useMaintenanceNoticeQuery();
   const {
     data: healthData,
     isLoading: isCheckingHealth,
@@ -59,8 +54,12 @@ export default function DashboardLayoutContent({
 
   useEffect(() => {
     // setShowPricingAlert(false)
-    setShowMaintenanceAlert(false);
-  }, []);
+    if (maintenanceNotice?.enabled) {
+      setShowMaintenanceAlert(true);
+    } else {
+      setShowMaintenanceAlert(false);
+    }
+  }, [maintenanceNotice]);
 
   // Log data prefetching for debugging
   useEffect(() => {
@@ -85,31 +84,7 @@ export default function DashboardLayoutContent({
     }
   }, [user, isLoading, router]);
 
-  if (maintenanceNoticeQuery.data?.enabled) {
-    const now = new Date();
-    const startTime = new Date(maintenanceNoticeQuery.data.startTime);
-    const endTime = new Date(maintenanceNoticeQuery.data.endTime);
-
-    if (now > startTime) {
-      return (
-        <div className="w-screen h-screen flex items-center justify-center">
-          <div className="max-w-xl">
-            <MaintenanceNotice endTime={endTime.toISOString()} />
-          </div>
-        </div>
-      );
-    }
-  }
-
   let mantenanceBanner: React.ReactNode | null = null;
-  if (maintenanceNoticeQuery.data?.enabled) {
-    mantenanceBanner = (
-      <MaintenanceBanner
-        startTime={maintenanceNoticeQuery.data.startTime}
-        endTime={maintenanceNoticeQuery.data.endTime}
-      />
-    );
-  }
 
   // Show loading state while checking auth or health
   if (isLoading || isCheckingHealth) {
@@ -156,8 +131,7 @@ export default function DashboardLayoutContent({
           {/* Status overlay for deletion operations */}
           <StatusOverlay />
           
-          {/* Floating mobile menu button */}
-          <FloatingMobileMenuButton />
+          {/* Floating mobile menu button - REMOVED: Now handled by header button */}
         </SidebarProvider>
       </SubscriptionProvider>
     </DeleteOperationProvider>

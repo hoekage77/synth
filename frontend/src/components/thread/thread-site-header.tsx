@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from "@/components/ui/button"
-import { FolderOpen, ExternalLink, Monitor, ChevronRight } from "lucide-react"
+import { FolderOpen, ExternalLink, Monitor, ChevronRight, Check, Copy, PanelLeft, ChevronLeft } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { toast } from "sonner"
 import {
@@ -16,22 +16,21 @@ import { useUpdateProject } from "@/hooks/react-query"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
-import { ShareModal } from "@/components/sidebar/share-modal"
 import { useQueryClient } from "@tanstack/react-query";
-import { projectKeys } from "@/hooks/react-query/sidebar/keys";
+import { useSidebar } from '@/components/ui/sidebar';
 import { threadKeys } from "@/hooks/react-query/threads/keys";
-import { useFeatureFlags } from "@/lib/feature-flags";
-import { useSidebar } from "@/components/ui/sidebar";
+import { ShareModal } from "../sidebar/share-modal";
 
 interface ThreadSiteHeaderProps {
-  threadId: string;
-  projectId: string;
+  threadId?: string;
+  projectId?: string;
   projectName: string;
   onViewFiles: () => void;
   onToggleSidePanel: () => void;
   onProjectRenamed?: (newName: string) => void;
   isMobileView?: boolean;
   debugMode?: boolean;
+  variant?: 'default' | 'shared';
 }
 
 export function SiteHeader({
@@ -43,6 +42,7 @@ export function SiteHeader({
   onProjectRenamed,
   isMobileView,
   debugMode,
+  variant = 'default',
 }: ThreadSiteHeaderProps) {
   const pathname = usePathname()
   const [isEditing, setIsEditing] = useState(false)
@@ -50,9 +50,8 @@ export function SiteHeader({
   const inputRef = useRef<HTMLInputElement>(null)
   const [showShareModal, setShowShareModal] = useState(false);
   const [showKnowledgeBase, setShowKnowledgeBase] = useState(false);
+  const [copied, setCopied] = useState(false);
   const queryClient = useQueryClient();
-  const { flags, loading: flagsLoading } = useFeatureFlags(['knowledge_base']);
-  const knowledgeBaseEnabled = flags.knowledge_base;
 
   const isMobile = useIsMobile() || isMobileView
   const updateProjectMutation = useUpdateProject()
@@ -67,6 +66,17 @@ export function SiteHeader({
   const openKnowledgeBase = () => {
     setShowKnowledgeBase(true)
   }
+
+  const copyShareLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      toast.success("Share link copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error("Failed to copy link");
+    }
+  };
 
   const startEditing = () => {
     setEditName(projectName);
@@ -137,35 +147,45 @@ export function SiteHeader({
 
 
         <div className="flex flex-1 items-center gap-2 px-3">
-          {/* Expand sidebar button - show when sidebar is collapsed */}
-          {state === 'collapsed' && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={() => isMobile ? setOpenMobile(true) : setOpen(true)}
-                  size="icon"
-                  variant="ghost"
-                  className={cn(
-                    "mr-2 hover:bg-accent transition-all duration-200",
-                    isMobile 
-                      ? "h-9 w-9 touch-manipulation" 
-                      : "h-8 w-8"
-                  )}
-                  aria-label="Expand sidebar"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <div className="text-center">
-                  <div className="font-medium">Expand Sidebar</div>
-                  <div className="text-xs text-muted-foreground">CMD+B</div>
-                </div>
-              </TooltipContent>
-            </Tooltip>
+          {/* Sidebar Toggle Button - Only show for default variant */}
+          {variant === 'default' && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      if (isMobile) {
+                        setOpenMobile(state !== "expanded");
+                      } else {
+                        setOpen(state !== "expanded");
+                      }
+                    }}
+                    className="h-9 w-9 cursor-pointer mr-2"
+                  >
+                    {state === "expanded" ? (
+                      <ChevronLeft className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side={isMobile ? "bottom" : "bottom"}>
+                  <p>{state === "expanded" ? "Collapse Sidebar" : "Expand Sidebar"}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
-          
-          {isEditing ? (
+
+          {variant === 'shared' ? (
+            <div className="text-base font-medium text-muted-foreground flex items-center gap-2">
+              {projectName}
+              <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 px-2 py-0.5 rounded-full">
+                Shared
+              </span>
+            </div>
+          ) : isEditing ? (
             <Input
               ref={inputRef}
               value={editName}
@@ -198,15 +218,32 @@ export function SiteHeader({
 
           {/* Show all buttons on both mobile and desktop - responsive tooltips */}
           <TooltipProvider>
-
-          <Button
-              variant="ghost"
-              onClick={openShareModal}
-              className="h-9 px-3 cursor-pointer gap-2"
-            >
-              <ExternalLink className="h-4 w-4" />
-              <span>Share</span>
-            </Button>
+            {variant === 'shared' ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    onClick={copyShareLink}
+                    className="h-9 px-3 cursor-pointer gap-2"
+                  >
+                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    <span>{copied ? 'Copied!' : 'Copy Link'}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side={isMobile ? "bottom" : "bottom"}>
+                  <p>Copy share link</p>
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <Button
+                variant="ghost"
+                onClick={openShareModal}
+                className="h-9 px-3 cursor-pointer gap-2"
+              >
+                <ExternalLink className="h-4 w-4" />
+                <span>Share</span>
+              </Button>
+            )}
 
             <Tooltip>
               <TooltipTrigger asChild>
@@ -244,13 +281,14 @@ export function SiteHeader({
           </TooltipProvider>
         </div>
       </header>
-      <ShareModal
-        isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
-        threadId={threadId}
-        projectId={projectId}
-      />
-      
+      {variant === 'default' && threadId && projectId && (
+        <ShareModal
+          isOpen={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          threadId={threadId}
+          projectId={projectId}
+        />
+      )}
     </>
   )
 } 

@@ -19,7 +19,6 @@ import {
 import { useAuth } from '@/components/AuthProvider';
 import { useAuthMethodTracking } from '@/lib/stores/auth-tracking';
 import { toast } from 'sonner';
-import { useFeatureFlag } from '@/lib/feature-flags';
 
 import {
   Dialog,
@@ -38,10 +37,9 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isLoading } = useAuth();
-  const mode = searchParams.get('mode');
-  const returnUrl = searchParams.get('returnUrl');
-  const message = searchParams.get('message');
-  const { enabled: customAgentsEnabled } = useFeatureFlag("custom_agents");
+  const mode = searchParams?.get('mode') ?? 'signin';
+  const returnUrl = searchParams?.get('returnUrl') ?? '/';
+  const message = searchParams?.get('message');
 
   const isSignUp = mode === 'signup';
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -287,7 +285,7 @@ function LoginContent() {
             </div>
             <div className="w-full max-w-sm">
               <div className="mb-4 flex items-center flex-col gap-3 sm:gap-4 justify-center">
-                {customAgentsEnabled && <ReleaseBadge className='mb-2 sm:mb-4' text="Custom Agents, Playbooks, and more!" link="/changelog" />}
+                <ReleaseBadge className='mb-2 sm:mb-4' text="Custom Agents, Playbooks, and more!" link="/changelog" />
                 <h1 className="text-xl sm:text-2xl font-semibold text-foreground text-center leading-tight">
                   {isSignUp ? 'Create your account' : 'Log into your account'}
                 </h1>

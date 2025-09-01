@@ -15,7 +15,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useBillingError } from '@/hooks/useBillingError';
 import { BillingErrorAlert } from '@/components/billing/usage-limit-alert';
 import { useAccounts } from '@/hooks/use-accounts';
-import { config, isLocalMode, isStagingMode } from '@/lib/config';
+import { config } from '@/lib/config';
 import { useInitiateAgentWithInvalidation } from '@/hooks/react-query/dashboard/use-initiate-agent';
 import { useAgents } from '@/hooks/react-query/agents/use-agents';
 import { cn } from '@/lib/utils';
@@ -25,7 +25,6 @@ import { useAgentSelection } from '@/lib/stores/agent-selection-store';
 import { useThreadQuery } from '@/hooks/react-query/threads/use-threads';
 import { normalizeFilenameToNFC } from '@/lib/utils/unicode';
 import { AgentRunLimitDialog } from '@/components/thread/agent-run-limit-dialog';
-import { useFeatureFlag } from '@/lib/feature-flags';
 import { toast } from 'sonner';
 import { ReleaseBadge } from '../auth/release-badge';
 import { Calendar, MessageSquare, Plus, Sparkles, Zap, ChevronRight } from 'lucide-react';
@@ -49,6 +48,7 @@ const PENDING_PROMPT_KEY = 'pendingAgentPrompt';
 export function DashboardContent() {
   const [inputValue, setInputValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [autoSubmit, setAutoSubmit] = useState(false);
   const [registryDialogOpen, setRegistryDialogOpen] = useState(false);
   const { 
@@ -75,10 +75,9 @@ export function DashboardContent() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Get sidebar state for toggle button
-  const { state, setOpen } = useSidebar();
+  const { state, setOpen, setOpenMobile } = useSidebar();
 
   // Feature flag for custom agents section
-  const { enabled: customAgentsEnabled } = useFeatureFlag('custom_agents');
 
   // Fetch agents to get the selected agent's name
   const { data: agentsResponse } = useAgents({
@@ -97,8 +96,6 @@ export function DashboardContent() {
 
   const threadQuery = useThreadQuery(initiatedThreadId || '');
 
-  const enabledEnvironment = isStagingMode() || isLocalMode();
-
   React.useEffect(() => {
     if (agents.length > 0) {
       initializeFromAgents(agents, undefined, setSelectedAgent);
@@ -106,7 +103,7 @@ export function DashboardContent() {
   }, [agents, initializeFromAgents, setSelectedAgent]);
 
   React.useEffect(() => {
-    const agentIdFromUrl = searchParams.get('agent_id');
+    const agentIdFromUrl = searchParams?.get('agent_id');
     if (agentIdFromUrl && agentIdFromUrl !== selectedAgentId) {
       setSelectedAgent(agentIdFromUrl);
       const newUrl = new URL(window.location.href);
@@ -118,6 +115,7 @@ export function DashboardContent() {
   React.useEffect(() => {
     if (threadQuery.data && initiatedThreadId) {
       const thread = threadQuery.data;
+      setIsRedirecting(true);
       if (thread.project_id) {
         router.push(`/projects/${thread.project_id}/thread/${initiatedThreadId}`);
       } else {
@@ -139,7 +137,8 @@ export function DashboardContent() {
   ) => {
     if (
       (!message.trim() && !chatInputRef.current?.getPendingFiles().length) ||
-      isSubmitting
+      isSubmitting ||
+      isRedirecting
     )
       return;
 
@@ -172,6 +171,7 @@ export function DashboardContent() {
 
       if (result.thread_id) {
         setInitiatedThreadId(result.thread_id);
+        // Don't reset isSubmitting here - keep loading until redirect happens
       } else {
         throw new Error('Agent initiation did not return a thread_id.');
       }
@@ -191,7 +191,7 @@ export function DashboardContent() {
         const errorMessage = error instanceof Error ? error.message : 'Operation failed';
         toast.error(errorMessage);
       }
-    } finally {
+      // Only reset loading state if there was an error or no thread_id was returned
       setIsSubmitting(false);
     }
   };
@@ -210,7 +210,7 @@ export function DashboardContent() {
   }, []);
 
   React.useEffect(() => {
-    if (autoSubmit && inputValue && !isSubmitting) {
+    if (autoSubmit && inputValue && !isSubmitting && !isRedirecting) {
       const timer = setTimeout(() => {
         handleSubmit(inputValue);
         setAutoSubmit(false);
@@ -218,7 +218,7 @@ export function DashboardContent() {
 
       return () => clearTimeout(timer);
     }
-  }, [autoSubmit, inputValue, isSubmitting]);
+  }, [autoSubmit, inputValue, isSubmitting, isRedirecting]);
 
   return (
     <>
@@ -228,13 +228,13 @@ export function DashboardContent() {
         showUsageLimitAlert={true}
       />
       <div className="dashboard-scroll-container flex flex-col h-full w-full bg-background">
-        {/* Sidebar Toggle Button for Desktop */}
-        {!isMobile && state === 'collapsed' && (
+        {/* Sidebar Toggle Button for Desktop and Mobile */}
+        {state === 'collapsed' && (
           <div className="fixed top-6 left-4 z-50">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  onClick={() => setOpen(true)}
+                  onClick={() => isMobile ? setOpenMobile(true) : setOpen(true)}
                   variant="ghost"
                   size="icon"
                   className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:text-accent-foreground dark:hover:bg-accent/50 size-9 mr-2 hover:bg-accent transition-all duration-200 h-9 w-9 touch-manipulation"
@@ -253,9 +253,8 @@ export function DashboardContent() {
         {/* Scrollable Content Area */}
         <div className="dashboard-scroll-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
           <div className="min-h-full flex flex-col">
-            {/* Header Section */}
-            {customAgentsEnabled && (
-              <div className="flex justify-center px-4 pt-6">
+            {(
+              <div className="flex justify-center px-4 pt-4 md:pt-8">
                 <ReleaseBadge text="Custom Agents, Playbooks, and more!" link="/agents?tab=my-agents" />
               </div>
             )}
@@ -275,30 +274,23 @@ export function DashboardContent() {
                     I'm Xera, your AI assistant. I can help with research, analysis, automation, and much more.
                   </p>
                 </div>
-                
-
+                <div className="w-full" data-tour="chat-input">
+                  <ChatInput
+                    ref={chatInputRef}
+                    onSubmit={handleSubmit}
+                    loading={isSubmitting || isRedirecting}
+                    placeholder="Describe what you need help with..."
+                    value={inputValue}
+                    onChange={setInputValue}
+                    hideAttachments={false}
+                    selectedAgentId={selectedAgentId}
+                    onAgentSelect={setSelectedAgent}
+                    enableAdvancedConfig={true}
+                    onConfigureAgent={(agentId) => router.push(`/agents/config/${agentId}`)}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        
-        {/* Fixed Chat Input at Bottom */}
-        <div className="flex-shrink-0 px-4 pt-4 bg-background/95 backdrop-blur-sm border-t border-border/20 sticky bottom-0">
-          <div className="w-full max-w-2xl mx-auto">
-            <ChatInput
-              ref={chatInputRef}
-              onSubmit={handleSubmit}
-              loading={isSubmitting}
-              placeholder="Message Xera..."
-              value={inputValue}
-              onChange={setInputValue}
-              hideAttachments={false}
-              selectedAgentId={selectedAgentId}
-              onAgentSelect={setSelectedAgent}
-              hideAgentSelection={false}
-              enableAdvancedConfig={true}
-              onConfigureAgent={(agentId) => router.push(`/agents/config/${agentId}`)}
-            />
           </div>
         </div>
         

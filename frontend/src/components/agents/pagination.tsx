@@ -38,8 +38,8 @@ export const Pagination: React.FC<PaginationProps> = ({
 
   const getVisiblePages = () => {
     const delta = 1;
-    const range = [];
-    const rangeWithDots = [];
+    const range: number[] = [];
+    const rangeWithDots: (number | string)[] = [];
 
     rangeWithDots.push(1);
 

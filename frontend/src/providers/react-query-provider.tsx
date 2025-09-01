@@ -5,6 +5,7 @@ import {
   HydrationBoundary,
   QueryClient,
   QueryClientProvider,
+  DehydratedState,
 } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { handleApiError } from '@/lib/error-handler';
@@ -16,7 +17,7 @@ export function ReactQueryProvider({
   dehydratedState,
 }: {
   children: React.ReactNode;
-  dehydratedState?: unknown;
+  dehydratedState?: DehydratedState;
 }) {
   const [queryClient] = useState(
     () =>
@@ -24,14 +25,14 @@ export function ReactQueryProvider({
         defaultOptions: {
           queries: {
             staleTime: 20 * 1000,
-            gcTime: 5 * 60 * 1000,
+            gcTime: 2 * 60 * 1000, 
             retry: (failureCount, error: any) => {
               if (error?.status >= 400 && error?.status < 500) return false;
               if (error?.status === 404) return false;
               return failureCount < 3;
             },
             refetchOnMount: true,
-            refetchOnWindowFocus: true,
+            refetchOnWindowFocus: false,
             refetchOnReconnect: 'always',
           },
           mutations: {
@@ -58,7 +59,7 @@ export function ReactQueryProvider({
 
   return (
     <QueryClientProvider client={queryClient}>
-      <HydrationBoundary state={dehydratedState}>
+      <HydrationBoundary state={dehydratedState ?? undefined}>
         {children}
         {isLocal && (
           <ReactQueryDevtools initialIsOpen={false} />

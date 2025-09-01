@@ -225,8 +225,8 @@ const convertToLLMFormat = (steps: ConditionalStep[]): any[] => {
 export default function WorkflowPage() {
   const params = useParams();
   const router = useRouter();
-  const agentId = params.agentId as string;
-  const workflowId = params.workflowId as string;
+  const agentId = (params as Record<string, string> | null)?.agentId ?? '';
+  const workflowId = (params as Record<string, string> | null)?.workflowId ?? '';
 
   const { data: workflows = [], isLoading: isLoadingWorkflows } = useAgentWorkflows(agentId);
   const createWorkflowMutation = useCreateAgentWorkflow();

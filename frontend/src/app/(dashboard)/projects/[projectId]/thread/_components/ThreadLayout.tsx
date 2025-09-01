@@ -10,6 +10,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ThreadLayoutProps {
   children: React.ReactNode;
+  chatInput?: React.ReactNode;
   threadId: string;
   projectName: string;
   projectId: string;
@@ -41,10 +42,12 @@ interface ThreadLayoutProps {
   initialLoadCompleted: boolean;
   agentName?: string;
   disableInitialAnimation?: boolean;
+  compact?: boolean;
 }
 
 export function ThreadLayout({
   children,
+  chatInput,
   threadId,
   projectName,
   projectId,
@@ -75,12 +78,88 @@ export function ThreadLayout({
   isMobile,
   initialLoadCompleted,
   agentName,
-  disableInitialAnimation = false
+  disableInitialAnimation = false,
+  compact = false
 }: ThreadLayoutProps) {
   const isActuallyMobile = useIsMobile();
   
+  // Compact mode for embedded use
+  if (compact) {
+    return (
+      <>
+        <div className="relative h-full flex flex-col">
+          {debugMode && (
+            <div className="absolute top-4 right-4 bg-amber-500 text-black text-xs px-2 py-1 rounded-md shadow-md z-50">
+              Debug Mode
+            </div>
+          )}
+
+          {/* Main content - always full width */}
+          <div className="flex flex-col h-full overflow-hidden">
+            <div className="flex-1 overflow-y-auto min-h-0">
+              {children}
+            </div>
+
+            {/* Sticky Chat Input at bottom for compact mode */}
+            {chatInput && (
+              <div className="flex-shrink-0 border-t border-border/20">
+                {chatInput}
+              </div>
+            )}
+          </div>
+
+          {/* Tool Call Side Panel - Full replacement overlay for compact */}
+          {isSidePanelOpen && initialLoadCompleted && (
+            <div className="absolute inset-0 bg-background z-40">
+              <ToolCallSidePanel
+                isOpen={true}
+                onClose={onSidePanelClose}
+                toolCalls={toolCalls}
+                messages={messages}
+                externalNavigateToIndex={externalNavIndex}
+                agentStatus={agentStatus}
+                currentIndex={currentToolIndex}
+                onNavigate={onSidePanelNavigate}
+                project={project || undefined}
+                renderAssistantMessage={renderAssistantMessage}
+                renderToolResult={renderToolResult}
+                isLoading={!initialLoadCompleted || isLoading}
+                onFileClick={onViewFiles}
+                agentName={agentName}
+                disableInitialAnimation={disableInitialAnimation}
+                compact={true}
+              />
+            </div>
+          )}
+
+          {/* File Viewer Modal */}
+          {sandboxId && (
+            <FileViewerModal
+              open={fileViewerOpen}
+              onOpenChange={setFileViewerOpen}
+              sandboxId={sandboxId}
+              initialFilePath={fileToView}
+              project={project || undefined}
+              filePathList={filePathList}
+            />
+          )}
+
+          <BillingErrorAlert
+            message={billingData.message}
+            currentUsage={billingData.currentUsage}
+            limit={billingData.limit}
+            accountId={billingData.accountId}
+            onDismiss={onDismissBilling}
+            isOpen={showBillingAlert}
+          />
+        </div>
+      </>
+    );
+  }
+
+  // Full layout mode
   return (
-    <div className="flex h-screen">
+    <div className="flex flex-col h-screen">
       {debugMode && (
         <div className="fixed top-16 right-4 bg-amber-500 text-black text-xs px-2 py-1 rounded-md shadow-md z-50">
           Debug Mode
@@ -88,7 +167,7 @@ export function ThreadLayout({
       )}
 
       <div
-        className={`flex flex-col flex-1 transition-all duration-200 ease-in-out h-full ${(!initialLoadCompleted || (isSidePanelOpen && !isActuallyMobile))
+        className={`flex flex-col flex-1 transition-all duration-200 ease-in-out min-h-0 ${(!initialLoadCompleted || (isSidePanelOpen && !isActuallyMobile))
           ? 'mr-[90%] sm:mr-[450px] md:mr-[500px] lg:mr-[550px] xl:mr-[650px]'
           : ''
           }`}
@@ -105,9 +184,16 @@ export function ThreadLayout({
         />
 
         {/* Main content area with proper scroll isolation */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0">
           {children}
         </div>
+
+        {/* Sticky Chat Input at bottom */}
+        {chatInput && (
+          <div className="flex-shrink-0 border-t border-border/20">
+            {chatInput}
+          </div>
+        )}
       </div>
 
       <ToolCallSidePanel

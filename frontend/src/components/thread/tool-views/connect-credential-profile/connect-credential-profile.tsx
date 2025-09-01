@@ -254,7 +254,7 @@ export function ConnectCredentialProfileToolView({
                   <div className="flex gap-2">
                     <Button
                       onClick={openConnectionLink}
-                      disabled={isExpired}
+                      disabled={Boolean(isExpired)}
                       className={cn(
                         "flex-1 h-9",
                         isExpired && "opacity-50 cursor-not-allowed"
@@ -267,7 +267,7 @@ export function ConnectCredentialProfileToolView({
                     <Button
                       variant="outline"
                       onClick={copyLink}
-                      disabled={isExpired}
+                      disabled={Boolean(isExpired)}
                       className="h-9 px-3"
                     >
                       {copiedLink ? (

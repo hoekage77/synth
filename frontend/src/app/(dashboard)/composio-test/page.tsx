@@ -614,30 +614,35 @@ export default function ComposioTestPage() {
                           <Label className="text-xs font-medium text-muted-foreground">Server ID</Label>
                           <div className="flex items-center gap-2 mt-1">
                             <code className="bg-background px-2 py-1 rounded text-sm flex-1">
-                              {testResult.mcp_urls.mcp_server_info.id}
+                              {testResult.mcp_urls?.mcp_server_info?.id}
                             </code>
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => copyToClipboard(testResult.mcp_urls.mcp_server_info.id)}
+                              onClick={() => {
+                                const serverId = testResult.mcp_urls?.mcp_server_info?.id;
+                                if (serverId) {
+                                  copyToClipboard(serverId);
+                                }
+                              }}
                             >
                               <Copy className="h-3 w-3" />
                             </Button>
                           </div>
                         </div>
 
-                        {testResult.mcp_urls.mcp_server_info.name && (
+                        {testResult.mcp_urls?.mcp_server_info?.name && (
                           <div>
                             <Label className="text-xs font-medium text-muted-foreground">Server Name</Label>
-                            <p className="text-sm mt-1">{testResult.mcp_urls.mcp_server_info.name}</p>
+                            <p className="text-sm mt-1">{testResult.mcp_urls?.mcp_server_info?.name}</p>
                           </div>
                         )}
 
-                        {testResult.mcp_urls.mcp_server_info.allowed_tools.length > 0 && (
+                        {testResult.mcp_urls?.mcp_server_info?.allowed_tools?.length > 0 && (
                           <div>
                             <Label className="text-xs font-medium text-muted-foreground">Allowed Tools</Label>
                             <div className="flex flex-wrap gap-1 mt-1">
-                              {testResult.mcp_urls.mcp_server_info.allowed_tools.map((tool, index) => (
+                              {testResult.mcp_urls?.mcp_server_info?.allowed_tools?.map((tool, index) => (
                                 <Badge key={index} variant="secondary" className="text-xs">
                                   {tool}
                                 </Badge>
@@ -652,19 +657,27 @@ export default function ComposioTestPage() {
                         <Label className="text-sm font-medium">Base MCP Server URL</Label>
                         <div className="flex items-center gap-2 mt-1">
                           <code className="bg-muted px-2 py-1 rounded text-sm flex-1 break-all">
-                            {testResult.mcp_urls.mcp_url}
+                            {testResult.mcp_urls?.mcp_url}
                           </code>
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => copyToClipboard(testResult.mcp_urls.mcp_url)}
+                            onClick={() => {
+                              if (testResult.mcp_urls?.mcp_url) {
+                                copyToClipboard(testResult.mcp_urls.mcp_url);
+                              }
+                            }}
                           >
                             <Copy className="h-3 w-3" />
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => window.open(testResult.mcp_urls.mcp_url, '_blank')}
+                            onClick={() => {
+                              if (testResult.mcp_urls?.mcp_url) {
+                                window.open(testResult.mcp_urls.mcp_url, '_blank');
+                              }
+                            }}
                           >
                             <ExternalLink className="h-3 w-3" />
                           </Button>
@@ -672,7 +685,7 @@ export default function ComposioTestPage() {
                       </div>
 
                       {/* User-Specific URLs */}
-                      {testResult.mcp_urls.user_ids_url.length > 0 && (
+                      {testResult.mcp_urls?.user_ids_url?.length > 0 && (
                         <div>
                           <Label className="text-sm font-medium">🎯 User-Specific URLs (Recommended)</Label>
                           <p className="text-xs text-muted-foreground mb-2">
@@ -706,7 +719,7 @@ export default function ComposioTestPage() {
                       )}
 
                       {/* Connected Account URLs */}
-                      {testResult.mcp_urls.connected_account_urls.length > 0 && (
+                      {testResult.mcp_urls?.connected_account_urls?.length > 0 && (
                         <div>
                           <Label className="text-sm font-medium">Connected Account URLs</Label>
                           <p className="text-xs text-muted-foreground mb-2">
@@ -769,4 +782,4 @@ export default function ComposioTestPage() {
         </div>
     </div>
   );
-} 
+}

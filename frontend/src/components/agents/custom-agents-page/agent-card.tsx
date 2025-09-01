@@ -422,7 +422,7 @@ export const AgentCard: React.FC<AgentCardProps> = ({
 }) => {
   
   const isSunaAgent = mode === 'agent' && (data as AgentData).metadata?.is_suna_default === true;
-  const isOwner = currentUserId && mode === 'marketplace' && (data as MarketplaceData).creator_id === currentUserId;
+  const isOwner = Boolean(currentUserId) && mode === 'marketplace' && (data as MarketplaceData).creator_id === currentUserId;
   
   const cardClassName = `group relative bg-card rounded-2xl overflow-hidden shadow-sm transition-all duration-300 border cursor-pointer flex flex-col min-h-[280px] max-h-[320px] border-border/50 hover:border-primary/20`;
   

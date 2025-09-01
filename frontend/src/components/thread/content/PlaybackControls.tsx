@@ -107,6 +107,7 @@ export const PlaybackControls = ({
 
     if (playbackTimeout.current) {
       clearTimeout(playbackTimeout.current);
+      playbackTimeout.current = null;
     }
 
     // If the side panel is open, close it
@@ -403,7 +404,9 @@ export const PlaybackControls = ({
     playbackTimeout.current = setTimeout(playbackNextMessage, 500);
 
     return () => {
-      clearTimeout(playbackTimeout.current);
+      if (playbackTimeout.current) {
+        clearTimeout(playbackTimeout.current);
+      }
       if (cleanupStreaming) cleanupStreaming();
     };
   }, [
