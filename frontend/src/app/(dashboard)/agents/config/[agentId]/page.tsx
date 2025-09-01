@@ -40,12 +40,12 @@ interface FormData {
 
 function AgentConfigurationContent() {
   const params = useParams();
-  const agentId = params.agentId as string;
+  const agentId = (params as Record<string, string> | null)?.agentId ?? '';
   const router = useRouter();
 
   const { agent, versionData, isViewingOldVersion, isLoading, error } = useAgentVersionData({ agentId });
   const searchParams = useSearchParams();
-  const initialAccordion = searchParams.get('accordion');
+  const initialAccordion = searchParams?.get('accordion') ?? undefined;
   const { setHasUnsavedChanges } = useAgentVersionStore();
   
   const updateAgentMutation = useUpdateAgent();
@@ -463,10 +463,10 @@ function AgentConfigurationContent() {
           <div className="bg-background h-full flex flex-col border-r border-border/40 overflow-hidden">
             <div className="flex-shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <div className="pt-4">
-                {isViewingOldVersion && (
+        {isViewingOldVersion && (
                   <div className="mb-4 px-8">
                     <VersionAlert
-                      versionData={versionData}
+          versionData={versionData ?? undefined}
                       isActivating={activateVersionMutation.isPending}
                       onActivateVersion={handleActivateVersion}
                     />
@@ -504,7 +504,7 @@ function AgentConfigurationContent() {
                 <ConfigurationTab
                   agentId={agentId}
                   displayData={displayData}
-                  versionData={versionData}
+                  versionData={versionData ?? undefined}
                   isViewingOldVersion={isViewingOldVersion}
                   onFieldChange={handleFieldChange}
                   onMCPChange={handleMCPChange}
@@ -667,10 +667,10 @@ function AgentConfigurationContent() {
             <div className="flex-shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <div className="pt-4">
                 
-                {isViewingOldVersion && (
+        {isViewingOldVersion && (
                   <div className="mb-4 px-4">
                     <VersionAlert
-                      versionData={versionData}
+          versionData={versionData ?? undefined}
                       isActivating={activateVersionMutation.isPending}
                       onActivateVersion={handleActivateVersion}
                     />
@@ -795,7 +795,7 @@ function AgentConfigurationContent() {
                 <ConfigurationTab
                   agentId={agentId}
                   displayData={displayData}
-                  versionData={versionData}
+                  versionData={versionData ?? undefined}
                   isViewingOldVersion={isViewingOldVersion}
                   onFieldChange={handleFieldChange}
                   onMCPChange={handleMCPChange}

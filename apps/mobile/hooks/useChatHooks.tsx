@@ -147,7 +147,7 @@ export interface UseAgentStreamResult {
 export const useAgentStream = (
     callbacks: AgentStreamCallbacks,
     threadId: string,
-    setMessages: (messages: Message[]) => void,
+    setMessages: (updater: (prev: Message[]) => Message[]) => void,
 ): UseAgentStreamResult => {
     const [agentRunId, setAgentRunId] = useState<string | null>(null);
     const [status, setStatus] = useState<string>('idle');
@@ -210,7 +210,7 @@ export const useAgentStream = (
             getMessages(currentThreadId)
                 .then((messagesData: Message[]) => {
                     if (isMountedRef.current && messagesData) {
-                        currentSetMessages(messagesData);
+                        currentSetMessages(() => messagesData);
                     }
                 })
                 .catch((err) => {
@@ -679,4 +679,4 @@ export const useEnsureThread = (projectId: string) => {
         isLoading: isLoading || createThread.isPending,
         ensureThread,
     };
-}; 
+};

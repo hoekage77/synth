@@ -256,7 +256,8 @@ export const useModelSelectionOld = () => {
 
   // Generate model options list with consistent structure
   const MODEL_OPTIONS = useMemo(() => {
-    let models = [];
+    
+    let models: ModelOption[] = [];
     
     // Default models if API data not available
     if (!modelsData?.models || isLoadingModels) {
@@ -324,8 +325,8 @@ export const useModelSelectionOld = () => {
       }
 
       // Then by priority (higher first)
-      if (a.priority !== b.priority) {
-        return b.priority - a.priority;
+      if ((a.priority || 0) !== (b.priority || 0)) {
+        return (b.priority || 0) - (a.priority || 0);
       }
       
       // Finally by name

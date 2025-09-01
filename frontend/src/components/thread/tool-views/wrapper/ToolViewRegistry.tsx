@@ -196,11 +196,11 @@ export function ToolView({ name = 'default', assistantContent, toolContent, ...p
   const toolToolData = extractToolData(toolContent);
 
   // find the file path from the tool output
-  const output  = toolToolData.toolResult.toolOutput as ToolOutput;
-  const filePath = output.file_path;
+  const output  = toolToolData.toolResult?.toolOutput as ToolOutput;
+  const filePath = output?.file_path;
 
   // check if the file path is a presentation slide
-  const { isValid: isPresentationSlide, presentationName, slideNumber } = parsePresentationSlidePath(filePath);
+  const { isValid: isPresentationSlide, presentationName, slideNumber } = parsePresentationSlidePath(filePath || null);
   let modifiedToolContent = toolContent;
 
   // define presentation-related tools that shouldn't be transformed

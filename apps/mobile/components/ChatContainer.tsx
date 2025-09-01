@@ -40,6 +40,13 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
         streamError,
     } = chatSession;
 
+    // Debug: log message flow from session to container
+    useEffect(() => {
+        if (messages && messages.length >= 0) {
+            console.log(`[ChatContainer] messages count=${messages.length} sampleIds=${messages.slice(-3).map(m=>m.message_id).join(',')}`);
+        }
+    }, [messages]);
+
     // For project mode, we still need these specific loading states
     const { isLoadingThread, isLoadingMessages, isSending: projectIsSending } = isNewChatMode ?
         { isLoadingThread: false, isLoadingMessages: false, isSending: false } :

@@ -113,8 +113,8 @@ export function useShareThreadData(threadId: string): UseShareThreadDataReturn {
             setProjectName('Shared Conversation');
           }
 
-          const unifiedMessages = (messagesData || [])
-            .filter((msg) => msg.type !== 'status')
+          const unifiedMessages = (messagesData as ApiMessageType[] || [])
+            .filter((msg) => msg && msg.type !== 'status')
             .map((msg: ApiMessageType) => {
               let finalContent: string | object = msg.content || '';
               if (msg.metadata) {

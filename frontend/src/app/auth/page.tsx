@@ -37,9 +37,9 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isLoading } = useAuth();
-  const mode = searchParams.get('mode');
-  const returnUrl = searchParams.get('returnUrl');
-  const message = searchParams.get('message');
+  const mode = searchParams?.get('mode') ?? 'signin';
+  const returnUrl = searchParams?.get('returnUrl') ?? '/';
+  const message = searchParams?.get('message');
 
   const isSignUp = mode === 'signup';
   const isMobile = useMediaQuery('(max-width: 768px)');

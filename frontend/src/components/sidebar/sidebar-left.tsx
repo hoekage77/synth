@@ -31,7 +31,7 @@ import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { usePathname, useSearchParams } from 'next/navigation';
-import posthog from 'posthog-js';
+import { captureEvent } from '@/lib/analytics';
 // Floating mobile menu button component - REMOVED: Now handled by header button
 // function FloatingMobileMenuButton() {
 //   const { setOpenMobile, openMobile } = useSidebar();
@@ -179,7 +179,7 @@ export function SidebarLeft({
                 'bg-accent text-accent-foreground font-medium': pathname === '/dashboard',
               })} 
               onClick={() => {
-                posthog.capture('new_task_clicked');
+                void captureEvent('new_task_clicked');
                 if (isMobile) setOpenMobile(false);
               }}
             >

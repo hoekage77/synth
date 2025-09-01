@@ -220,7 +220,7 @@ export function CompleteToolView({
               <div className="space-y-2">
                 <div className="bg-muted/50 rounded-2xl p-4 border border-border">
                   <Markdown className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none [&>:first-child]:mt-0 prose-headings:mt-3">
-                    {text || completeData.summary || completeData.result}
+                    {text || completeData.summary || completeData.result || ''}
                   </Markdown>
                 </div>
               </div>

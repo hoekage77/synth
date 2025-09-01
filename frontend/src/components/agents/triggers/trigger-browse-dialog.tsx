@@ -83,7 +83,7 @@ export const TriggerBrowseDialog: React.FC<TriggerBrowseDialogProps> = ({
 
   const filteredProviders = providers.filter(provider =>
     provider.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    provider.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    provider.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     provider.trigger_type.toLowerCase().includes(searchTerm.toLowerCase())
   );
 

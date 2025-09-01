@@ -265,7 +265,7 @@ export function FileEditToolView({
           <div className="h-[calc(100vh-17rem)] w-full bg-muted/20 border rounded-xl overflow-auto">
             <XlsxRenderer 
               content={updatedContent}
-              filePath={processedFilePath}
+              filePath={processedFilePath || undefined}
               fileName={fileName}
               project={project}
             />

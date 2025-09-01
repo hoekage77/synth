@@ -228,6 +228,7 @@ const FuturisticGrid = React.memo(() => {
     </div>
   );
 });
+FuturisticGrid.displayName = "FuturisticGrid";
 
 // Holographic Orbs Effect
 const HolographicOrbs = () => {
@@ -323,20 +324,6 @@ ScanningLines.displayName = "ScanningLines";
 const FuturisticSpaceBackground = () => {
   return (
     <div className="absolute inset-0 -z-30 overflow-hidden bg-gradient-to-b from-slate-950 via-blue-950/20 to-black">
-      {/* Animated nebula effect */}
-      <motion.div
-        className="absolute inset-0"
-        animate={{
-          background: [
-            "radial-gradient(circle at 20% 30%, cyan/10 0%, transparent 50%), radial-gradient(circle at 80% 70%, purple/8 0%, transparent 50%), radial-gradient(circle at 50% 50%, blue/5 0%, transparent 70%)",
-            "radial-gradient(circle at 30% 70%, purple/12 0%, transparent 50%), radial-gradient(circle at 70% 30%, cyan/6 0%, transparent 50%), radial-gradient(circle at 50% 50%, blue/8 0%, transparent 70%)",
-            "radial-gradient(circle at 80% 40%, cyan/8 0%, transparent 50%), radial-gradient(circle at 20% 60%, purple/10 0%, transparent 50%), radial-gradient(circle at 50% 50%, blue/6 0%, transparent 70%)",
-            "radial-gradient(circle at 20% 30%, cyan/10 0%, transparent 50%), radial-gradient(circle at 80% 70%, purple/8 0%, transparent 50%), radial-gradient(circle at 50% 50%, blue/5 0%, transparent 70%)",
-          ]
-        }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-      />
-
       {/* Star field */}
       <div className="absolute inset-0">
         {Array.from({ length: 100 }).map((_, i) => {
@@ -440,12 +427,6 @@ export function HeroSection() {
       {/* Futuristic Grid Overlay */}
       <FuturisticGrid />
       
-      {/* Holographic Orbs */}
-      <HolographicOrbs />
-      
-      {/* Scanning Lines */}
-      <ScanningLines />
-      
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen w-full px-4 sm:px-6 pt-32">
         <div className="max-w-6xl mx-auto w-full text-center">
           
@@ -459,72 +440,39 @@ export function HeroSection() {
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full backdrop-blur-sm">
               <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
               <span className="text-emerald-400 font-mono text-sm tracking-wider">
-                SYSTEM ONLINE • AI WORKFORCE READY
+                XERA ONLINE • READY TO WORK
               </span>
             </div>
           </motion.div>
 
-          {/* Main Title - Futuristic Typography */}
+          {/* Main Headline */}
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.4 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
             className="mb-8"
           >
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-4">
-              <motion.span
-                className="block bg-gradient-to-r from-cyan-400 via-white to-purple-400 bg-clip-text text-transparent"
-                animate={{
-                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                }}
-                transition={{ duration: 4, repeat: Infinity }}
-                style={{ backgroundSize: "200% 200%" }}
-              >
-                NEURAL
-              </motion.span>
-              <motion.span
-                className="block font-mono tracking-wider text-white/90"
-                initial={{ letterSpacing: "0.1em" }}
-                animate={{ letterSpacing: ["0.1em", "0.15em", "0.1em"] }}
-                transition={{ duration: 3, repeat: Infinity }}
-              >
-                WORKFORCE
-              </motion.span>
-              <motion.span
-                className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent"
-                animate={{ opacity: [0.7, 1, 0.7] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                PROTOCOL
-              </motion.span>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+              <span className="block bg-gradient-to-r from-cyan-400 via-white to-purple-400 bg-clip-text text-transparent">
+                Your AI Workforce
+              </span>
+              <span className="block text-white/90">
+                That Never Sleeps
+              </span>
             </h1>
           </motion.div>
 
-          {/* Subtitle with typewriter effect */}
+          {/* Value Proposition */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
             className="mb-12"
           >
-            <p className="text-xl sm:text-2xl text-gray-300 font-mono max-w-4xl mx-auto leading-relaxed">
-              <motion.span
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 2, delay: 1 }}
-                className="inline-block overflow-hidden whitespace-nowrap"
-              >
-                Deploy autonomous AI agents for complex task execution
-              </motion.span>
+            <p className="text-xl sm:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
+              Stop wasting hours on repetitive tasks.
               <br />
-              <motion.span
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 2, delay: 1.5 }}
-                className="inline-block overflow-hidden whitespace-nowrap"
-              >
-                Research • Automation • Analysis • Creation
-              </motion.span>
+              <span className="text-cyan-400 font-semibold">Deploy Xera to handle research, automation, analysis, and creation while you focus on what matters most.</span>
             </p>
           </motion.div>
 
@@ -532,25 +480,75 @@ export function HeroSection() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.2 }}
-            className="flex flex-col items-center gap-6"
+            transition={{ duration: 0.8, delay: 0.9 }}
+            className="flex flex-col items-center gap-8"
           >
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <Link
                 href={user ? "/dashboard" : "/auth"}
-                className="px-8 py-4 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700 rounded-lg text-white font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="px-10 py-5 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700 rounded-xl text-white font-bold text-xl transition-all duration-300 shadow-2xl hover:shadow-cyan-500/25 hover:scale-105"
               >
-                {user ? "Enter Dashboard" : "Deploy Neural Agent"}
+                {user ? "Enter Dashboard" : "Start Building with Xera"}
               </Link>
 
               {!user && (
                 <button
                   onClick={() => setAuthDialogOpen(true)}
-                  className="px-6 py-3 border border-cyan-500/50 rounded-lg text-cyan-400 hover:bg-cyan-500/10 transition-all duration-300 font-medium"
+                  className="px-8 py-4 border-2 border-cyan-500/50 rounded-xl text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400 transition-all duration-300 font-semibold text-lg"
                 >
-                  Learn More
+                  See Xera in Action
                 </button>
               )}
+            </div>
+
+            {/* Trust Indicators */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 1.2 }}
+              className="flex items-center gap-6 text-sm text-gray-400"
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <span>Free to start</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <span>Works 24/7</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                <span>Human-like intelligence</span>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* Certifications & Trust */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.4 }}
+            className="mt-16 pt-8 border-t border-gray-800/50"
+          >
+            <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-400">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">✓</span>
+                </div>
+                <span>Enterprise Security</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">✓</span>
+                </div>
+                <span>SOC 2 Compliant</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">✓</span>
+                </div>
+                <span>GDPR Ready</span>
+              </div>
             </div>
           </motion.div>
 

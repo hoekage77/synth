@@ -27,7 +27,17 @@ const nextConfig = (): NextConfig => ({
   },
   
   // Webpack optimizations
-  webpack: (config, { dev, isServer }) => {
+  webpack: (config, { dev, isServer, webpack }) => {
+    // Polyfill `self` on the server to avoid SSR vendor bundles referencing it
+    if (isServer) {
+      config.plugins = config.plugins || [];
+      config.plugins.push(
+        new webpack.DefinePlugin({
+          self: 'globalThis',
+        } as any)
+      );
+    }
+
     // Production optimizations
     if (!dev) {
       config.optimization = {

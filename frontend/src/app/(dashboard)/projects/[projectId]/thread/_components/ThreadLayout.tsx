@@ -102,7 +102,7 @@ export function ThreadLayout({
 
             {/* Sticky Chat Input at bottom for compact mode */}
             {chatInput && (
-              <div className="flex-shrink-0 border-t border-border/20 bg-background">
+              <div className="flex-shrink-0 border-t border-border/20">
                 {chatInput}
               </div>
             )}
@@ -190,7 +190,7 @@ export function ThreadLayout({
 
         {/* Sticky Chat Input at bottom */}
         {chatInput && (
-          <div className="flex-shrink-0 border-t border-border/20 bg-background">
+          <div className="flex-shrink-0 border-t border-border/20">
             {chatInput}
           </div>
         )}

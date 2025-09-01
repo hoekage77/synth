@@ -622,7 +622,7 @@ export default function ShareThreadPage({
         isStreamingText={playbackState.isStreamingText}
         currentToolCall={playbackState.currentToolCall}
         sandboxId={sandboxId || ''}
-        project={project}
+        project={project || undefined}
       />
       {renderWelcomeOverlay()}
       {renderFloatingControls()}

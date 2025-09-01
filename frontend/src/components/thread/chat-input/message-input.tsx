@@ -256,7 +256,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
       <div className="relative flex flex-col w-full">
                  {/* AI Agent Capabilities - Enhanced card-based design */}
          {onAgentSelect && (selectedAgentId || displayAgent?.agent_id) && (
-           <div className="flex items-center justify-center gap-2 px-2 mb-3">
+           <div className="flex items-center justify-center gap-1.5 px-1.5 mb-2">
              <Button
                variant="ghost"
                size="sm"
@@ -330,8 +330,8 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
            </div>
          )}
         
-        <div className="flex items-end gap-2 px-2">
-          <div className="flex-1 flex flex-col gap-1">
+        <div className="flex items-end gap-1.5 px-1.5">
+          <div className="flex-1 flex flex-col">
             <Textarea
               ref={ref}
               value={value}
@@ -340,9 +340,9 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
               onPaste={handlePaste}
               placeholder={placeholder}
               className={cn(
-                'w-full bg-transparent dark:bg-transparent border-none shadow-none focus-visible:ring-0 px-0.5 py-3 !text-[15px] min-h-[40px] overflow-y-auto resize-none',
+                'w-full bg-transparent dark:bg-transparent border-none shadow-none focus-visible:ring-0 px-0.5 py-2 !text-[15px] min-h-[36px] overflow-y-auto resize-none',
                 // Mobile-specific styles to prevent stretching
-                'md:max-h-[200px] max-h-[120px]', // Smaller max height on mobile
+                'md:max-h-[180px] max-h-[100px]', // Smaller max height on mobile
                 'touch-manipulation', // Better touch handling
                 'webkit-appearance-none', // Remove iOS styling
                 isDraggingOver ? 'opacity-40' : '',
@@ -367,7 +367,7 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
             onClick={isAgentRunning && onStopAgent ? onStopAgent : onSubmit}
             size="sm"
             className={cn(
-              'w-8 h-8 flex-shrink-0 rounded-xl mb-1',
+              'w-7 h-7 flex-shrink-0 rounded-xl',
               (!value.trim() && uploadedFiles.length === 0 && !isAgentRunning) ||
                 loading ||
                 (disabled && !isAgentRunning)
@@ -391,8 +391,8 @@ export const MessageInput = forwardRef<HTMLTextAreaElement, MessageInputProps>(
         </div>
 
         {/* Bottom controls row */}
-        <div className="flex items-center justify-between mt-2 px-2 gap-2 min-w-0">
-          <div className="flex items-center gap-3 min-w-0 flex-shrink">
+        <div className="flex items-center justify-between mt-1.5 px-1.5 gap-1.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-shrink">
             {!hideAttachments && (
               <FileUploadHandler
                 ref={fileInputRef}

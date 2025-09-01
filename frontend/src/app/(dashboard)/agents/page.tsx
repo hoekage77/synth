@@ -89,7 +89,7 @@ export default function AgentsPage() {
   const [agentLimitError, setAgentLimitError] = useState<AgentCountLimitError | null>(null);
 
   const activeTab = useMemo(() => {
-    return searchParams.get('tab') || 'my-agents';
+    return searchParams ? searchParams.get('tab') || 'my-agents' : 'my-agents';
   }, [searchParams]);
 
   const agentsQueryParams: AgentsParams = useMemo(() => {
@@ -184,7 +184,7 @@ export default function AgentsPage() {
           id: template.template_id,
           creator_id: template.creator_id,
           name: template.name,
-          description: template.description,
+          description: template.description ?? '',
           tags: template.tags || [],
           download_count: template.download_count || 0,
           creator_name: template.creator_name || 'Anonymous',
@@ -210,7 +210,7 @@ export default function AgentsPage() {
   }, [marketplaceTemplates]);
 
   const handleTabChange = (newTab: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() ?? '');
     params.set('tab', newTab);
     router.replace(`${pathname}?${params.toString()}`);
   };
@@ -240,7 +240,7 @@ export default function AgentsPage() {
   }, [templatesSearchQuery, templatesSortBy, templatesSortOrder]);
 
   useEffect(() => {
-    const agentId = searchParams.get('agent');
+    const agentId = searchParams?.get('agent');
     if (agentId && allMarketplaceItems.length > 0) {
       const sharedAgent = allMarketplaceItems.find(agent => agent.id === agentId);
       if (sharedAgent) {
@@ -574,7 +574,7 @@ export default function AgentsPage() {
               setAgentsPage={setAgentsPage}
               agentsPageSize={agentsPageSize}
               onAgentsPageSizeChange={handleAgentsPageSizeChange}
-              myTemplates={myTemplates}
+              myTemplates={myTemplates || []}
               templatesLoading={templatesLoading}
               templatesError={templatesError}
               templatesActioningId={templatesActioningId}

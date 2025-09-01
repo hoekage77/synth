@@ -221,7 +221,7 @@ export function FileOperationToolView({
           <div className="flex-1 min-h-[400px] w-full bg-muted/20 border rounded-xl overflow-hidden">
             <XlsxRenderer 
               content={fileContent}
-              filePath={processedFilePath}
+              filePath={processedFilePath || undefined}
               fileName={fileName}
               project={project}
             />

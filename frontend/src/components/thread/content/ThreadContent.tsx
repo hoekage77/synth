@@ -105,7 +105,7 @@ export function renderMarkdownContent(
 
                     // Render ask tool content with attachment UI
                     contentParts.push(
-                        <div key={`ask-${match.index}-${index}`} className="space-y-3">
+                        <div key={`ask-${match?.index || 0}-${index}`} className="space-y-3">
                             <ComposioUrlDetector content={askText} className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none break-words [&>:first-child]:mt-0 prose-headings:mt-3" />
                             {renderAttachments(attachmentArray, fileViewerHandler, sandboxId, project)}
                         </div>
@@ -115,7 +115,7 @@ export function renderMarkdownContent(
                     const standaloneAttachments = renderStandaloneAttachments(attachmentArray, fileViewerHandler, sandboxId, project);
                     if (standaloneAttachments) {
                         contentParts.push(
-                            <div key={`ask-func-attachments-${match.index}-${index}`}>
+                            <div key={`ask-func-attachments-${match?.index || 0}-${index}`}>
                                 {standaloneAttachments}
                             </div>
                         );
@@ -131,7 +131,7 @@ export function renderMarkdownContent(
 
                     // Render complete tool content with attachment UI
                     contentParts.push(
-                        <div key={`complete-${match.index}-${index}`} className="space-y-3">
+                        <div key={`complete-${match?.index || 0}-${index}`} className="space-y-3">
                             <ComposioUrlDetector content={completeText} className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none break-words [&>:first-child]:mt-0 prose-headings:mt-3" />
                             {renderAttachments(attachmentArray, fileViewerHandler, sandboxId, project)}
                         </div>
@@ -141,7 +141,7 @@ export function renderMarkdownContent(
                     const standaloneAttachments = renderStandaloneAttachments(attachmentArray, fileViewerHandler, sandboxId, project);
                     if (standaloneAttachments) {
                         contentParts.push(
-                            <div key={`complete-func-attachments-${match.index}-${index}`}>
+                            <div key={`complete-func-attachments-${match?.index || 0}-${index}`}>
                                 {standaloneAttachments}
                             </div>
                         );
@@ -163,7 +163,7 @@ export function renderMarkdownContent(
 
                     contentParts.push(
                         <div
-                            key={`tool-${match.index}-${index}`}
+                            key={`tool-${match?.index || 0}-${index}`}
                             className="my-1"
                         >
                             <button

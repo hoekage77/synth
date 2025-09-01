@@ -103,7 +103,7 @@ export function DashboardContent() {
   }, [agents, initializeFromAgents, setSelectedAgent]);
 
   React.useEffect(() => {
-    const agentIdFromUrl = searchParams.get('agent_id');
+    const agentIdFromUrl = searchParams?.get('agent_id');
     if (agentIdFromUrl && agentIdFromUrl !== selectedAgentId) {
       setSelectedAgent(agentIdFromUrl);
       const newUrl = new URL(window.location.href);

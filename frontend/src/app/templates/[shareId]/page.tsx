@@ -165,7 +165,7 @@ const IntegrationIcon: React.FC<{
 
 export default function TemplateSharePage() {
   const params = useParams();
-  const templateId = params.shareId as string; // Note: keeping shareId param name for URL compatibility
+  const templateId = params?.shareId as string; // Note: keeping shareId param name for URL compatibility
   const router = useRouter();
   const { user } = useAuth();
   const { theme, resolvedTheme, setTheme } = useTheme();

@@ -162,8 +162,8 @@ export function AgentHeader({
               <AgentIconAvatar
                 profileImageUrl={displayData.profile_image_url}
                 iconName={displayData.icon_name}
-                iconColor={displayData.icon_color}
-                backgroundColor={displayData.icon_background}
+                iconColor={displayData.icon_color || undefined}
+                backgroundColor={displayData.icon_background || undefined}
                 agentName={displayData.name}
                 size={36}
                 className="ring-1 ring-black/5 hover:ring-black/10 transition-all"
@@ -238,9 +238,9 @@ export function AgentHeader({
       isOpen={isProfileDialogOpen}
       onClose={() => setIsProfileDialogOpen(false)}
       currentImageUrl={displayData.profile_image_url}
-      currentIconName={displayData.icon_name}
-      currentIconColor={displayData.icon_color}
-      currentBackgroundColor={displayData.icon_background}
+      currentIconName={displayData.icon_name || undefined}
+      currentIconColor={displayData.icon_color || undefined}
+      currentBackgroundColor={displayData.icon_background || undefined}
       agentName={displayData.name}
       onImageUpdate={handleImageUpdate}
       onIconUpdate={handleIconUpdate}

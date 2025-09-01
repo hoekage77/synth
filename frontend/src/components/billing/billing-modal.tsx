@@ -64,7 +64,7 @@ export function BillingModal({ open, onOpenChange, returnUrl = typeof window !==
         isLoading: commitmentLoading,
         error: commitmentError,
         refetch: refetchCommitment
-    } = useSubscriptionCommitment(subscriptionData?.subscription?.id || null);
+    } = useSubscriptionCommitment(subscriptionData?.subscription?.id || undefined);
 
     // Simple function to fetch subscription data
     const fetchSubscriptionData = async () => {

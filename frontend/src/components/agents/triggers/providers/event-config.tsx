@@ -158,12 +158,12 @@ export const EventTriggerConfigForm: React.FC<EventTriggerConfigFormProps> = ({
     const newConfig = {
       ...config,
       execution_type: value,
-    };
+    } as EventTriggerConfig;
     if (value === 'agent') {
-      delete newConfig.workflow_id;
-      delete newConfig.workflow_input;
+      delete (newConfig as any).workflow_id;
+      delete (newConfig as any).workflow_input;
     } else {
-      delete newConfig.agent_prompt;
+      delete (newConfig as any).agent_prompt;
       if (!newConfig.workflow_input) {
         newConfig.workflow_input = { prompt: '' };
       }

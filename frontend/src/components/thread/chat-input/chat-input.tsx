@@ -29,7 +29,7 @@ import { useSubscriptionData } from '@/contexts/SubscriptionContext';
 import { isLocalMode } from '@/lib/config';
 import { BillingModal } from '@/components/billing/billing-modal';
 import { useRouter } from 'next/navigation';
-import posthog from 'posthog-js';
+import { captureEvent } from '@/lib/analytics';
 
 export interface ChatInputHandles {
   getPendingFiles: () => File[];
@@ -246,7 +246,7 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
         thinkingEnabled = true;
       }
 
-      posthog.capture("task_prompt_submitted", { message });
+      void captureEvent("task_prompt_submitted", { message });
 
       onSubmit(message, {
         agent_id: selectedAgentId,

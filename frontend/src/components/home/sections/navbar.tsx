@@ -142,49 +142,17 @@ export function Navbar() {
       >
         {/* Starfield background pattern */}
         <div className="absolute inset-0 opacity-15" style={{
-          backgroundImage: `radial-gradient(circle at 2px 2px, cyan 1px, transparent 0)`,
+          backgroundImage: `radial-gradient(circle at 2px 2px, gray 1px, transparent 0)`,
           backgroundSize: '40px 40px'
         }} />
-        
-        {/* Animated scanning line effect */}
-        <motion.div
-          className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent"
-          animate={{ opacity: [0.3, 1, 0.3] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
         
         {/* Main navbar container */}
         <div className={cn(
           'relative bg-black/85 backdrop-blur-xl border-b transition-all duration-300',
           hasScrolled 
-            ? 'border-cyan-500/40 shadow-xl shadow-cyan-500/20' 
+            ? 'border-gray-600/40 shadow-xl' 
             : 'border-gray-800/30'
         )}>
-          {/* Enhanced holographic overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/8 via-blue-500/5 to-purple-500/8" />
-          
-          {/* Floating particles */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-0.5 h-0.5 bg-cyan-400/30 rounded-full"
-                style={{
-                  left: `${(i * 150 + 50) % 100}%`,
-                  top: `${30 + (i * 23) % 40}%`,
-                }}
-                animate={{
-                  opacity: [0.2, 0.8, 0.2],
-                  scale: [0.5, 1.2, 0.5],
-                }}
-                transition={{
-                  duration: 3 + (i % 2),
-                  repeat: Infinity,
-                  delay: i * 0.4,
-                }}
-              />
-            ))}
-          </div>
           
           <div className="relative max-w-6xl mx-auto px-8 sm:px-12 lg:px-16">
             <div className="flex h-20 items-center justify-between py-4">
@@ -199,14 +167,12 @@ export function Navbar() {
                   {/* Enhanced logo with starfield effect */}
                   <div className="relative">
                     <motion.span 
-                      className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent"
+                      className="text-2xl font-bold text-white"
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 0.2 }}
                     >
                       XERA
                     </motion.span>
-                    {/* Subtle glow effect */}
-                    <div className="absolute inset-0 text-2xl font-bold text-cyan-400/20 blur-sm">XERA</div>
                   </div>
                 </Link>
               </motion.div>
@@ -214,9 +180,7 @@ export function Navbar() {
               {/* Center Section - Enhanced Navigation Menu (hidden when no nav items) */}
               {siteConfig.nav.links.length > 0 && (
                 <div className="flex items-center justify-center flex-1">
-                  <div className="relative bg-black/60 border border-cyan-500/30 rounded-full px-1 py-1 backdrop-blur-xl shadow-lg shadow-cyan-500/10">
-                    {/* Inner glow */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/5 via-blue-400/5 to-purple-400/5 rounded-full" />
+                  <div className="relative bg-black/60 border border-gray-600/30 rounded-full px-1 py-1 backdrop-blur-xl">
                     {mounted ? (
                       <Suspense fallback={
                         <div className="flex items-center gap-6 px-4 py-2">
@@ -246,7 +210,7 @@ export function Navbar() {
                     whileTap={{ scale: 0.95 }}
                   >
                     <Link
-                      className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 rounded-lg text-white font-medium text-sm hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 transition-all duration-300 shadow-lg shadow-cyan-500/20 border border-cyan-500/20"
+                      className="hidden md:flex items-center gap-2 px-4 py-2 bg-gray-800 rounded-lg text-white font-medium text-sm hover:bg-gray-700 transition-all duration-300 border border-gray-600"
                       href="/dashboard"
                     >
                       <Power className="w-4 h-4" />
@@ -259,7 +223,7 @@ export function Navbar() {
                     whileTap={{ scale: 0.95 }}
                   >
                     <Link
-                      className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 rounded-lg text-white font-medium text-sm hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 transition-all duration-300 shadow-lg shadow-cyan-500/20 border border-cyan-500/20"
+                      className="hidden md:flex items-center gap-2 px-4 py-2 bg-gray-800 rounded-lg text-white font-medium text-sm hover:bg-gray-700 transition-all duration-300 border border-gray-600"
                       href="/auth"
                     >
                       <Zap className="w-4 h-4" />
@@ -270,17 +234,16 @@ export function Navbar() {
 
                 {/* Enhanced Mobile menu button */}
                 <motion.button
-                  className="md:hidden relative bg-black/80 border border-cyan-500/40 rounded-lg p-2 hover:border-cyan-400/60 transition-colors duration-300 shadow-lg shadow-cyan-500/10"
+                  className="md:hidden relative bg-black/80 border border-gray-600/40 rounded-lg p-2 hover:border-gray-500/60 transition-colors duration-300"
                   onClick={toggleDrawer}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/10 to-purple-400/10 rounded-lg" />
                   <div className="relative">
                     {isDrawerOpen ? (
-                      <X className="w-5 h-5 text-cyan-400" />
+                      <X className="w-5 h-5 text-gray-300" />
                     ) : (
-                      <Menu className="w-5 h-5 text-cyan-400" />
+                      <Menu className="w-5 h-5 text-gray-300" />
                     )}
                   </div>
                 </motion.button>
@@ -305,7 +268,7 @@ export function Navbar() {
             />
 
             <motion.div
-              className="fixed inset-x-0 w-[95%] mx-auto bottom-4 bg-black/95 border border-cyan-500/40 p-6 rounded-xl shadow-2xl backdrop-blur-xl"
+              className="fixed inset-x-0 w-[95%] mx-auto bottom-4 bg-black/95 border border-gray-600/40 p-6 rounded-xl shadow-2xl backdrop-blur-xl"
               initial="hidden"
               animate="visible"
               exit="exit"
@@ -313,13 +276,9 @@ export function Navbar() {
             >
               {/* Starfield pattern for mobile drawer */}
               <div className="absolute inset-0 opacity-10" style={{
-                backgroundImage: `radial-gradient(circle at 2px 2px, cyan 1px, transparent 0)`,
+                backgroundImage: `radial-gradient(circle at 2px 2px, gray 1px, transparent 0)`,
                 backgroundSize: '30px 30px'
               }} />
-              
-              {/* Enhanced holographic overlay */}
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/8 via-blue-500/5 to-purple-500/8 rounded-xl" />
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
               
               {/* Mobile menu content */}
               <div className="relative flex flex-col gap-6">
@@ -327,7 +286,7 @@ export function Navbar() {
                   <Link href="/" className="flex items-center gap-3 group">
                     {/* Enhanced mobile logo */}
                     <motion.span 
-                      className="text-xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent"
+                      className="text-xl font-bold text-white"
                       whileHover={{ scale: 1.05 }}
                     >
                       XERA
@@ -336,21 +295,21 @@ export function Navbar() {
                   
                   <motion.button
                     onClick={toggleDrawer}
-                    className="bg-black/60 border border-cyan-500/30 rounded-lg p-2 hover:border-cyan-400/50 transition-colors duration-300"
+                    className="bg-black/60 border border-gray-600/30 rounded-lg p-2 hover:border-gray-500/50 transition-colors duration-300"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <X className="w-5 h-5 text-cyan-400" />
+                    <X className="w-5 h-5 text-gray-300" />
                   </motion.button>
                 </div>
 
                 {/* Enhanced Navigation menu (hidden when no nav items) */}
                 {siteConfig.nav.links.length > 0 && (
                   <motion.div
-                    className="bg-black/60 border border-cyan-500/30 rounded-xl p-4 backdrop-blur-xl shadow-lg shadow-cyan-500/10"
+                    className="bg-black/60 border border-gray-600/30 rounded-xl p-4 backdrop-blur-xl"
                     variants={drawerMenuContainerVariants}
                   >
-                    <div className="text-xs font-medium text-cyan-400/80 mb-3 tracking-wider">Navigation</div>
+                    <div className="text-xs font-medium text-gray-400 mb-3 tracking-wider">Navigation</div>
                     <AnimatePresence>
                       {siteConfig.nav.links.map((item, index) => (
                         <motion.div
@@ -387,11 +346,11 @@ export function Navbar() {
                             }}
                             className={`flex items-center gap-3 p-3 rounded-lg font-medium text-sm transition-all duration-300 ${
                               (item.href.startsWith('#') && pathname === '/' && activeSection === item.href.substring(1)) || (item.href === pathname)
-                                ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-lg shadow-cyan-500/10'
-                                : 'text-gray-300 hover:bg-cyan-500/10 hover:text-cyan-400 hover:border hover:border-cyan-500/20'
+                                ? 'bg-gray-700 text-white border border-gray-600'
+                                : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                             }`}
                           >
-                            <div className="w-1 h-1 bg-cyan-400/60 rounded-full" />
+                            <div className="w-1 h-1 bg-gray-400 rounded-full" />
                             {item.name}
                           </a>
                         </motion.div>
@@ -405,7 +364,7 @@ export function Navbar() {
                   {user ? (
                     <Link
                       href="/dashboard"
-                      className="flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 rounded-lg text-white font-medium text-sm hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 transition-all duration-300 shadow-lg shadow-cyan-500/20 border border-cyan-500/20"
+                      className="flex items-center justify-center gap-2 py-3 bg-gray-800 rounded-lg text-white font-medium text-sm hover:bg-gray-700 transition-all duration-300 border border-gray-600"
                     >
                       <Power className="w-4 h-4" />
                       Dashboard
@@ -413,7 +372,7 @@ export function Navbar() {
                   ) : (
                     <Link
                       href="/auth"
-                      className="flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 rounded-lg text-white font-medium text-sm hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 transition-all duration-300 shadow-lg shadow-cyan-500/20 border border-cyan-500/20"
+                      className="flex items-center justify-center gap-2 py-3 bg-gray-800 rounded-lg text-white font-medium text-sm hover:bg-gray-700 transition-all duration-300 border border-gray-600"
                     >
                       <Zap className="w-4 h-4" />
                       Get Started

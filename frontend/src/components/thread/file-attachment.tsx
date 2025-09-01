@@ -422,7 +422,7 @@ export function FileAttachment({
                 title={filename}
             >
                 <img
-                    src={sandboxId && session?.access_token ? imageUrl : (fileUrl || '')}
+                    src={sandboxId && session?.access_token ? (imageUrl || undefined) : (fileUrl || '')} 
                     alt={filename}
                     className={cn(
                         "max-h-full max-w-full", // Respect parent constraints

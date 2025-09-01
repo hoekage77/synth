@@ -238,7 +238,7 @@ export function BrowserToolView({
     }
     
     if (matchingToolMessage) {
-      const toolContent = safeJsonParse<ParsedContent>(matchingToolMessage.content, {});
+      const toolContent = safeJsonParse<ParsedContent>((matchingToolMessage as any).content, {});
         if (toolContent?.tool_execution?.result?.output) {
           // result = toolContent.tool_execution.result.output;
           // Handle if output is a string or object

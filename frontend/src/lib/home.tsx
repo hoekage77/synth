@@ -71,11 +71,11 @@ export const siteConfig = {
     instagram: 'https://instagram.com/xera.cc',
   },
   nav: {
-    links: [
+  links: [
       // Commented out - only home page exists now
       // { id: 1, name: 'Home', href: '#hero' },
       // { id: 6, name: 'Enterprise', href: '/enterprise' },
-    ],
+  ] as Array<{ id: number; name: string; href: string }>,
   },
   hero: {
     badgeIcon: (

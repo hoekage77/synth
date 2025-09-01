@@ -164,8 +164,15 @@ export function useWorkflowSteps({
         onStepsChange(newSteps);
         
         // Update the selected step if it's the one being updated
-        if (updates.id === selectedStep?.id) {
-            setSelectedStep({ ...selectedStep, ...updates });
+        if (updates.id === selectedStep?.id && selectedStep) {
+            const updatedStep = { ...selectedStep };
+            // Only update fields that are defined in updates
+            for (const key in updates) {
+                if (updates[key] !== undefined) {
+                    updatedStep[key] = updates[key];
+                }
+            }
+            setSelectedStep(updatedStep as ConditionalStep);
         }
     }, [steps, onStepsChange, selectedStep, setSelectedStep]);
 
